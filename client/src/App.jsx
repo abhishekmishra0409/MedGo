@@ -7,6 +7,7 @@ import Footer from "./component/Footer.jsx";
 import Store from './page/Store.jsx';
 import Ambulance from './page/Ambulance.jsx';
 import Login from './page/Login.jsx';
+import DoctorLists from "./page/DoctorLists.jsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/doctors" element={<Doctors/>}/>
             <Route path="/store" element={<Store />} />
             <Route path="/ambulance" element={<Ambulance />} />
+              <Route path="/doctorlists" element={<DoctorLists />} />
             <Route path="/login" element={<Login />} />
           </Routes>
           <Footer/>

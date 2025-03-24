@@ -1,6 +1,6 @@
 const DepartmentCardLr = ({ icon, title, category, description }) => {
     return (
-        <div className="w-80 bg-slate-100 shadow-md rounded-xl p-6 text-center border border-gray-200">
+        <div className="w-70 bg-slate-100 shadow-md rounded-xl p-6 text-center border border-gray-200">
             <div
                 className="w-20 h-20 border-2 border-white rounded-full flex items-center justify-center mx-auto bg-white">
                 <img src={icon} alt={title} className="w-12 h-12"/>
