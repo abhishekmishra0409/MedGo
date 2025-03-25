@@ -29,6 +29,15 @@ export const doctors = [
         qualification: "MBBS, MD (Dermatology)",
         hospital: "Medanta Hospital, Indore",
         image: "./Doctor01.png"
+    },
+    {
+        id: 4,
+        name: "Dr. R Gupta",
+        position: "Sr. Surgeon",
+        speciality: "Dermatology",
+        qualification: "MBBS, MD (Dermatology)",
+        hospital: "Medanta Hospital, Indore",
+        image: "./Doctor01.png"
     }
 ];
 
