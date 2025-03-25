@@ -76,7 +76,7 @@ const Home = () => {
 
                             {/* Clock Icon in Background */}
                             <div className="absolute bottom-4 right-4 opacity-20">
-                                <img src="./watch.svg" alt="Watch"/>
+                                <img src="./Record.png" alt="Watch"/>
                             </div>
                         </div>
                         <div
