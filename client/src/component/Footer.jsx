@@ -22,7 +22,6 @@ const Footer = () => {
                             <li>About Us</li>
                             <li>Customers Speak</li>
                             <li>In the News</li>
-                            <li>Careers</li>
                             <li>Contact</li>
                         </ul>
                     </div>
@@ -66,7 +65,7 @@ const Footer = () => {
 
                 {/* Bottom Section */}
                 <div className="mt-10 border-t border-gray-300 pt-4 flex flex-col md:flex-row justify-between items-center">
-                    <p className="text-sm">&copy; 2023 Sunrise. All Rights Reserved.</p>
+                    <p className="text-sm">&copy; 2025 DawaiLink. All Rights Reserved.</p>
 
                     <div className="flex space-x-3 mt-3">
                         <FaFacebook className="text-xl cursor-pointer"/>
