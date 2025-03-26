@@ -19,7 +19,7 @@ function BlogsPage() {
             author: blog.author || 'Anonymous',
             date: blog.date || new Date().toLocaleDateString(),
             title: blog.title,
-            description: blog.description || blog.content.substring(0, 100) + '...'
+            Description: blog.Description || blog.content.substring(0, 100) + '...'
         }));
 
         setBlogs(formattedBlogs);

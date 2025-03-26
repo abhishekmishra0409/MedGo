@@ -1,3 +1,5 @@
+import {Link} from "react-router-dom";
+
 const HeroSection = () => {
     return (
         <div className="relative w-full h-[600px] bg-cover bg-center flex items-center"
@@ -11,9 +13,11 @@ const HeroSection = () => {
                 <p className="text-gray-700 mt-4">
                 Reliable healthcare at your fingertips or connect with trusted doctors, book appointments, and access medical services effortlessly.
                 </p>
-                <button className="mt-6 px-6 py-3 bg-gradient-to-r from-teal-300 to-teal-700 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 transition w-1/3">
+                <Link to={"/doctorlists"}>
+                <button className="mt-6 px-6 py-3 bg-gradient-to-r from-teal-300 to-teal-700 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 transition w-1/3 cursor-pointer">
                     Get Appointment
                 </button>
+                </Link>
             </div>
 
         </div>

@@ -229,12 +229,16 @@ const Home = () => {
                             .slice(0, 4) // Get only first 4 hot products
                             .map(product => (
                                 <ProductCard
+                                    id={product.id}
                                     key={product.id}
-                                    image={product.images[0]} // Use first image as thumbnail
+                                    image={product.image}
                                     name={product.name}
-                                    price={product.price.toFixed(2)}
+                                    price={product.price}
+                                    originalPrice={product.originalPrice}
                                     isHot={product.isHot}
-                                    id={product.id} // Pass the id if your ProductCard needs it
+                                    isNew={product.isNew}
+                                    rating={product.rating}
+                                    reviews={product.reviews}
                                 />
                             ))}
                     </div>

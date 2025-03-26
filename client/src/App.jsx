@@ -16,6 +16,7 @@ import AppointmentForm from "./page/AppointmentForm.jsx";
 import Blogs from "./page/Blogs.jsx";
 import BlogDetail from "./page/BlogDetails.jsx";
 import LoginOption from "./page/LoginOption.jsx";
+import CartPage from "./page/CartPage.jsx";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/appointment/:doctorId" element={<AppointmentForm />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
+            <Route path="/cart" element={<CartPage />} />
             <Route path="/login-option" element={<LoginOption />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

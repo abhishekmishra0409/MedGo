@@ -4,6 +4,7 @@ import { MdHealthAndSafety } from "react-icons/md";
 import DepartmentCardLr from "../component/Doctors/DepartmentCardLr.jsx";
 import TabsSection from "../component/Doctors/TabsSection.jsx";
 import DoctorCard from "../component/Common/DoctorCard.jsx";
+import {Link} from "react-router-dom";
 
 // Services array
 const services = [
@@ -57,8 +58,19 @@ const departments = [
 function Doctors() {
     return (
         <>
-            <div className="relative w-full h-[450px] bg-cover bg-center flex items-center"
+            <div className="relative w-full h-[450px] bg-cover bg-center flex items-center justify-start px-32"
                  style={{backgroundImage: "url('/hero_healthcare.png')"}}>
+                <div className="text-left max-w-md">
+                    <p className="text-gray-600 text-sm">Book Now!</p>
+                    <h1 className="text-4xl font-bold text-gray-900">Meet Our Qualified Doctors</h1>
+
+                    <Link to={"/doctorlists"}>
+                        <button
+                            className="mt-4 px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
+                            Book Appointment
+                        </button>
+                    </Link>
+                </div>
             </div>
 
             <section className="py-10 bg-gray-100 px-28">

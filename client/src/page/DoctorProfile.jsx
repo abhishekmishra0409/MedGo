@@ -13,6 +13,7 @@ const DoctorProfile = () => {
         navigate(`/appointment/${id}`)
     };
 
+
     useEffect(() => {
         // Find doctor by ID
         const foundDoctor = Doctors.find(d => d.id === parseInt(id));
@@ -48,7 +49,7 @@ const DoctorProfile = () => {
                         <img
                             src={doctor.image}
                             alt={doctor.name}
-                            className="rounded-lg h-64 w-full object-cover"
+                            className="rounded-lg h-80 w-80 object-cover"
                         />
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                         <p className="text-teal-600 text-lg">{doctor.specialty}</p>

@@ -93,7 +93,7 @@ const ProductCard = ({
 
                 {/* Add to Cart Button - Prevent event bubbling */}
                 <button
-                    className="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg font-medium transition-colors duration-300"
+                    className="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg font-medium transition-colors duration-300 cursor-pointer"
                     onClick={(e) => {
                         e.stopPropagation();
                         // Add to cart logic here

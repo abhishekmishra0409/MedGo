@@ -6,12 +6,13 @@ function Login() {
     return (
         <>
 
-        <div className=' flex justify-center items-center w-full min-h-screen bg-gradient-to-r from-[#5FC4B1] to-[#42887B]'>
+        <div className=' flex justify-center items-center w-full min-h-screen bg-gradient-to-b from-teal-300 to-white'>
             
-        <div className='text-white  bg-gradient-to-b from-[#24AEB1] to-[#0F4A4B] border border-blue-400 p-5 rounded-2xl flex flex-col gap-2'>
-            <h2>Welcome to Health Care</h2>
+        <div className='text-white w-92  bg-gradient-to-b from-[#24AEB1] to-[#0F4A4B] border border-blue-400 p-12 rounded-2xl flex flex-col gap-2'>
+            <h2>Welcome to DawaiLink</h2>
             <img src="/logo.png" alt="Logo" />
-            <p>Login to enjoy...</p>
+            <p>Login to enjoy the features we’ve provided
+                and stay healthy!</p>
             
             <p>Login as</p>
             

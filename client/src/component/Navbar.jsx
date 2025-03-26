@@ -11,7 +11,7 @@ const Navbar = () => {
         <nav className="bg-teal-300 flex items-center justify-between px-10 py-4">
             {/* Logo */}
             <div className="mb-6 md:mb-0">
-                <Link to="/"> {/* Wrap logo with Link to navigate to Home */}
+                <Link to="/">
                     <img src="/logo.png" alt="Sunrise Logo" className="h-16 mx-auto md:mx-0"/>
                 </Link>
             </div>
@@ -50,11 +50,13 @@ const Navbar = () => {
 
             {/* Icons */}
             <div className="flex gap-6 items-center">
+                <Link to={'/cart'}>
                 <div className="relative cursor-pointer">
                     <FaShoppingCart className="text-gray-700 text-xl"/>
                 </div>
+                </Link>
 
-                <Link to="/login-option" className="flex items-center gap-2 border border-gray-500 px-4 py-1 rounded-lg hover:bg-teal-600"> {/* Login Link */}
+                <Link to="/login-option" className="flex items-center gap-2 border border-gray-500 px-4 py-1 rounded-lg bg-teal-400 hover:bg-teal-500">
                     <FaUser className="text-gray-700"/>
                     <span>Login</span>
                 </Link>

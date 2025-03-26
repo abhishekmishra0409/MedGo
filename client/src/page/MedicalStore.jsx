@@ -57,9 +57,11 @@ function MedicalStore() {
                     <p className="text-xl text-gray-700">
                         UP to <span className="text-teal-500 font-semibold">25%</span> off
                     </p>
+                    <Link to={"/productlists"}>
                     <button className="mt-4 px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
                         SHOP NOW
                     </button>
+                    </Link>
                 </div>
             </div>
 
@@ -72,9 +74,11 @@ function MedicalStore() {
                         <h2 className="text-xl font-bold text-gray-900">Save 20%</h2>
                         <p className="text-lg text-teal-500 font-semibold">On Sanitizer</p>
                         <p className="text-gray-600 text-sm">99.9% Germ Protection</p>
+                        <Link to={"productlists"}>
                         <button className="mt-2 px-4 py-2 bg-teal-500 text-white rounded-md shadow-md hover:bg-teal-600 transition-all">
                             SHOP NOW
                         </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -85,9 +89,11 @@ function MedicalStore() {
                         <h2 className="text-xl font-bold text-gray-900">15% Off</h2>
                         <p className="text-lg text-teal-500 font-semibold">Protective Masks</p>
                         <p className="text-gray-600 text-sm">Covid Protection</p>
+                        <Link to={"productlists"}>
                         <button className="mt-2 px-4 py-2 bg-teal-500 text-white rounded-md shadow-md hover:bg-teal-600 transition-all">
                             SHOP NOW
                         </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -145,7 +151,9 @@ function MedicalStore() {
                             <p>Seconds</p>
                         </div>
                     </div>
+                    <Link to={"productlists"}>
                     <button className="mt-6 bg-black text-white px-6 py-2 rounded-lg">BUY NOW</button>
+                    </Link>
                 </div>
             </div>
 
