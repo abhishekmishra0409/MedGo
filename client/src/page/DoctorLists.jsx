@@ -48,18 +48,26 @@ const DoctorLists = () => {
 
 
     return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8">Find Your Doctor</h1>
+        <>
+            <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
+                 style={{backgroundImage: "url('/hero_healthcare.png')"}}>
+                <div className="">
+                    <h1 className="text-4xl font-bold text-gray-900">Find Your Doctor</h1>
+                </div>
+            </div>
 
-            <div className="grid md:grid-cols-4 sm:grid-cols-1 gap-8">
-                {/* Left Side - Search & Filter */}
-                <div className="col-span-1">
-                    <SearchFilter
-                        onSearch={handleSearch}
-                        onFilter={handleFilter}
-                        options={specialities}
-                        onClear={handleClear}
-                        placeholder="Search doctors..."
+            <div className="container mx-auto p-6 bg-gradient-to-b from-gray-100 to-white">
+                {/*<h1 className="text-3xl font-bold text-gray-800 mb-8">Find Your Doctor</h1>*/}
+
+                <div className="grid md:grid-cols-4 sm:grid-cols-1 gap-8 mt-16">
+                    {/* Left Side - Search & Filter */}
+                    <div className="col-span-1">
+                        <SearchFilter
+                            onSearch={handleSearch}
+                            onFilter={handleFilter}
+                            options={specialities}
+                            onClear={handleClear}
+                            placeholder="Search doctors..."
                         filterLabel="Speciality"
                         optionType="speciality"
                     />
@@ -106,6 +114,7 @@ const DoctorLists = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

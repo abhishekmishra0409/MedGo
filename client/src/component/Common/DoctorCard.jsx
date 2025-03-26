@@ -17,7 +17,7 @@ const DoctorCard = ({ id, name, position, specialty, qualification, hospital, im
 
     return (
         <div
-            className="bg-white shadow-lg rounded-lg p-6 text-center max-w-sm mx-auto cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-white w-84 shadow-lg rounded-lg p-6 text-center max-w-sm mx-auto cursor-pointer hover:shadow-xl transition-shadow"
             onClick={handleCardClick}
         >
             <img src={image} alt={name} className="w-24 h-24 mx-auto rounded-full border-2 border-gray-300"/>
@@ -36,7 +36,7 @@ const DoctorCard = ({ id, name, position, specialty, qualification, hospital, im
             </div>
 
             <button
-                className="mt-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white w-full py-2 rounded-md shadow-md hover:from-blue-600 hover:to-blue-800 transition-colors"
+                className="mt-4 bg-gradient-to-r from-teal-400 to-teal-700 text-white w-full py-2 rounded-md shadow-md hover:from-blue-600 hover:to-blue-800 transition-colors"
                 onClick={handleAppointmentClick}
             >
                 Book an Appointment

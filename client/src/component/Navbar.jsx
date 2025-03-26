@@ -2,6 +2,8 @@ import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
 import { MdLocalPharmacy, MdLocalHospital, MdOutlineLocalOffer } from "react-icons/md";
 import { IoMdMedical } from "react-icons/io";
 import { GiAmbulance } from "react-icons/gi";
+import { FaMicroblog } from "react-icons/fa";
+
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
@@ -28,10 +30,6 @@ const Navbar = () => {
 
             {/* Navigation Items */}
             <div className="flex gap-8 text-white text-sm font-medium">
-                <Link to="/pharmacy" className="flex items-center gap-1 cursor-pointer"> {/* Pharmacy Link */}
-                    <MdLocalPharmacy className="text-blue-500 text-xl"/>
-                    <span>Pharmacy</span>
-                </Link>
                 <Link to="/doctors" className="flex items-center gap-1 cursor-pointer"> {/* Doctors Link */}
                     <IoMdMedical className="text-blue-400 text-xl"/>
                     <span>Doctors</span>
@@ -43,6 +41,10 @@ const Navbar = () => {
                 <Link to="/ambulance" className="flex items-center gap-1 cursor-pointer"> {/* Ambulance Link */}
                     <GiAmbulance className="text-red-500 text-xl"/>
                     <span>Ambulance</span>
+                </Link>
+                <Link to="/blogs" className="flex items-center gap-1 cursor-pointer">
+                    <FaMicroblog className="text-blue-500 text-xl"/>
+                    <span>Blogs</span>
                 </Link>
             </div>
 

@@ -310,35 +310,35 @@ const Home = () => {
             </section>
 
             {/* Online Consultations */}
-            <section className="relative bg-cover bg-center py-32"
-                     style={{backgroundImage: "url('/VCBg.png')"}}>
-                <div className="container mx-auto flex flex-col lg:flex-row items-center justify-end px-6 lg:px-16">
+            {/*<section className="relative bg-cover bg-center py-32"*/}
+            {/*         style={{backgroundImage: "url('/VCBg.png')"}}>*/}
+            {/*    <div className="container mx-auto flex flex-col lg:flex-row items-center justify-end px-6 lg:px-16">*/}
 
-                    {/* Right Side - Text Content */}
-                    <div className="w-full lg:w-1/2 text-center lg:text-left">
-                        <h2 className="text-3xl font-bold text-gray-900">Get Online Consultations</h2>
-                        <p className="text-gray-600 mt-3 w-2/3">
-                            Behind the word mountains, far from the countries Vokalia and Consonantia, there live the
-                            blind texts.
-                        </p>
+            {/*        /!* Right Side - Text Content *!/*/}
+            {/*        <div className="w-full lg:w-1/2 text-center lg:text-left">*/}
+            {/*            <h2 className="text-3xl font-bold text-gray-900">Get Online Consultations</h2>*/}
+            {/*            <p className="text-gray-600 mt-3 w-2/3">*/}
+            {/*                Behind the word mountains, far from the countries Vokalia and Consonantia, there live the*/}
+            {/*                blind texts.*/}
+            {/*            </p>*/}
 
-                        {/* Button */}
-                        <button
-                            className="mt-5 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-6 rounded-lg transition">
-                            START VIDEO CHAT <FaVideo/>
-                        </button>
-                    </div>
-                </div>
-            </section>
+            {/*            /!* Button *!/*/}
+            {/*            <button*/}
+            {/*                className="mt-5 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-6 rounded-lg transition">*/}
+            {/*                START VIDEO CHAT <FaVideo/>*/}
+            {/*            </button>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</section>*/}
 
             {/* Blog Section */}
-            <section className="py-16 text-center bg-white px-28">
+            <section className="py-16 bg-gradient-to-b from-gray-100 to-white px-28 flex justify-center items-center flex-col">
                 {/* Title */}
                 <h2 className="text-2xl md:text-3xl font-bold text-teal-600">
                     Our Blog
                 </h2>
 
-                <p className="text-gray-600 max-w-lg mx-auto my-3">
+                <p className="text-gray-600 max-w-lg mx-auto my-3 text-center">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit praesent aliquet, pretium.
                 </p>
 
