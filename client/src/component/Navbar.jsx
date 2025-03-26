@@ -52,7 +52,7 @@ const Navbar = () => {
                     <FaShoppingCart className="text-gray-700 text-xl"/>
                 </div>
 
-                <Link to="/login" className="flex items-center gap-2 border border-gray-500 px-4 py-1 rounded-lg hover:bg-teal-600"> {/* Login Link */}
+                <Link to="/login-option" className="flex items-center gap-2 border border-gray-500 px-4 py-1 rounded-lg hover:bg-teal-600"> {/* Login Link */}
                     <FaUser className="text-gray-700"/>
                     <span>Login</span>
                 </Link>
