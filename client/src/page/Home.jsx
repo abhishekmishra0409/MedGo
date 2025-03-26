@@ -13,7 +13,7 @@ const Home = () => {
         <div className="bg-gray-100">
 
             {/* Hero Section */}
-            <HeroSection/>
+            <HeroSection />
 
             {/* Info Cards Section */}
             <div className="relative">
@@ -21,21 +21,21 @@ const Home = () => {
                     <div className={"grid grid-cols-1 md:grid-cols-3 gap-6 px-28 py-10"}>
                         <div
                             className="max-w-sm bg-gradient-to-r from-teal-400 to-teal-600 text-white p-6 rounded-lg shadow-lg relative">
-                            <p className="text-sm opacity-80">Donec luctus</p>
-                            <h2 className="text-xl font-bold mt-1">Opening Hours</h2>
+                            {/* <p className="text-sm opacity-80">Donec luctus</p> */}
+                            <h2 className="text-xl font-bold mt-1">Emergency Cases</h2>
 
                             <ul className="mt-4 space-y-2 text-sm">
                                 <li className="flex justify-between">
-                                    <span>• Monday - Friday</span>
-                                    <span>8.00 - 20.00</span>
+                                    <span>Quick Response Time Focus</span>
+                                    {/* <span>8.00 - 20.00</span> */}
                                 </li>
                                 <li className="flex justify-between">
-                                    <span>• Saturday</span>
-                                    <span>9.00 - 18.30</span>
+                                    <span>24/7 Availability</span>
+                                    {/* <span>9.00 - 18.30</span> */}
                                 </li>
                                 <li className="flex justify-between">
-                                    <span>• Monday - Thursday</span>
-                                    <span>9.00 - 15.00</span>
+                                    <span> Ambulance & Critical Care Timing</span>
+                                    {/* <span>9.00 - 15.00</span> */}
                                 </li>
                             </ul>
 
@@ -47,26 +47,26 @@ const Home = () => {
 
                             {/* Clock Icon in Background */}
                             <div className="absolute bottom-4 right-4 opacity-20">
-                                <img src="./watch.svg" alt="Watch"/>
+                                <img src="./Cases.svg" alt="Case" />
                             </div>
                         </div>
                         <div
                             className="max-w-sm bg-gradient-to-r from-teal-400 to-teal-600 text-white p-6 rounded-lg shadow-lg relative">
-                            <p className="text-sm opacity-80">Donec luctus</p>
-                            <h2 className="text-xl font-bold mt-1">Opening Hours</h2>
+                            {/* <p className="text-sm opacity-80">Donec luctus</p> */}
+                            <h2 className="text-xl font-bold mt-1">Doctors Timetable</h2>
 
                             <ul className="mt-4 space-y-2 text-sm">
                                 <li className="flex justify-between">
-                                    <span>• Monday - Friday</span>
-                                    <span>8.00 - 20.00</span>
+                                    <span>General Consultation</span>
+                                    <span>9:00 AM - 9:00 PM</span>
                                 </li>
                                 <li className="flex justify-between">
-                                    <span>• Saturday</span>
-                                    <span>9.00 - 18.30</span>
+                                    <span>Specialist Doctors</span>
+                                    <span>10:00 AM - 6:00 PM </span>
                                 </li>
                                 <li className="flex justify-between">
-                                    <span>• Monday - Thursday</span>
-                                    <span>9.00 - 15.00</span>
+                                    <span>Emergency Services</span>
+                                    <span>24/7 Available</span>
                                 </li>
                             </ul>
 
@@ -78,12 +78,12 @@ const Home = () => {
 
                             {/* Clock Icon in Background */}
                             <div className="absolute bottom-4 right-4 opacity-20">
-                                <img src="./Record.png" alt="Watch"/>
+                                <img src="./Record.svg" alt="Record" />
                             </div>
                         </div>
                         <div
                             className="max-w-sm bg-gradient-to-r from-teal-400 to-teal-600 text-white p-6 rounded-lg shadow-lg relative">
-                            <p className="text-sm opacity-80">Donec luctus</p>
+                            {/* <p className="text-sm opacity-80">Donec luctus</p> */}
                             <h2 className="text-xl font-bold mt-1">Opening Hours</h2>
 
                             <ul className="mt-4 space-y-2 text-sm">
@@ -109,7 +109,7 @@ const Home = () => {
 
                             {/* Clock Icon in Background */}
                             <div className="absolute bottom-4 right-4 opacity-20">
-                                <img src="./watch.svg" alt="Watch"/>
+                                <img src="./watch.svg" alt="Watch" />
                             </div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ const Home = () => {
 
                 {/* Subtitle */}
                 <div className="flex justify-center items-center my-3">
-                    <img src={"./arrowdot.png"} alt={"arrow"}/>
+                    <img src={"./arrowdot.png"} alt={"arrow"} />
                 </div>
 
                 <p className="text-gray-600 max-w-lg mx-auto">
@@ -137,7 +137,7 @@ const Home = () => {
                     <div className="text-center">
                         <div
                             className="w-20 h-20 border-2 border-gray-700 rounded-full flex items-center justify-center mx-auto">
-                            <img src={"./ambulance.svg"} alt={"arrow"}/>
+                            <img src={"./ambulance.svg"} alt={"arrow"} />
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Emergency Help</h3>
                         <p className="text-gray-600 text-sm">
@@ -153,7 +153,7 @@ const Home = () => {
                     <div className="text-center">
                         <div
                             className="w-20 h-20 border-2 border-gray-700 rounded-full flex items-center justify-center mx-auto">
-                            <img src={"./pharmacy.svg"} alt={"arrow"}/>
+                            <img src={"./pharmacy.svg"} alt={"arrow"} />
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Enriched Pharmacy</h3>
                         <p className="text-gray-600 text-sm">
@@ -169,7 +169,7 @@ const Home = () => {
                     <div className="text-center">
                         <div
                             className="w-20 h-20 border-2 border-gray-700 rounded-full flex items-center justify-center mx-auto">
-                            <img src={"./medical.svg"} alt={"arrow"}/>
+                            <img src={"./medical.svg"} alt={"arrow"} />
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Medical Treatment</h3>
                         <p className="text-gray-600 text-sm">
@@ -181,13 +181,13 @@ const Home = () => {
 
             {/* Specialist Doctors */}
             <section className="bg-cover bg-center py-16 text-center px-28"
-                     style={{backgroundImage: "url('/doctorbg.png')"}}>
+                style={{ backgroundImage: "url('/doctorbg.png')" }}>
                 <div className="py-12">
                     <h2 className="text-3xl text-white font-semibold">We Have Specialist Doctors to Solve Your
                         Problems</h2>
                     {/* Subtitle */}
                     <div className="flex justify-center items-center my-3">
-                        <img src={"./arrowhite.png"} alt={"arrow"}/>
+                        <img src={"./arrowhite.png"} alt={"arrow"} />
                     </div>
 
                     <p className="text-white max-w-lg mx-auto">
@@ -200,17 +200,17 @@ const Home = () => {
                             specialty="Neurosurgeon"
                         />
                         <DoctorCard
-                            image="/doctor.png"
+                            image="/doctor1.png"
                             name="Collis Molate"
                             specialty="Neurosurgeon"
                         />
                         <DoctorCard
-                            image="/doctor.png"
+                            image="/doctor2.png"
                             name="Collis Molate"
                             specialty="Neurosurgeon"
                         />
                         <DoctorCard
-                            image="/doctor.png"
+                            image="/doctor3.png"
                             name="Collis Molate"
                             specialty="Neurosurgeon"
                         />
@@ -253,7 +253,7 @@ const Home = () => {
 
                 {/* Subtitle */}
                 <div className="flex justify-center items-center my-3">
-                    <img src={"./line.png"} alt={"arrow"}/>
+                    <img src={"./line.png"} alt={"arrow"} />
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-10 mt-6">
@@ -308,28 +308,6 @@ const Home = () => {
 
                 </div>
             </section>
-
-            {/* Online Consultations */}
-            {/*<section className="relative bg-cover bg-center py-32"*/}
-            {/*         style={{backgroundImage: "url('/VCBg.png')"}}>*/}
-            {/*    <div className="container mx-auto flex flex-col lg:flex-row items-center justify-end px-6 lg:px-16">*/}
-
-            {/*        /!* Right Side - Text Content *!/*/}
-            {/*        <div className="w-full lg:w-1/2 text-center lg:text-left">*/}
-            {/*            <h2 className="text-3xl font-bold text-gray-900">Get Online Consultations</h2>*/}
-            {/*            <p className="text-gray-600 mt-3 w-2/3">*/}
-            {/*                Behind the word mountains, far from the countries Vokalia and Consonantia, there live the*/}
-            {/*                blind texts.*/}
-            {/*            </p>*/}
-
-            {/*            /!* Button *!/*/}
-            {/*            <button*/}
-            {/*                className="mt-5 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-6 rounded-lg transition">*/}
-            {/*                START VIDEO CHAT <FaVideo/>*/}
-            {/*            </button>*/}
-            {/*        </div>*/}
-            {/*    </div>*/}
-            {/*</section>*/}
 
             {/* Blog Section */}
             <section className="py-16 bg-gradient-to-b from-gray-100 to-white px-28 flex justify-center items-center flex-col">
