@@ -4,6 +4,8 @@ import ProductCard from "../component/Common/PoductCard.jsx";
 import DepartmentCard from "../component/Common/DepartmentCard.jsx";
 import BlogCard from "../component/Common/BlogCard.jsx";
 
+import { Products } from '../assets/ProductData.js';
+
 import { FaVideo } from "react-icons/fa";
 
 const Home = () => {
@@ -218,33 +220,23 @@ const Home = () => {
 
 
             {/* Featured Products */}
-            <section className="py-16 text-center bg-gray-100 px-32 ">
-                <h2 className="text-2xl font-semibold">Featured Products</h2>
-                <div className="flex flex-wrap justify-center gap-6 mt-6">
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
+            <section className="py-16 bg-gray-100 px-4 sm:px-8 lg:px-32">
+                <div className="container mx-auto text-center">
+                    <h2 className="text-2xl font-semibold">Featured Products</h2>
+                    <div className="flex flex-wrap justify-center gap-6 mt-6">
+                        {Products.filter(product => product.isHot)
+                            .slice(0, 4) // Get only first 4 hot products
+                            .map(product => (
+                                <ProductCard
+                                    key={product.id}
+                                    image={product.images[0]} // Use first image as thumbnail
+                                    name={product.name}
+                                    price={product.price.toFixed(2)}
+                                    isHot={product.isHot}
+                                    id={product.id} // Pass the id if your ProductCard needs it
+                                />
+                            ))}
+                    </div>
                 </div>
             </section>
 

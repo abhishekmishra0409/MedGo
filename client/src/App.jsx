@@ -8,6 +8,10 @@ import Ambulance from './page/Ambulance.jsx';
 import Login from './page/Login.jsx';
 import DoctorLists from "./page/DoctorLists.jsx";
 import MedicalStore from './page/MedicalStore.jsx';
+import ProductLists from "./page/ProductLists.jsx";
+import SingleProduct from "./page/SingleProduct.jsx";
+import DoctorProfile from "./page/DoctorProfile.jsx";
+import AppointmentForm from "./page/AppointmentForm.jsx";
 
 function App() {
   return (
@@ -21,6 +25,10 @@ function App() {
             <Route path="/store" element={<MedicalStore />} />
             <Route path="/ambulance" element={<Ambulance />} />
               <Route path="/doctorlists" element={<DoctorLists />} />
+              <Route path="/productlists" element={<ProductLists />} />
+            <Route path="/product/:id" element={<SingleProduct />} />
+            <Route path="/doctor/:id" element={<DoctorProfile />} />
+            <Route path="/appointment/:doctorId" element={<AppointmentForm />} />
             <Route path="/login" element={<Login />} />
           </Routes>
           <Footer/>

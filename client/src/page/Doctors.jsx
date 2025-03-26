@@ -5,6 +5,7 @@ import DepartmentCardLr from "../component/Doctors/DepartmentCardLr.jsx";
 import TabsSection from "../component/Doctors/TabsSection.jsx";
 import DoctorCard from "../component/Common/DoctorCard.jsx";
 
+// Services array
 const services = [
     { icon: <FaCalendarCheck />, title: "Book Appointment" },
     { icon: <MdHealthAndSafety />, title: "Book Health Check-Up" },
@@ -13,13 +14,49 @@ const services = [
     { icon: <FaHospital />, title: "Find Hospital" },
 ];
 
-
-
+// Departments array
+const departments = [
+    {
+        icon: "/oncology_icon.svg",
+        title: "Oncology",
+        category: "Cancer & Tumors",
+        description: "Behind the word mountains, far from the countries Vokalia and Consonantia"
+    },
+    {
+        icon: "/oncology_icon.svg",
+        title: "Cardiology",
+        category: "Heart Care",
+        description: "Specialized care for your heart health and cardiovascular system"
+    },
+    {
+        icon: "/oncology_icon.svg",
+        title: "Neurology",
+        category: "Brain & Nerves",
+        description: "Expert care for neurological disorders and conditions"
+    },
+    {
+        icon: "/oncology_icon.svg",
+        title: "Orthopedics",
+        category: "Bones & Joints",
+        description: "Treatment for musculoskeletal system injuries and disorders"
+    },
+    {
+        icon: "/oncology_icon.svg",
+        title: "Pediatrics",
+        category: "Child Care",
+        description: "Comprehensive healthcare for infants, children and adolescents"
+    },
+    {
+        icon: "/oncology_icon.svg",
+        title: "Dermatology",
+        category: "Skin Care",
+        description: "Diagnosis and treatment of skin conditions and diseases"
+    }
+];
 
 function Doctors() {
     return (
         <>
-
             <div className="relative w-full h-[450px] bg-cover bg-center flex items-center"
                  style={{backgroundImage: "url('/hero_healthcare.png')"}}>
             </div>
@@ -42,45 +79,17 @@ function Doctors() {
 
             <div className="py-10 bg-gray-100 px-28">
                 <div className="container mx-auto px-4 flex flex-wrap justify-center gap-6 ">
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
-                    <DepartmentCardLr
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
-                    />
+                    {departments.map((department, index) => (
+                        <DepartmentCardLr
+                            key={index}
+                            icon={department.icon}
+                            title={department.title}
+                            category={department.category}
+                            description={department.description}
+                        />
+                    ))}
                 </div>
             </div>
-
         </>
     );
 }

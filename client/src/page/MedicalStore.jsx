@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '../component/Common/PoductCard';
+import {Link} from "react-router-dom";
+import { Products } from '../assets/ProductData.js';
 
 function MedicalStore() {
     const [targetDate] = useState(() => {
@@ -39,6 +41,9 @@ function MedicalStore() {
         minutes: timeLeft.minutes || 0,
         seconds: timeLeft.seconds || 0
     };
+
+    // Get first 8 products
+    const featuredProducts = Products.slice(0, 8);
 
     return (
         <>
@@ -146,49 +151,30 @@ function MedicalStore() {
 
 
             <div className="py-10 text-center px-32">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Product</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
                 <div className="flex flex-wrap justify-center gap-6 mt-6">
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
-                    <ProductCard
-                        image="/product01.png"
-                        name="Cannabis Opioid"
-                        price="39.00"
-                        isHot={true}
-                    />
+                    {featuredProducts.map((product) => (
+                        <ProductCard
+                            id={product.id}
+                            key={product.id}
+                            image={product.image}
+                            name={product.name}
+                            price={product.price}
+                            originalPrice={product.originalPrice}
+                            isHot={product.isHot}
+                            isNew={product.isNew}
+                            rating={product.rating}
+                            reviews={product.reviews}
+                        />
+                    ))}
                 </div>
 
-                <button className="mt-8  px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
-                        View All Products  <span>&rarr;</span>
+                <Link to={'/productlists'}>
+                    <button
+                        className="mt-8  px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
+                        View All Products <span>&rarr;</span>
                     </button>
+                </Link>
             </div>
 
 
@@ -197,3 +183,4 @@ function MedicalStore() {
 }
 
 export default MedicalStore;
+
