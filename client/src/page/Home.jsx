@@ -5,6 +5,7 @@ import DepartmentCard from "../component/Common/DepartmentCard.jsx";
 import BlogCard from "../component/Common/BlogCard.jsx";
 
 import { Products } from '../assets/ProductData.js';
+import {Blogs} from "../assets/BlogData.js";
 
 import { FaVideo } from "react-icons/fa";
 
@@ -321,27 +322,19 @@ const Home = () => {
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-8 mt-6">
-                    <BlogCard
-                        image="/blog01.png"
-                        author="Shawn Jackson"
-                        date="12 Sep, 2020"
-                        title="10 Outrageous ideas for your medical products"
-                        description="The medical products industry is a diverse, imaginative, and dynamic area."
-                    />
-                    <BlogCard
-                        image="/blog01.png"
-                        author="Shawn Jackson"
-                        date="12 Sep, 2020"
-                        title="10 Outrageous ideas for your medical products"
-                        description="The medical products industry is a diverse, imaginative, and dynamic area."
-                    />
-                    <BlogCard
-                        image="/blog01.png"
-                        author="Shawn Jackson"
-                        date="12 Sep, 2020"
-                        title="10 Outrageous ideas for your medical products"
-                        description="The medical products industry is a diverse, imaginative, and dynamic area."
-                    />
+                    {Blogs.filter(blog => blog)
+                        .slice(0, 3)
+                        .map(blog => (
+                            <BlogCard
+                                id={blog.id}
+                                key={blog.id}
+                                image={blog.image}
+                                author={blog.author}
+                                date={blog.date}
+                                title={blog.title}
+                                description={blog.Description}
+                            />
+                        ))}
 
                 </div>
             </section>
