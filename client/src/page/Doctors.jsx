@@ -24,31 +24,31 @@ const departments = [
         description: "Behind the word mountains, far from the countries Vokalia and Consonantia"
     },
     {
-        icon: "/oncology_icon.svg",
+        icon: "/Cardiology_icon.svg",
         title: "Cardiology",
         category: "Heart Care",
         description: "Specialized care for your heart health and cardiovascular system"
     },
     {
-        icon: "/oncology_icon.svg",
+        icon: "/Neurology_icon.svg",
         title: "Neurology",
         category: "Brain & Nerves",
         description: "Expert care for neurological disorders and conditions"
     },
     {
-        icon: "/oncology_icon.svg",
+        icon: "/Orthopedics_icon.svg",
         title: "Orthopedics",
         category: "Bones & Joints",
         description: "Treatment for musculoskeletal system injuries and disorders"
     },
     {
-        icon: "/oncology_icon.svg",
+        icon: "/Pediatrics_icon.svg",
         title: "Pediatrics",
         category: "Child Care",
         description: "Comprehensive healthcare for infants, children and adolescents"
     },
     {
-        icon: "/oncology_icon.svg",
+        icon: "/Dermatology_icon.svg",
         title: "Dermatology",
         category: "Skin Care",
         description: "Diagnosis and treatment of skin conditions and diseases"
@@ -89,7 +89,7 @@ function Doctors() {
 
             <TabsSection/>
 
-            <div className="py-10 bg-gray-100 px-28">
+            <div className="py-10 bg-gradient-to-b from-gray-100 to-white px-28">
                 <div className="container mx-auto px-4 flex flex-wrap justify-center gap-6 ">
                     {departments.map((department, index) => (
                         <DepartmentCardLr

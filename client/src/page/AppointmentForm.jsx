@@ -168,8 +168,10 @@ const AppointmentForm = () => {
                 </div>
 
                 {/* Right - Doctor Profile */}
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                    <img src={doctor.image} alt={doctor.name} className="rounded-lg w-full h-64 object-cover"/>
+                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm items-center">
+                <div className="flex flex-col items-center">
+                    <img src={doctor.image} alt={doctor.name} className="rounded-lg w-80 h-80 object-cover"/>
+                    </div>
                     <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                     <p className="text-teal-600">{doctor.specialty}</p>
 

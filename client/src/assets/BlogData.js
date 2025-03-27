@@ -2,61 +2,61 @@ export const Blogs = [
     {
         id: 1,
         title: 'Top five ways for solving teeth problems.',
-        Description: "The medical products industry is a diverse, imaginative, and dynamic area.",
-        content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt.',
+        Description: "Discover five effective solutions to keep your teeth healthy and free from common dental problems.",
+        content: 'Maintain strong and healthy teeth with these five expert-recommended solutions. From daily care tips to professional treatments, ensure a brighter and pain-free smile.',
         author: 'Shawn Jackson',
         date: '15 Aug 2010',
         category: 'Dental Care',
-        image: 'https://example.com/image1.jpg'
+        image: '/blog/Blog.jpg'
     },
     {
         id: 2,
         title: 'The Importance of Regular Health Checkups',
-        Description: "Preventive healthcare is essential for detecting potential health issues early.",
-        content: 'Regular checkups help in early detection of diseases and promote a healthier lifestyle.',
+        Description: "Regular health checkups ensure early detection and better overall well-being.",
+        content: 'Regular health checkups help in early detection of diseases and prevent potential health risks. Prioritizing routine medical visits ensures a healthier and longer life.',
         author: 'Dr. Emily Roberts',
         date: '10 Mar 2021',
         category: 'Preventive Care',
-        image: 'https://example.com/image2.jpg'
+        image: '/blog/Blog1.jpg'
     },
     {
         id: 3,
         title: 'How to Boost Your Immune System Naturally',
-        Description: "A strong immune system can help protect you from illnesses and infections.",
-        content: 'Healthy eating, regular exercise, and proper sleep contribute to a better immune system.',
+        Description: "Boost your immune system naturally with healthy food, exercise, and proper rest.",
+        content: 'Enhancing your immunity starts with simple lifestyle changes. Eating nutrient-rich foods, staying active, getting enough sleep, and managing stress can help strengthen your body natural defenses.',
         author: 'Mark Stevenson',
         date: '22 May 2022',
         category: 'Immunity',
-        image: 'https://example.com/image3.jpg'
+        image: '/blog/Blog2.jpg'
     },
     {
         id: 4,
         title: 'Understanding Mental Health: Signs and Solutions',
-        Description: "Mental health is as important as physical health for overall well-being.",
-        content: 'Recognizing symptoms early and seeking professional help can prevent severe issues.',
+        Description: "Recognize the signs of mental health challenges and discover effective solutions for a healthier mind.",
+        content: 'Mental health is essential for overall well-being. Identifying early signs of stress, anxiety, or depression and adopting healthy coping strategies can lead to a balanced and fulfilling life.',
         author: 'Sarah Johnson',
         date: '05 Sep 2023',
         category: 'Mental Health',
-        image: 'https://example.com/image4.jpg'
+        image: '/blog/Blog3.jpg'
     },
     {
         id: 5,
         title: 'Common Skin Problems and Their Treatments',
-        Description: "Skin health is vital for confidence and overall well-being.",
-        content: 'Acne, eczema, and other skin issues can be managed with proper skincare routines.',
+        Description: "Discover common skin problems and effective treatments for healthy, radiant skin.",
+        content: 'Skin issues like acne, dryness, and eczema can affect anyone. Understanding their causes and using the right treatments can help maintain clear, healthy skin.',
         author: 'Dr. David Brown',
         date: '19 Nov 2023',
         category: 'Dermatology',
-        image: 'https://example.com/image5.jpg'
+        image: '/blog/Blog4.jpg'
     },
     {
         id: 6,
         title: 'How to Maintain a Healthy Heart',
-        Description: "Cardiovascular diseases are among the leading causes of death worldwide.",
-        content: 'A balanced diet, exercise, and stress management play key roles in heart health.',
+        Description: "Keep your heart healthy with a balanced diet, regular exercise, stress management, and routine checkups.", 
+        content: 'A healthy heart starts with a balanced lifestyle. Eating nutritious foods, staying active, managing stress, and going for regular checkups can help prevent heart disease and promote overall well-being.A balanced diet, exercise, and stress management play key roles in heart health.',
         author: 'Dr. Amanda Lee',
         date: '02 Jan 2024',
         category: 'Cardiology',
-        image: 'https://example.com/image6.jpg'
+        image: '/blog/Blog5.jpg'
     }
 ];

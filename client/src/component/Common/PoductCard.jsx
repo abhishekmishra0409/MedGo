@@ -40,7 +40,7 @@ const ProductCard = ({
             </div>
 
             {/* Product Image */}
-            <div className=" w-64 flex items-center justify-center  bg-gray-50">
+            <div className=" w-64 h-80 flex items-center justify-center  bg-gray-50">
                 <img
                     src={image}
                     alt={name}

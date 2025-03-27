@@ -74,9 +74,9 @@ const ProductLists = () => {
 
         <>
             <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{backgroundImage: "url('/hero_healthcare.png')"}}>
+                 style={{backgroundImage: "url('/Product/productmain.jpg')"}}>
                 <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900">Find Your Products</h1>
+                    <h1 className="text-4xl font-bold text-gray-900"></h1>
                 </div>
             </div>
 

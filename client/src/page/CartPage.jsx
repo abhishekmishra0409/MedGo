@@ -1,33 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const initialCart = [
     {
         id: 1,
-        name: "Thermometers",
+        name: "Cannabis Opioid",
         sku: "290397",
-        price: 61.0,
+        price: 39.0,
         qty: 1,
-        image: "./cart-thumb01.png",
+        image: "/product01.png",
     },
     {
         id: 2,
-        name: "Weight Loss Measuring",
+        name: "Immune Booster Pro",
         sku: "290392",
-        price: 115.0,
+        price: 29.99,
         qty: 1,
-        image: "./cart-thumb02.png",
+        image: "/Product/product02.jpg",
     },
     {
         id: 3,
-        name: "Hand Gloves",
+        name: "Sleep Well Capsules",
         sku: "290347",
-        price: 24.0,
+        price: 24.50,
         qty: 1,
-        image: "./cart-thumb03.png",
+        image: "/Product/product03.jpg",
     },
 ];
 
 const CartPage = () => {
+    const navigate = useNavigate();
     const [cart, setCart] = useState(initialCart);
     const [coupon, setCoupon] = useState("");
     const [discount, setDiscount] = useState(0);
@@ -72,6 +75,13 @@ const CartPage = () => {
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
     const total = subtotal - discount;
 
+  
+
+    const handleCardClick = (id) => {
+        navigate(`/product/${id}`);
+    };
+
+
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-6 bg-white shadow-lg rounded-lg">
             <h2 className="text-2xl font-bold mb-6">Your Shopping Cart ({cart.length})</h2>
@@ -99,44 +109,43 @@ const CartPage = () => {
                             </thead>
                             <tbody>
                             {cart.map((item) => (
-                                <tr key={item.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-3">
-                                        <div className="flex items-center gap-4">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-16 h-16 object-contain border rounded"
-                                            />
-                                            <div>
-                                                <p className="font-semibold">{item.name}</p>
-                                                <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                                    <tr key={item.id} className="border-b hover:bg-gray-50 " >
+                                        <td className="p-3 cursor-pointer" onClick={() => handleCardClick(item.id)}>
+                                            <div className="flex items-center gap-4">
+                                                <img src={item.image} alt={item.name} className="w-16 h-16 object-contain border rounded" />
+                                                <div>
+                                                    <p className="font-semibold">{item.name}</p>
+                                                    <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-3 text-right">${item.price.toFixed(2)}</td>
-                                    <td className="p-3 text-center">
-                                        <input
-                                            type="number"
-                                            value={item.qty}
-                                            min="1"
-                                            onChange={(e) => updateQty(item.id, e.target.value)}
-                                            className="w-16 p-2 border rounded text-center"
-                                        />
-                                    </td>
-                                    <td className="p-3 text-right">${(item.price * item.qty).toFixed(2)}</td>
-                                    <td className="p-3 text-center">
-                                        <button
-                                            onClick={() => removeItem(item.id)}
-                                            className="text-red-500 hover:text-red-700 transition"
-                                            aria-label="Remove item"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        </td>
+                                        <td className="p-3 text-right">${item.price.toFixed(2)}</td>
+                                        <td className="p-3 text-center">
+                                            <input
+                                                type="number"
+                                                value={item.qty}
+                                                min="1"
+                                                onChange={(e) => updateQty(item.id, e.target.value)}
+                                                className="w-16 p-2 border rounded text-center"
+                                            />
+                                        </td>
+                                        <td className="p-3 text-right">${(item.price * item.qty).toFixed(2)}</td>
+                                        <td className="p-3 text-center">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeItem(item.id);
+                                                }}
+                                                className="text-red-500 hover:text-red-700 transition cursor-pointer"
+                                                aria-label="Remove item"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
