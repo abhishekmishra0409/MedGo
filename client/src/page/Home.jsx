@@ -5,7 +5,7 @@ import DepartmentCard from "../component/Common/DepartmentCard.jsx";
 import BlogCard from "../component/Common/BlogCard.jsx";
 
 import { Products } from '../assets/ProductData.js';
-import {Blogs} from "../assets/BlogData.js";
+import { Blogs } from "../assets/BlogData.js";
 
 import { FaVideo } from "react-icons/fa";
 
@@ -129,7 +129,7 @@ const Home = () => {
                 </div>
 
                 <p className="text-gray-600 max-w-lg mx-auto">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit praesent aliquet, pretium.
+                We Are Always Ready To Help You & Your Family – Get instant medical assistance, order medicines online, and book appointments with trusted doctors at DawaiLink.
                 </p>
 
                 {/* Services */}
@@ -142,7 +142,7 @@ const Home = () => {
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Emergency Help</h3>
                         <p className="text-gray-600 text-sm">
-                            Lorem ipsum sit, consectetur adipiscing elit. Maecenas mi quam vulputate.
+                        Get instant medical assistance whenever you need it.
                         </p>
                     </div>
 
@@ -158,7 +158,7 @@ const Home = () => {
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Enriched Pharmacy</h3>
                         <p className="text-gray-600 text-sm">
-                            Lorem ipsum sit, consectetur adipiscing elit. Maecenas mi quam vulputate.
+                        Order medicines online with doorstep delivery and easy access to prescriptions.
                         </p>
                     </div>
 
@@ -174,7 +174,7 @@ const Home = () => {
                         </div>
                         <h3 className="mt-3 text-lg font-semibold text-gray-900">Medical Treatment</h3>
                         <p className="text-gray-600 text-sm">
-                            Lorem ipsum sit, consectetur adipiscing elit. Maecenas mi quam vulputate.
+                        Find the best doctors, book appointments, and receive quality care.
                         </p>
                     </div>
                 </div>
@@ -192,28 +192,28 @@ const Home = () => {
                     </div>
 
                     <p className="text-white max-w-lg mx-auto">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit praesent aliquet, pretium.
+                    We Have Specialist Doctors to Solve Your Problems and Connect with top medical experts, book appointments instantly, and receive the best care with DawaiLink.
                     </p>
                     <div className="flex flex-wrap justify-center gap-6 mt-6">
                         <DoctorCard
                             image="/doctor.png"
-                            name="Collis Molate"
+                            name="Dr. Collis Molate"
                             specialty="Neurosurgeon"
                         />
                         <DoctorCard
                             image="/doctor1.png"
-                            name="Collis Molate"
+                            name="Dr. Sarah Taylor"
                             specialty="Neurosurgeon"
                         />
                         <DoctorCard
                             image="/doctor2.png"
-                            name="Collis Molate"
-                            specialty="Neurosurgeon"
+                            name="Dr. Michael Chen"
+                            specialty="Cardiologist"
                         />
                         <DoctorCard
                             image="/doctor3.png"
-                            name="Collis Molate"
-                            specialty="Neurosurgeon"
+                            name="Dr. Peter England"
+                            specialty="Pediatrician"
                         />
                     </div>
                 </div>
@@ -253,7 +253,7 @@ const Home = () => {
                 </h2>
 
                 <p className="text-gray-600 max-w-lg mx-auto my-3">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit praesent aliquet, pretium.
+                DawaiLink connects you with top specialists across various hospital departments for expert medical care.
                 </p>
 
                 {/* Subtitle */}
@@ -269,46 +269,46 @@ const Home = () => {
                         description="Behind the word mountains, far from the countries Vokalia and Consonantia"
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Cardiology_icon.svg"
+                        title="Cardiology"
+                        category="Heart Care"
+                        description="Specialized care for your heart health and cardiovascular system"
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Neurology_icon.svg"
+                        title="Neurology"
+                        category="Brain & Nerves"
+                        description="Expert care for neurological disorders and conditions"
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Pediatrics_icon.svg"
+                        title="Pediatrics"
+                        category="Child Care"
+                        description="Comprehensive healthcare for infants, children and adolescents"
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Dermatology_icon.svg"
+                        title="Dermatology"
+                        category="Skin Care"
+                        description="Diagnosis and treatment of skin conditions and diseases"
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Gynecology_icon.svg"
+                        title="Gynecology"
+                        category="women's reproductive health"
+                        description="Gynecology is the medical specialty focused on women's reproductive health, diagnosing and treating conditions related to the uterus, ovaries, and vagina."
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
-                        category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        icon="/Urology_icon.svg"
+                        title="Urology"
+                        category="Urinary System"
+                        description="Urology is the medical specialty that focuses on diagnosing and treating disorders of the urinary system in both men and women, including reproductive organs."
                     />
                     <DepartmentCard
-                        icon="/oncology_icon.svg"
-                        title="Oncology"
+                        icon="/Radiology_icon.svg"
+                        title="Radiology"
                         category="Cancer & Tumors"
-                        description="Behind the word mountains, far from the countries Vokalia and Consonantia"
+                        description="Radiology is the medical field specializing in diagnosing and treating diseases using imaging techniques, such as X-rays, CT scans, and MRIs."
                     />
 
                 </div>
@@ -322,7 +322,7 @@ const Home = () => {
                 </h2>
 
                 <p className="text-gray-600 max-w-lg mx-auto my-3 text-center">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit praesent aliquet, pretium.
+                Explore expert health tips, medical insights, and wellness advice on DawaiLink’s blog.
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-8 mt-6">

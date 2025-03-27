@@ -40,11 +40,11 @@ export const Products = [
         isNew: true,
         rating: 4.8,
         reviews: 92,
-        image: "/product02.png",
+        image: "/Product/product02.jpg",
         stock: 25,
         images: [
-            "/product02-detail1.jpg",
-            "/product02-detail2.jpg",
+            "/Product/product02.jpg",
+            "/Product/product02.jpg",
         ],
     },
     {
@@ -64,11 +64,11 @@ export const Products = [
         isNew: false,
         rating: 4.3,
         reviews: 76,
-        image: "/product03.png",
+        image: "/Product/product03.jpg",
         stock: 8,
         images: [
-            "/product03-detail1.jpg",
-            "/product03-detail2.jpg",
+            "/Product/product03.jpg",
+            "/Product/product03.jpg",
         ],
     },
     {
@@ -88,10 +88,10 @@ export const Products = [
         isNew: true,
         rating: 4.6,
         reviews: 54,
-        image: "/product04.png",
+        image: "/Product/product04.jpg",
         stock: 30,
         images: [
-            "/product04-detail1.jpg",
+            "/Product/product04.jpg",
         ],
     },
     {
@@ -111,11 +111,11 @@ export const Products = [
         isNew: false,
         rating: 4.2,
         reviews: 112,
-        image: "/product05.png",
+        image: "/Product/product05.jpg",
         stock: 12,
         images: [
-            "/product05-detail1.jpg",
-            "/product05-detail2.jpg",
+            "/Product/product05.jpg",
+            "/Product/product05.jpg",
         ],
     },
     {
@@ -135,10 +135,10 @@ export const Products = [
         isNew: true,
         rating: 4.7,
         reviews: 43,
-        image: "/product06.png",
+        image: "/Product/product06.jpg",
         stock: 18,
         images: [
-            "/product06-detail1.jpg",
+            "/Product/product06.jpg",
         ],
     },
     {
@@ -158,11 +158,11 @@ export const Products = [
         isNew: false,
         rating: 4.9,
         reviews: 87,
-        image: "/product07.png",
+        image: "/Product/product07.jpg",
         stock: 22,
         images: [
-            "/product07-detail1.jpg",
-            "/product07-detail2.jpg",
+            "/Product/product07.jpg",
+            "/Product/product07.jpg",
         ],
     },
     {
@@ -182,10 +182,10 @@ export const Products = [
         isNew: true,
         rating: 4.4,
         reviews: 65,
-        image: "/product08.png",
+        image: "/Product/product08.png",
         stock: 14,
         images: [
-            "/product08-detail1.jpg",
+            "/Product/product08.png",
         ],
     },
     {
@@ -205,11 +205,11 @@ export const Products = [
         isNew: false,
         rating: 4.8,
         reviews: 38,
-        image: "/product09.png",
+        image: "/Product/product09.jpeg",
         stock: 9,
         images: [
-            "/product09-detail1.jpg",
-            "/product09-detail2.jpg",
+            "/Product/product09.jpeg",
+            "/Product/product09.jpeg",
         ],
     },
     {
@@ -229,10 +229,10 @@ export const Products = [
         isNew: true,
         rating: 4.6,
         reviews: 71,
-        image: "/product10.png",
+        image: "/Product/product10.jpeg",
         stock: 27,
         images: [
-            "/product10-detail1.jpg",
+            "/Product/product10.jpeg",
         ],
     }
 ];

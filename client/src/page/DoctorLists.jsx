@@ -50,9 +50,9 @@ const DoctorLists = () => {
     return (
         <>
             <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{backgroundImage: "url('/hero_healthcare.png')"}}>
+                style={{ backgroundImage: "url('/appointmentmain.jpg')" }}>
                 <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900">Find Your Doctor</h1>
+                    <h1 className="text-4xl font-bold text-gray-900"></h1>    {/* addting any word for appointment main page  */}
                 </div>
             </div>
 
@@ -68,52 +68,52 @@ const DoctorLists = () => {
                             options={specialities}
                             onClear={handleClear}
                             placeholder="Search doctors..."
-                        filterLabel="Speciality"
-                        optionType="speciality"
-                    />
-                </div>
+                            filterLabel="Speciality"
+                            optionType="speciality"
+                        />
+                    </div>
 
-                {/* Right Side - Doctor Cards */}
-                <div className="col-span-3">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-                        </div>
-                    ) : filteredDoctors.length > 0 ? (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredDoctors.map((doctor) => (
-                                <DoctorCard
-                                    id={doctor.id}
-                                    key={doctor.id}
-                                    image={doctor.image}
-                                    name={doctor.name}
-                                    specialty={doctor.specialty}
-                                    qualification={doctor.qualification}
-                                    rating={doctor.rating}
-                                    reviews={doctor.reviews}
-                                    hospital={doctor.contact.address}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 rounded-lg p-8 text-center">
-                            <h3 className="text-xl font-medium text-gray-600 mb-2">No doctors found</h3>
-                            <p className="text-gray-500">
-                                {searchQuery || filteredSpeciality
-                                    ? "Try adjusting your search or filter criteria"
-                                    : "Currently no doctors available in this category"}
-                            </p>
-                            <button
-                                onClick={handleClear}
-                                className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
-                            >
-                                Clear filters
-                            </button>
-                        </div>
-                    )}
+                    {/* Right Side - Doctor Cards */}
+                    <div className="col-span-3">
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+                            </div>
+                        ) : filteredDoctors.length > 0 ? (
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredDoctors.map((doctor) => (
+                                    <DoctorCard
+                                        id={doctor.id}
+                                        key={doctor.id}
+                                        image={doctor.image}
+                                        name={doctor.name}
+                                        specialty={doctor.specialty}
+                                        qualification={doctor.qualification}
+                                        rating={doctor.rating}
+                                        reviews={doctor.reviews}
+                                        hospital={doctor.contact.address}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-lg p-8 text-center">
+                                <h3 className="text-xl font-medium text-gray-600 mb-2">No doctors found</h3>
+                                <p className="text-gray-500">
+                                    {searchQuery || filteredSpeciality
+                                        ? "Try adjusting your search or filter criteria"
+                                        : "Currently no doctors available in this category"}
+                                </p>
+                                <button
+                                    onClick={handleClear}
+                                    className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
         </>
     );
 };

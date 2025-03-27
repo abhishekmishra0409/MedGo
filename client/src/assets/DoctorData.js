@@ -4,7 +4,7 @@ export const Doctors = [
         name: "Dr. Sarah Taylor",
         specialty: "Neurosurgeon",
         qualification: "MBBS in Neurology, PhD in Neurosurgery",
-        image: "/doctor1.png",
+        image: "/doctor2.png",
         contact: {
             phone: "+07 554 332 322",
             email: "sarah.taylor@medsev.com",
@@ -41,7 +41,7 @@ export const Doctors = [
         name: "Dr. Michael Chen",
         specialty: "Cardiologist",
         qualification: "MD in Cardiology, FACC",
-        image: "/doctor2.png",
+        image: "/doctor1.png",
         contact: {
             phone: "+07 555 123 456",
             email: "michael.chen@medsev.com",
@@ -74,13 +74,13 @@ export const Doctors = [
     },
     {
         id: 3,
-        name: "Dr. Priya Sharma",
+        name: "Dr. Peter England",
         specialty: "Pediatrician",
         qualification: "MD in Pediatrics, DCH",
         image: "/doctor3.png",
         contact: {
             phone: "+07 556 789 012",
-            email: "priya.sharma@medsev.com",
+            email: "peter.england@medsev.com",
             address: "2nd Floor, 209 Children's Wing",
         },
         workingHours: [

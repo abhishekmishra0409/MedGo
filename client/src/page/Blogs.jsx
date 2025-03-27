@@ -76,9 +76,9 @@ function BlogsPage() {
 
         <>
             <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{backgroundImage: "url('/hero_healthcare.png')"}}>
+                 style={{backgroundImage: "url('/blog/Blogmain.jpg')"}}>
                 <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900">Find Your Doctor</h1>
+                    <h1 className="text-4xl font-bold text-gray-900"></h1>
                 </div>
             </div>
     <div className="container mx-auto px-4 py-8 mt-16">

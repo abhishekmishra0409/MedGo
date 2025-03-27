@@ -22,12 +22,10 @@ const TabsSection = () => {
             </div>
 
             {/* Content */}
-            <div className="text-center px-4 mt-8">
+            <div className="text-center px-12 mt-8">
                 <h2 className="text-2xl font-bold text-gray-900">Explore our Centres of Clinical Excellence</h2>
                 <p className="text-gray-600 mt-3">
-                    Apollo Hospitals has dedicated Centres of Excellence for several key specialties and super specialties.
-                    They are unique and state-of-the-art facilities spread across several of the Apollo hospital locations,
-                    and each Centre of Excellence stands out as a citadel of world-class clinical outcomes.
+                Dedicated Centres of Excellence for various key specialties and super specialties, providing state-of-the-art facilities and advanced medical care, ensuring world-class clinical outcomes across multiple locations.
                 </p>
                 <p className="text-gray-600 mt-4 font-medium">Learn about the world-class healthcare we provide</p>
             </div>
