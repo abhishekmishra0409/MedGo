@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllProducts } from "../features/Product/ProductSlice.js";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
 import ProductCard from "../component/Common/PoductCard.jsx";
-import { Products } from '../assets/ProductData.js';
-
-
 
 const ProductLists = () => {
-    const categories = ["All", "Pain Relief", "Wellness", "Sleep Aid", "Digestive Health", "Allergy"];
+    const dispatch = useDispatch();
+    const { products, isLoading } = useSelector((state) => state.products);
+
+    const categories = [...new Set(products.map(product => product.category))];
     const [filteredCategory, setFilteredCategory] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const [sortOption, setSortOption] = useState("featured");
 
-    // Simulate loading state
     useEffect(() => {
-        if (searchQuery || filteredCategory !== "All") {
-            setIsLoading(true);
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-            }, 300);
-            return () => clearTimeout(timer);
-        }
-    }, [searchQuery, filteredCategory]);
+        dispatch(fetchAllProducts());
+    }, [dispatch]);
 
     const handleSearch = (query) => {
         setSearchQuery(query.toLowerCase());
@@ -41,15 +35,15 @@ const ProductLists = () => {
         setSortOption(e.target.value);
     };
 
+    // console.log(products)
     // Filter and sort products
-    const filteredProducts = Products
+    const filteredProducts = (products || [])
         .filter((product) => {
             const matchesSearch =
                 product.name.toLowerCase().includes(searchQuery) ||
                 product.description.toLowerCase().includes(searchQuery) ||
                 product.category.toLowerCase().includes(searchQuery);
-            const matchesCategory =
-                filteredCategory === "All" ? true : product.category === filteredCategory;
+            const matchesCategory = filteredCategory === "All" || product.category === filteredCategory;
             return matchesSearch && matchesCategory;
         })
         .sort((a, b) => {
@@ -67,11 +61,8 @@ const ProductLists = () => {
             }
         });
 
-    console.log(filteredProducts)
-
 
     return (
-
         <>
             <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
                  style={{backgroundImage: "url('/Product/productmain.jpg')"}}>
@@ -98,7 +89,6 @@ const ProductLists = () => {
 
                     {/* Right Side - Product Cards */}
                     <div className="lg:col-span-3">
-                        {/* Sort Options */}
                         <div className="flex justify-between items-center mb-6">
                             <p className="text-sm text-gray-600">
                                 Showing {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
@@ -122,15 +112,14 @@ const ProductLists = () => {
 
                         {isLoading ? (
                             <div className="flex justify-center items-center h-64">
-                                <div
-                                    className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                             </div>
                         ) : filteredProducts.length > 0 ? (
-                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {filteredProducts.map((product) => (
                                     <ProductCard
-                                        id={product.id}
-                                        key={product.id}
+                                        id={product._id}
+                                        key={product._id}
                                         image={product.image}
                                         name={product.name}
                                         price={product.price}
@@ -149,14 +138,9 @@ const ProductLists = () => {
                             <div className="bg-gray-50 rounded-lg p-8 text-center">
                                 <h3 className="text-xl font-medium text-gray-600 mb-2">No products found</h3>
                                 <p className="text-gray-500 mb-4">
-                                    {searchQuery || filteredCategory !== "All"
-                                        ? "Try adjusting your search or filter criteria"
-                                        : "We're currently updating our product inventory"}
+                                    Try adjusting your search or filter criteria
                                 </p>
-                                <button
-                                    onClick={handleClear}
-                                    className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
-                                >
+                                <button onClick={handleClear} className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
                                     Reset filters
                                 </button>
                             </div>

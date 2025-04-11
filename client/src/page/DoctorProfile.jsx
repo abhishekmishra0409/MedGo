@@ -1,29 +1,27 @@
 import React, { useEffect, useState } from "react";
-import {useNavigate, useParams} from "react-router-dom";
-import { Doctors } from "../assets/DoctorData";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchDoctorById } from "../features/Doctor/DoctorSlice.js";
 
 const DoctorProfile = () => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [doctor, setDoctor] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
+
+    // Get doctor data from Redux store
+    const {doctor, isLoading, isError} = useSelector((state) => state.doctor);
+
 
     const handleButtonClick = (e) => {
         navigate(`/appointment/${id}`)
     };
 
-
     useEffect(() => {
-        // Find doctor by ID
-        const foundDoctor = Doctors.find(d => d.id === parseInt(id));
-        if (foundDoctor) {
-            setDoctor(foundDoctor);
-        }
-        setLoading(false);
-    }, [id]);
+        // Fetch doctor by ID when components mounts or ID changes
+        dispatch(fetchDoctorById(id));
+    }, [dispatch, id]);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="container mx-auto px-4 sm:px-6 py-8 bg-white text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto"></div>
@@ -31,7 +29,7 @@ const DoctorProfile = () => {
         );
     }
 
-    if (!doctor) {
+    if (isError || !doctor) {
         return (
             <div className="container mx-auto px-4 sm:px-6 py-8 bg-white text-center">
                 <h1 className="text-2xl font-bold text-gray-800">Doctor not found</h1>

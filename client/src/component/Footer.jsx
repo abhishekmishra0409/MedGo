@@ -8,7 +8,7 @@ const Footer = () => {
                 {/* Top Section */}
                 <div className="flex flex-wrap justify-between items-center text-center md:text-left">
                     <div className="mb-6 md:mb-0">
-                        <img src="/logo.png" alt="Sunrise Logo" className="h-16 mx-auto md:mx-0" />
+                        <img src="/Logo.png" alt="Sunrise Logo" className="h-16 mx-auto md:mx-0" />
                     </div>
 
                 </div>

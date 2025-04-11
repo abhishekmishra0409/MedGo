@@ -4,12 +4,45 @@ import ProductCard from "../component/Common/PoductCard.jsx";
 import DepartmentCard from "../component/Common/DepartmentCard.jsx";
 import BlogCard from "../component/Common/BlogCard.jsx";
 
-import { Products } from '../assets/ProductData.js';
-import { Blogs } from "../assets/BlogData.js";
+import {useDispatch, useSelector} from "react-redux";
+import { fetchAllProducts } from "../features/Product/ProductSlice.js";
+import { fetchAllBlogs } from "../features/blog/blogSlice";
 
-import { FaVideo } from "react-icons/fa";
+import React, {useEffect} from "react";
 
 const Home = () => {
+    const dispatch = useDispatch();
+
+    const { products, isLoading } = useSelector((state) => state.products);
+    const { blogs } = useSelector((state) => state.blogs);
+
+
+    // console.log(blogs)
+    // console.log(products)
+    useEffect(() => {
+        dispatch(fetchAllProducts());
+        dispatch(fetchAllBlogs());
+    }, [dispatch]);
+
+    // console.log(products)
+
+    if (isLoading) {
+        return (
+            <div className="container mx-auto px-6 py-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto"></div>
+            </div>
+        );
+    }
+
+    // Ensure products and blogs are arrays before mapping
+    const featuredProducts = Array.isArray(products)
+        ? products.filter(product => product?.isHot).slice(0, 4)
+        : [];
+
+    const recentBlogs = Array.isArray(blogs)
+        ? blogs.slice(0, 3)
+        : [];
+
     return (
         <div className="bg-gray-100">
 
@@ -225,22 +258,20 @@ const Home = () => {
                 <div className="container mx-auto text-center">
                     <h2 className="text-2xl font-semibold">Featured Products</h2>
                     <div className="flex flex-wrap justify-center gap-6 mt-6">
-                        {Products.filter(product => product.isHot)
-                            .slice(0, 4) // Get only first 4 hot products
-                            .map(product => (
-                                <ProductCard
-                                    id={product.id}
-                                    key={product.id}
-                                    image={product.image}
-                                    name={product.name}
-                                    price={product.price}
-                                    originalPrice={product.originalPrice}
-                                    isHot={product.isHot}
-                                    isNew={product.isNew}
-                                    rating={product.rating}
-                                    reviews={product.reviews}
-                                />
-                            ))}
+                        {featuredProducts.map(product => (
+                            <ProductCard
+                                key={product?._id}
+                                id={product?._id}
+                                image={product?.image || ''}
+                                name={product?.name || ''}
+                                price={product?.price || 0}
+                                originalPrice={product?.originalPrice || 0}
+                                isHot={product?.isHot || false}
+                                isNew={product?.isNew || false}
+                                rating={product?.rating || 0}
+                                reviews={product?.reviews || 0}
+                            />
+                        ))}
                     </div>
                 </div>
             </section>
@@ -326,20 +357,17 @@ const Home = () => {
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-8 mt-6">
-                    {Blogs.filter(blog => blog)
-                        .slice(0, 3)
-                        .map(blog => (
-                            <BlogCard
-                                id={blog.id}
-                                key={blog.id}
-                                image={blog.image}
-                                author={blog.author}
-                                date={blog.date}
-                                title={blog.title}
-                                description={blog.Description}
-                            />
-                        ))}
-
+                    {recentBlogs.map(blog => (
+                        <BlogCard
+                            key={blog?._id}
+                            id={blog?._id}
+                            image={blog?.image || ''}
+                            author={blog?.author?.name || 'Anonymous'}
+                            date={blog?.date || ''}
+                            title={blog?.title || ''}
+                            description={blog?.description || ''}
+                        />
+                    ))}
                 </div>
             </section>
         </div>

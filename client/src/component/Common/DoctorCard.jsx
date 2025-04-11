@@ -36,7 +36,7 @@ const DoctorCard = ({ id, name, position, specialty, qualification, hospital, im
             </div>
 
             <button
-                className="mt-4 bg-gradient-to-r from-teal-400 to-teal-700 text-white w-full py-2 rounded-md shadow-md hover:from-blue-600 hover:to-blue-800 transition-colors"
+                className="mt-4 bg-gradient-to-r from-teal-400 to-teal-700 text-white w-full py-2 rounded-md shadow-md hover:from-teal-700 hover:to-teal-400 transition-colors"
                 onClick={handleAppointmentClick}
             >
                 Book an Appointment

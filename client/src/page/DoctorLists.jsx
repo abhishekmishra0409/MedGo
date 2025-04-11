@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from "react";
+import {useDispatch, useSelector } from "react-redux";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
 import DoctorCard from "../component/Common/DoctorCard.jsx";
-import { Doctors } from "../assets/DoctorData.js";
+import {fetchDoctors} from "../features/Doctor/DoctorSlice.js";
 
 const DoctorLists = () => {
+    const dispatch = useDispatch();
+
+    // Get doctors data from Redux store
+    const {doctors} = useSelector((state) => state.doctor);
+
+    // console.log(doctors )
+
     // Extract unique specialities from doctors data
-    const specialities = [...new Set(Doctors.map(doctor => doctor.specialty))];
+    const specialities = [...new Set(doctors.map(doctor => doctor.specialty))];
 
     const [filteredSpeciality, setFilteredSpeciality] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchDoctors());
+    }, [dispatch]);
 
     // Simulate loading state
     useEffect(() => {
@@ -36,7 +48,7 @@ const DoctorLists = () => {
     };
 
     // Filter Doctors Based on Search and Speciality
-    const filteredDoctors = Doctors.filter((doctor) => {
+    const filteredDoctors = doctors.filter((doctor) => {
         const matchesSearch =
             doctor.name.toLowerCase().includes(searchQuery) ||
             doctor.specialty.toLowerCase().includes(searchQuery) ||
@@ -46,11 +58,10 @@ const DoctorLists = () => {
         return matchesSearch && matchesSpeciality;
     });
 
-
     return (
         <>
             <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                style={{ backgroundImage: "url('/appointmentmain.jpg')" }}>
+                 style={{ backgroundImage: "url('/appointmentmain.jpg')" }}>
                 <div className="">
                     <h1 className="text-4xl font-bold text-gray-900"></h1>    {/* addting any word for appointment main page  */}
                 </div>
@@ -83,8 +94,8 @@ const DoctorLists = () => {
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredDoctors.map((doctor) => (
                                     <DoctorCard
-                                        id={doctor.id}
-                                        key={doctor.id}
+                                        id={doctor._id}
+                                        key={doctor._id}
                                         image={doctor.image}
                                         name={doctor.name}
                                         specialty={doctor.specialty}

@@ -1,91 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllBlogs } from "../features/blog/blogSlice";
 import BlogCard from "../component/Common/BlogCard.jsx";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
-import { Blogs } from "../assets/BlogData.js";
 
 function BlogsPage() {
-    const [blogs, setBlogs] = useState([]);
+    const dispatch = useDispatch();
+    const { blogs, loading, error } = useSelector((state) => state.blogs);
+
+    // Extract unique categories from blog data
+    const categories = [...new Set(blogs.map(blog => blog.category))];
+
     const [filteredBlogs, setFilteredBlogs] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [categories, setCategories] = useState([]);
-    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredCategory, setFilteredCategory] = useState("");
 
-    // Initialize blogs and extract unique categories
     useEffect(() => {
-        // Transform the blog data to match BlogCard's expected props
-        const formattedBlogs = Blogs.map(blog => ({
-            id: blog.id,
-            image: blog.image || '/default-blog-image.jpg', // Add default image if not provided
-            author: blog.author || 'Anonymous',
-            date: blog.date || new Date().toLocaleDateString(),
-            title: blog.title,
-            Description: blog.Description || blog.content.substring(0, 100) + '...'
-        }));
+        dispatch(fetchAllBlogs());
+    }, [dispatch]);
 
-        setBlogs(formattedBlogs);
-        setFilteredBlogs(formattedBlogs);
+    useEffect(() => {
+        if (blogs.length > 0) {
+            const formattedBlogs = blogs.map(blog => ({
+                id: blog._id,
+                image: blog.image || "/default-blog-image.jpg",
+                author: blog.author?.name || "Anonymous",
+                date: blog.date ? new Date(blog.date).toLocaleDateString() : new Date().toLocaleDateString(),
+                title: blog.title,
+                description: blog.description || (blog.content ? blog.content.substring(0, 100) + "..." : "No description available"),
+                category: blog.category || "Uncategorized",
+            }));
+            setFilteredBlogs(formattedBlogs);
+        }
+    }, [blogs]);
 
-        // Extract unique categories from all blogs (if available)
-        const uniqueCategories = [...new Set(Blogs.map(blog => blog.category || 'Uncategorized'))];
-        setCategories(uniqueCategories);
-    }, []);
-
-    // Handle search functionality
-    const handleSearch = (term) => {
-        setSearchTerm(term);
-        applyFilters(term, selectedCategories);
+    const handleSearch = (query) => {
+        setSearchQuery(query.toLowerCase());
     };
 
-    // Handle category filter
-    const handleFilter = (selectedOptions) => {
-        setSelectedCategories(selectedOptions);
-        applyFilters(searchTerm, selectedOptions);
+    const handleFilter = (category) => {
+        setFilteredCategory(category);
     };
 
-    // Clear all filters
     const handleClear = () => {
-        setSearchTerm("");
-        setSelectedCategories([]);
-        setFilteredBlogs(blogs);
+        setSearchQuery("");
+        setFilteredCategory("");
     };
 
-    // Apply both search and category filters
-    const applyFilters = (term, categories) => {
-        let results = [...blogs];
-
-        // Apply search filter
-        if (term) {
-            results = results.filter(blog =>
-                blog.title.toLowerCase().includes(term.toLowerCase()) ||
-                (blog.description && blog.description.toLowerCase().includes(term.toLowerCase()))
-            );
-        }
-
-        // Apply category filter (if original blog data has categories)
-        if (categories.length > 0 && Blogs[0]?.category) {
-            results = results.filter(blog => {
-                const originalBlog = Blogs.find(b => b.id === blog.id);
-                return originalBlog && categories.includes(originalBlog.category);
-            });
-        }
-
-        setFilteredBlogs(results);
-    };
+    // Filter blogs based on search and category
+    const filteredResults = filteredBlogs.filter((blog) => {
+        const matchesSearch =
+            blog.title.toLowerCase().includes(searchQuery) ||
+            (blog.description && blog.description.toLowerCase().includes(searchQuery));
+        const matchesCategory = filteredCategory ? blog.category === filteredCategory : true;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
-
         <>
-            <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{backgroundImage: "url('/blog/Blogmain.jpg')"}}>
-                <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900"></h1>
-                </div>
+            <div
+                className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
+                style={{ backgroundImage: "url('/blog/Blogmain.jpg')" }}
+            >
+                <h1 className="text-4xl font-bold text-gray-900">Blogs</h1>
             </div>
-    <div className="container mx-auto px-4 py-8 mt-16">
-           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Search filter column (left) */}
-            <div className="col-span-1">
-                {categories.length > 0 && (
+
+            <div className="container mx-auto px-4 py-8 mt-16">
+                <div className="grid md:grid-cols-4 sm:grid-cols-1 gap-8">
+                    {/* Left Side - Search & Filter */}
+                    <div className="col-span-1">
                         <SearchFilter
                             onSearch={handleSearch}
                             onFilter={handleFilter}
@@ -95,33 +78,50 @@ function BlogsPage() {
                             filterLabel="Category"
                             optionType="category"
                         />
-                    )}
-                </div>
+                    </div>
 
-                {/* Blogs content column (right) */}
-                <div className="col-span-1 md:col-span-3">
-                    {filteredBlogs.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredBlogs.map(blog => (
-                                <BlogCard
-                                    id={blog.id}
-                                    key={blog.id}
-                                    image={blog.image}
-                                    author={blog.author}
-                                    date={blog.date}
-                                    title={blog.title}
-                                    description={blog.Description}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No blogs found matching your criteria.</p>
-                    )}
+                    {/* Right Side - Blog Cards */}
+                    <div className="col-span-3">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+                            </div>
+                        ) : error ? (
+                            <p className="text-red-500">Error fetching blogs: {error}</p>
+                        ) : filteredResults.length > 0 ? (
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredResults.map((blog) => (
+                                    <BlogCard
+                                        key={blog.id}
+                                        id={blog.id}
+                                        image={blog.image}
+                                        author={blog.author}
+                                        date={blog.date}
+                                        title={blog.title}
+                                        description={blog.description}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-lg p-8 text-center">
+                                <h3 className="text-xl font-medium text-gray-600 mb-2">No blogs found</h3>
+                                <p className="text-gray-500">
+                                    {searchQuery || filteredCategory
+                                        ? "Try adjusting your search or filter criteria"
+                                        : "Currently no blogs available in this category"}
+                                </p>
+                                <button
+                                    onClick={handleClear}
+                                    className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
         </>
-
     );
 }
 

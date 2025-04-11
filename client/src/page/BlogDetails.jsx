@@ -1,79 +1,88 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Blogs } from "../assets/BlogData.js";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { BsPerson } from "react-icons/bs";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchBlogById } from "../features/blog/blogSlice";
 
 const BlogDetail = () => {
     const { id } = useParams();
+    const dispatch = useDispatch();
 
-    // Find the blog with matching ID
-    const blogData = Blogs.find(blog => blog.id.toString() === id);
+    const { blog, loading, error } = useSelector((state) => state.blogs);
 
-    // If blog not found, show error message
-    if (!blogData) {
+    useEffect(() => {
+        dispatch(fetchBlogById(id));
+    }, [dispatch, id]);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 sm:px-6 py-8 bg-white text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto"></div>
+            </div>
+        );
+    }
+
+    if (error || !blog) {
         return (
             <div className="max-w-3xl mx-auto p-6 text-center">
                 <h1 className="text-2xl font-bold text-red-500">Blog Not Found</h1>
-                <p className="text-gray-600 mt-2">The requested blog post does not exist.</p>
+                <p className="text-gray-600 mt-2">
+                    {error || "The requested blog post does not exist."}
+                </p>
             </div>
         );
     }
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-            {/* Blog Image with fallback */}
-            {blogData.image && (
+            {/* Blog Image */}
+            {blog.image && (
                 <img
-                    src={blogData.image}
-                    alt={blogData.title}
+                    src={blog.image}
+                    alt={blog.title}
                     className="w-full h-64 object-cover rounded-lg"
                 />
             )}
 
             {/* Blog Title */}
-            <h1 className="text-2xl md:text-3xl font-bold mt-4">{blogData.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mt-4">{blog.title}</h1>
 
             {/* Blog Metadata */}
             <div className="flex flex-wrap items-center text-gray-600 text-sm mt-2 gap-2">
-                {blogData.author && (
+                {blog.author && (
                     <span className="flex items-center">
-                    <BsPerson className="mr-1 text-teal-400" />
-                        <span className="font-semibold ml-1">{blogData.author}</span>
+                        <BsPerson className="mr-1 text-teal-400" />
+                        <span className="font-semibold ml-1">{blog.author?.name}</span>
                     </span>
                 )}
-                {blogData.date && (
+                {blog.date && (
                     <span className="flex items-center">
-                        {blogData.author && '|'}
+                        {blog.author?.name && " | "}
                         <FaRegCalendarAlt className="mx-1 text-teal-400" />
-                        {blogData.date}
+                        {blog.date ? new Date(blog.date).toLocaleDateString() : new Date().toLocaleDateString()}
                     </span>
                 )}
-                {blogData.category && (
+                {blog.category && (
                     <span className="text-teal-500">
-                        {blogData.author || blogData.date ? '|' : ''} {blogData.category}
+                        {blog.author?.name || blog.date ? " | " : ""} {blog.category}
                     </span>
                 )}
             </div>
 
             {/* Blog Description */}
-            {blogData.Description && (
-                <p className="text-gray-700 mt-4 text-lg italic">{blogData.Description}</p>
+            {blog?.Description && (
+                <p className="text-gray-700 mt-4 text-lg italic">{blog.Description}</p>
             )}
 
             {/* Blog Content */}
-            {blogData.content && (
+            {blog?.content && (
                 <div className="text-gray-800 mt-4 space-y-4">
-                    {blogData.content.split('\n').map((paragraph, index) => (
+                    {blog.content.split("\n").map((paragraph, index) => (
                         <p key={index}>{paragraph}</p>
                     ))}
                 </div>
             )}
-
-            {/*/!* Book Appointment Button *!/*/}
-            {/*<button className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow transition duration-300">*/}
-            {/*    Book an Appointment*/}
-            {/*</button>*/}
 
             {/* Social Share Icons */}
             <div className="mt-6 flex flex-wrap gap-3">

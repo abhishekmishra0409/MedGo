@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCalendarCheck, FaUserMd, FaCapsules, FaHospital } from "react-icons/fa";
 import { MdHealthAndSafety } from "react-icons/md";
 import DepartmentCardLr from "../component/Doctors/DepartmentCardLr.jsx";
-import TabsSection from "../component/Doctors/TabsSection.jsx";
-import DoctorCard from "../component/Common/DoctorCard.jsx";
-import {Link} from "react-router-dom";
+import ClinicCard from "../component/Doctors/ClinicCard.jsx";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchClinics } from '../features/clinic/clinicSlice';
 
 // Services array
 const services = [
@@ -16,7 +17,7 @@ const services = [
 ];
 
 // Departments array
-const departments = [
+const specialties = [
     {
         icon: "/oncology_icon.svg",
         title: "Oncology",
@@ -56,6 +57,32 @@ const departments = [
 ];
 
 function Doctors() {
+    const [activeTab, setActiveTab] = useState("specialties");
+    const dispatch = useDispatch();
+    const { clinics, isLoading, isError, message } = useSelector((state) => state.clinic);
+
+    useEffect(() => {
+        if (activeTab === "clinic") {
+            dispatch(fetchClinics());
+        }
+    }, [activeTab, dispatch]);
+
+    if (isLoading && activeTab === "clinic") {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+            </div>
+        );
+    }
+
+    if (isError && activeTab === "clinic") {
+        return (
+            <div className="text-center py-10 text-red-500">
+                {message || "Failed to load clinics"}
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="relative w-full h-[450px] bg-cover bg-center flex items-center justify-start px-32"
@@ -87,19 +114,57 @@ function Doctors() {
                 </div>
             </section>
 
-            <TabsSection/>
+            <div className="bg-white py-10 px-32">
+                {/* Tabs */}
+                <div className="flex justify-center border-b border-gray-300">
+                    <button
+                        className={`py-3 px-6 text-lg font-medium ${activeTab === "specialties" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
+                        onClick={() => setActiveTab("specialties")}
+                    >
+                        Specialties
+                    </button>
+                    <button
+                        className={`py-3 px-6 text-lg font-medium ${activeTab === "clinic" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
+                        onClick={() => setActiveTab("clinic")}
+                    >
+                        Clinics
+                    </button>
+                </div>
 
-            <div className="py-10 bg-gradient-to-b from-gray-100 to-white px-28">
-                <div className="container mx-auto px-4 flex flex-wrap justify-center gap-6 ">
-                    {departments.map((department, index) => (
-                        <DepartmentCardLr
-                            key={index}
-                            icon={department.icon}
-                            title={department.title}
-                            category={department.category}
-                            description={department.description}
-                        />
-                    ))}
+                {/* Content */}
+                <div className="text-center px-12 mt-8">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        {activeTab === "specialties"
+                            ? "Explore our Medical Specialties"
+                            : "Discover our Clinical Services"}
+                    </h2>
+                    <p className="text-gray-600 mt-3">
+                        {activeTab === "specialties"
+                            ? "Our team of specialized physicians provides expert care across various medical disciplines, using the latest technologies and treatments."
+                            : "Our clinical facilities offer comprehensive healthcare services with patient-centered care and modern medical equipment."}
+                    </p>
+                    <p className="text-gray-600 mt-4 font-medium">
+                        Learn about the world-class healthcare we provide
+                    </p>
+                </div>
+            </div>
+
+            <div className="py-10 bg-gradient-to-b from-gray-100 to-white px-32">
+                <div className="container mx-auto px-4 flex flex-wrap justify-center gap-6">
+                    {activeTab === "specialties"
+                        ? specialties.map((department, index) => (
+                            <DepartmentCardLr
+                                key={index}
+                                icon={department.icon}
+                                title={department.title}
+                                category={department.category}
+                                description={department.description}
+                            />
+                        ))
+                        : clinics.map((clinic) => (
+                            <ClinicCard key={clinic._id} clinic={clinic} />
+                        ))
+                    }
                 </div>
             </div>
         </>

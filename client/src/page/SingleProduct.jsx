@@ -1,29 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Products } from "../assets/ProductData.js";
+// import { Products } from "../assets/ProductData.js";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProductById } from "../features/Product/ProductSlice.js";
+
 
 const SingleProduct = () => {
     const { id } = useParams();
-    const [product, setProduct] = useState(null);
+    const dispatch = useDispatch();
+    const {product,loading, error}  = useSelector((state) => state.products);
     const [selectedImage, setSelectedImage] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+
+    // console.log(product)
 
     useEffect(() => {
-        try {
-            // Find product by ID - ensure proper type comparison
-            const foundProduct = Products.find(p => p.id.toString() === id);
-            if (foundProduct) {
-                setProduct(foundProduct);
-            } else {
-                setError("Product not found");
-            }
-            setLoading(false);
-        } catch (err) {
-            setError("Failed to load product");
-            setLoading(false);
+        if (id) {
+            dispatch(fetchProductById(id));
         }
-    }, [id]);
+    }, [dispatch, id]);
 
     if (loading) {
         return (

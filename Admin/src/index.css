@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Active route styling */
+.router-link-active {
+    @apply bg-blue-50 text-blue-600;
+}
+
+/* Smooth transitions for sidebar items */
+.sidebar-item {
+    @apply transition-colors duration-200 ease-in-out;
+}
+
+/* Active state for nested routes */
+.router-link-active {
+    @apply bg-blue-50 text-blue-600 font-medium;
+}
+
+/* Hover state */
+.router-link-active:hover {
+    @apply bg-blue-100;
+}

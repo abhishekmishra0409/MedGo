@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '../component/Common/PoductCard';
 import {Link} from "react-router-dom";
-import { Products } from '../assets/ProductData.js';
+// import { products } from '../assets/ProductData.js';
+import { fetchAllProducts } from "../features/Product/ProductSlice.js";
+import {useDispatch, useSelector} from "react-redux";
+
 
 function MedicalStore() {
+    const dispatch = useDispatch();
+    const { products, isLoading } = useSelector((state) => state.products);
+
+    useEffect(() => {
+        dispatch(fetchAllProducts());
+    }, [dispatch]);
+
     const [targetDate] = useState(() => {
         const now = new Date();
-        return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+        return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     });
 
     const calculateTimeLeft = () => {
@@ -43,7 +53,7 @@ function MedicalStore() {
     };
 
     // Get first 8 products
-    const featuredProducts = Products.slice(0, 8);
+    const featuredProducts = products.slice(0, 8);
 
     return (
         <>
@@ -159,12 +169,12 @@ function MedicalStore() {
 
 
             <div className="py-10 text-center px-32">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured products</h2>
                 <div className="flex flex-wrap justify-center gap-6 mt-6">
                     {featuredProducts.map((product) => (
                         <ProductCard
-                            id={product.id}
-                            key={product.id}
+                            id={product._id}
+                            key={product._id}
                             image={product.image}
                             name={product.name}
                             price={product.price}
@@ -180,7 +190,7 @@ function MedicalStore() {
                 <Link to={'/productlists'}>
                     <button
                         className="mt-8  px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
-                        View All Products <span>&rarr;</span>
+                        View All products <span>&rarr;</span>
                     </button>
                 </Link>
             </div>
