@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const labTestController = require('../controllers/labTestController');
+const labTestController = require('../Controllers/labTestController');
 const authMiddleware = require('../Middlewares/authMiddleware');
 const doctorMiddleware = require('../Middlewares/doctorMiddleware');
 

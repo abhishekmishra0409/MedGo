@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const DoctorController = require('../controllers/doctorController');
+const DoctorController = require('../Controllers/doctorController');
 const authMiddleware = require('../Middlewares/authMiddleware');
 const adminMiddleware = require('../Middlewares/adminMiddleware');
 
