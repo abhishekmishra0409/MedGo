@@ -1,5 +1,5 @@
 const ClinicService = require('../Services/clinicService');
-const Clinic  = require('../Models/ClinicModel');
+const Clinic = require('../Models/ClinicModel');
 
 class ClinicController {
     static async createClinic(req, res) {
@@ -40,7 +40,7 @@ class ClinicController {
 
     static async getClinics(req, res) {
         try {
-            const clinics = await Clinic.find();
+            const clinics = await Clinic.find().populate('doctors', 'name specialty image');
             res.status(200).json({
                 success: true,
                 count: clinics.length,
@@ -56,10 +56,7 @@ class ClinicController {
 
     static async updateClinic(req, res) {
         try {
-            const clinic = await ClinicService.updateClinicOperatingHours(
-                req.params.id,
-                req.body.operatingHours
-            );
+            const clinic = await ClinicService.updateClinic(req.params.id, req.body);
             res.status(200).json({
                 success: true,
                 data: clinic
@@ -75,6 +72,24 @@ class ClinicController {
     static async addDoctor(req, res) {
         try {
             const clinic = await ClinicService.addDoctorToClinic(
+                req.params.clinicId,
+                req.body.doctorId
+            );
+            res.status(200).json({
+                success: true,
+                data: clinic
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    static async removeDoctor(req, res) {
+        try {
+            const clinic = await ClinicService.removeDoctorFromClinic(
                 req.params.clinicId,
                 req.body.doctorId
             );
@@ -123,6 +138,21 @@ class ClinicController {
             });
         } catch (error) {
             res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    static async getClinicsByDoctor(req, res) {
+        try {
+            const clinics = await ClinicService.getClinicsByDoctor(req.params.doctorId);
+            res.status(200).json({
+                success: true,
+                data: clinics
+            });
+        } catch (error) {
+            res.status(400).json({
                 success: false,
                 error: error.message
             });

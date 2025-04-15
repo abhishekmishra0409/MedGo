@@ -22,11 +22,14 @@ class ClinicService {
     }
 
     static async removeDoctorFromClinic(clinicId, doctorId) {
-        return await Clinic.findByIdAndUpdate(
+        const clinic = await Clinic.findByIdAndUpdate(
             clinicId,
             { $pull: { doctors: doctorId } },
             { new: true }
         );
+
+        if (!clinic) throw new Error('Clinic not found');
+        return clinic;
     }
 
     static async getClinicsByDoctor(doctorId) {
@@ -131,24 +134,36 @@ class ClinicService {
         return slots;
     }
 
-    static async updateClinicOperatingHours(clinicId, newHours) {
-        return await Clinic.findByIdAndUpdate(
-            clinicId,
-            { $set: { operatingHours: newHours } },
-            { new: true, runValidators: true }
-        );
+    static async updateClinic(clinicId, updateData) {
+        const clinic = await Clinic.findById(clinicId);
+        if (!clinic) {
+            throw new Error('Clinic not found');
+        }
+
+        // Update fields
+        Object.keys(updateData).forEach((key) => {
+            clinic[key] = updateData[key];
+        });
+
+        await clinic.save();
+        return clinic;
     }
 
+
     static async getClinicById(clinicId) {
-        return await Clinic.findById(clinicId)
+        const clinic = await Clinic.findById(clinicId)
             .populate('doctors', 'name specialty image')
             .lean();
+        if (!clinic) throw new Error('Clinic not found');
+        return clinic;
     }
 
     static async getClinicByDoctorId(doctorId) {
-        return await Clinic.findOne({ doctors: doctorId })
+        const clinic = await Clinic.findOne({ doctors: doctorId })
             .populate('doctors', 'name specialty image')
             .lean();
+        if (!clinic) throw new Error('Clinic not found for this doctor');
+        return clinic;
     }
 
 }

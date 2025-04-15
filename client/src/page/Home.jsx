@@ -363,7 +363,7 @@ const Home = () => {
                             id={blog?._id}
                             image={blog?.image || ''}
                             author={blog?.author?.name || 'Anonymous'}
-                            date={blog?.date || ''}
+                            date={blog?.date ? new Date(blog.date).toLocaleDateString() : new Date().toLocaleDateString() || ''}
                             title={blog?.title || ''}
                             description={blog?.description || ''}
                         />

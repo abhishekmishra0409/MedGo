@@ -121,9 +121,9 @@ class UserService {
     }
 
     // Get current user profile (for authenticated requests)
-    static async getCurrentUser(userId) {
+    static async getAllUsers() {
         try {
-            const user = await User.findById(userId).select('-password');
+            const user = await User.find().select('-password');
             if (!user) {
                 throw new Error('User not found');
             }

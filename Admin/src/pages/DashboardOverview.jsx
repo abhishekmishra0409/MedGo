@@ -1,5 +1,3 @@
-// src/pages/Dashboard.jsx
-import Sidebar from "../components/Sidebar";
 import {
     Activity,
     Users,

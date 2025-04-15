@@ -1,4 +1,3 @@
-// src/components/NavItem.jsx
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";

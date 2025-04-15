@@ -14,11 +14,11 @@ userRouter.use(authMiddleware);
 
 userRouter.get('/me', UserController.getMe);
 userRouter.put('/profile', UserController.updateUser);
-userRouter.delete('/account', UserController.deleteUser);
 
 // Admin-only routes (require admin role)
 userRouter.use(adminMiddleware);
 
+userRouter.delete('/account', UserController.deleteUser);
 userRouter.get('/', UserController.getAllUsers);
 userRouter.get('/:id', UserController.getUser);
 

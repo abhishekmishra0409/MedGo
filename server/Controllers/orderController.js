@@ -102,7 +102,7 @@ exports.getOrdersByStatus = async (req, res) => {
 
         res.json({
             success: true,
-            data: result.orders,
+            orders: result.orders,
             pagination: {
                 total: result.total,
                 pages: result.pages,
@@ -114,5 +114,19 @@ exports.getOrdersByStatus = async (req, res) => {
             success: false,
             error: error.message
         });
+    }
+};
+
+exports.getAllOrders = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const data = await OrderService.getAllOrders(page, limit);
+
+        res.status(200).json(data);
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).json({ error: "Failed to fetch orders." });
     }
 };

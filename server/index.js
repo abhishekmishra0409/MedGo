@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const cors = require('cors');
 const http = require('http');
@@ -12,15 +13,30 @@ const { initializeWSS } = require('./config/websocket');
 dotenv.config();
 
 const app = express();
+
 const server = http.createServer(app);
 
 // Initialize WebSocket
 initializeWSS(server);
 
 // Middlewares
-app.use(express.json());
+// app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors(
+    {
+        origin: [
+            "http://localhost:5173",
+            "http://localhost:5175",
+            "http://localhost:5174",
+            "http://192.168.1.71:5174"
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"],
+    }
+));
 
 const PORT = process.env.PORT || 5000;
 

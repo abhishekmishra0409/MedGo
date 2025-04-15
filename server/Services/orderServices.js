@@ -192,12 +192,33 @@ class OrderService {
 
         const [orders, total] = await Promise.all([
             Order.find({ status })
-                .populate('user', 'name email')
+                .populate('user', 'username email')
                 .populate('items.product')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
             Order.countDocuments({ status })
+        ]);
+
+        return {
+            orders,
+            total,
+            pages: Math.ceil(total / limit),
+            currentPage: page
+        };
+    }
+
+    static async getAllOrders(page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+
+        const [orders, total] = await Promise.all([
+            Order.find()
+                .populate('user', 'username email')
+                .populate('items.product')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Order.countDocuments()
         ]);
 
         return {

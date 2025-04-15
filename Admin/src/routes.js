@@ -31,22 +31,16 @@ export const routes = [
                 component: "Products",
                 children: [
                     {
-                        path: "all",
+                        path: "products/all",
                         name: "All Products",
                         icon: Package,
                         component: "AllProducts"
                     },
                     {
-                        path: "create",
+                        path: "products/create",
                         name: "Create Product",
                         icon: PackagePlus,
                         component: "CreateProduct"
-                    },
-                    {
-                        path: "update",
-                        name: "Update Product",
-                        icon: PackageCheck,
-                        component: "UpdateProduct"
                     }
                 ]
             },
@@ -57,86 +51,26 @@ export const routes = [
                 icon: ShoppingCart,
                 component: "Orders"
             },
-            // Doctors with subcategories
+            // Doctors
             {
-                path: "doctors",
+                path: "doctors/all",
                 name: "Doctors",
                 icon: Stethoscope,
                 component: "Doctors",
-                children: [
-                    {
-                        path: "all",
-                        name: "All Doctors",
-                        icon: Stethoscope,
-                        component: "AllDoctors"
-                    },
-                    {
-                        path: "update",
-                        name: "Update Doctors",
-                        icon: ClipboardList,
-                        component: "UpdateDoctors"
-                    },
-                    {
-                        path: "register",
-                        name: "Register New",
-                        icon: UserPlus,
-                        component: "RegisterDoctor"
-                    }
-                ]
             },
-            // Clinics with subcategories
+            // Clinics
             {
-                path: "clinics",
+                path: "clinics/all",
                 name: "Clinics",
                 icon: Building,
                 component: "Clinics",
-                children: [
-                    {
-                        path: "all",
-                        name: "All Clinics",
-                        icon: Building,
-                        component: "AllClinics"
-                    },
-                    {
-                        path: "add-doctors",
-                        name: "Add Doctors",
-                        icon: UserPlus,
-                        component: "AddDoctorsToClinic"
-                    },
-                    {
-                        path: "register",
-                        name: "Register New",
-                        icon: Hospital,
-                        component: "RegisterClinic"
-                    }
-                ]
             },
-            // Lab Tests with subcategories
+            // Lab Tests
             {
-                path: "labtests",
+                path: "labtests/all",
                 name: "Lab Tests",
                 icon: FlaskConical,
                 component: "LabTests",
-                children: [
-                    {
-                        path: "all",
-                        name: "All Tests",
-                        icon: FlaskConical,
-                        component: "AllLabTests"
-                    },
-                    {
-                        path: "update",
-                        name: "Update Tests",
-                        icon: FlaskRound,
-                        component: "UpdateTests"
-                    },
-                    {
-                        path: "add",
-                        name: "Add New Test",
-                        icon: TestTube2,
-                        component: "AddLabTest"
-                    }
-                ]
             },
             // Users
             {
@@ -145,13 +79,6 @@ export const routes = [
                 icon: Users,
                 component: "Users"
             },
-            // Logout
-            {
-                path: "logout",
-                name: "Logout",
-                icon: LogOut,
-                component: "Logout"
-            }
         ]
     }
 ];

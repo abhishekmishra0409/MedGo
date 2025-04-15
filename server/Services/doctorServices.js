@@ -72,7 +72,7 @@ const createDoctor = async (doctorData, file) => {
 
     try {
         if (!file) throw new Error('Doctor image is required');
-        if (!doctorData.password) throw new Error('Password is required');
+        // if (!doctorData.password) throw new Error('Password is required');
 
         // Check if email already exists
         const existingDoctor = await Doctor.findOne({ email: doctorData.email.toLowerCase().trim() });
@@ -80,6 +80,7 @@ const createDoctor = async (doctorData, file) => {
             throw new Error('Email already in use');
         }
 
+        doctorData.password = "123456"; // Default password for new doctors
         // Upload image
         const uploadResult = await uploadToCloudinary(file);
 
