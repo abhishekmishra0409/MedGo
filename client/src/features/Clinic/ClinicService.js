@@ -5,8 +5,14 @@ const API_URL = `${base_url}clinics`;
 
 // Get All Clinics
 const getClinics = async () => {
+    try{
     const response = await axios.get(API_URL);
     return response.data;
+    }
+    catch (error) {
+        console.log(error)
+        throw error.message
+    }
 };
 
 // Get Single Clinic by ID

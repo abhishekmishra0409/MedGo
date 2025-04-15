@@ -19,7 +19,7 @@ export const fetchClinics = createAsyncThunk("clinic/fetchClinics", async (_, th
     try {
         return await clinicService.getClinics();
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch clinics");
+        return thunkAPI.rejectWithValue(error || "Failed to fetch clinics");
     }
 });
 
