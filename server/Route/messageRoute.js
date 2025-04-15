@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../Controllers/messageController');
-const userAuth = require('../middlewares/authMiddleware');
-const doctorAuth = require('../middlewares/doctorMiddleware');
+const userAuth = require('../Middlewares/authMiddleware');
+const doctorAuth = require('../Middlewares/doctorMiddleware');
 
 // USER ROUTES
 router.post('/user/send', userAuth, messageController.sendMessage); // Only authenticated users can send
