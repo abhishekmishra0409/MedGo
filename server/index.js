@@ -7,7 +7,7 @@ const http = require('http');
 const connectDB = require('./config/db');
 const cloudinaryConfig = require('./config/cloudinarydb');
 const routes = require('./Route/index');
-const errorHandler = require('./middlewares/errorMiddleware');
+const errorHandler = require('./Middlewares/errorMiddleware');
 const { initializeWSS } = require('./config/websocket');
 
 dotenv.config();
