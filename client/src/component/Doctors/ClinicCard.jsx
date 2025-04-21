@@ -4,7 +4,6 @@ import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaCalendarAlt, FaClinicMe
 
 const ClinicCard = ({ clinic }) => {
 
-    // console.log(clinic)
     return (
         <div className="w-96 bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
             <div className="p-6">
@@ -59,7 +58,7 @@ const ClinicCard = ({ clinic }) => {
 
                 {/* Appointment Button */}
                 <Link
-                    to={`/appointment/${clinic?.doctors[0]}`}
+                    to={`/appointment/${clinic?.doctors[0]._id}`}
                     className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors"
                 >
                     <FaCalendarAlt className="mr-2" />

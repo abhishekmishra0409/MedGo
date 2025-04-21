@@ -39,6 +39,9 @@ import DoctorsBlogs from "./page/Doctors/Blogs.jsx"
 import DoctorLabBookings from "./page/Doctors/DoctorLabBookings.jsx";
 import ConversationPage from "./page/Conversation.jsx";
 
+import { RequireAuth, PreventAuth } from './middleware/AuthMiddleware.jsx';
+import UnauthorizedPage from './page/UnauthorizedPage.jsx';
+
 
 function App() {
   return (
@@ -58,6 +61,7 @@ function App() {
               theme="colored"
           />
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/pharmacy" element={<Pharmacy />} />
             <Route path="/doctors" element={<Doctors />} />
@@ -67,32 +71,111 @@ function App() {
             <Route path="/productlists" element={<ProductLists />} />
             <Route path="/product/:id" element={<SingleProduct />} />
             <Route path="/doctor/:id" element={<DoctorProfile />} />
-            <Route path="/appointment/:doctorId" element={<AppointmentForm />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
-            <Route path="/cart" element={<CartPage />} />
             <Route path="/labtest" element={<LabTest />} />
             <Route path="/labtestlists" element={<LabTestList />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-            <Route path="/book-lab-test/:testId" element={<LabTestBookingForm />} />
-            <Route path="/login-option" element={<LoginOption />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/user" element={< MainLayout/>}>
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+            {/* Auth Protected Routes */}
+            <Route
+                path="/appointment/:doctorId"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <AppointmentForm />
+                  </RequireAuth>
+                }
+            />
+            <Route
+                path="/cart"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <CartPage />
+                  </RequireAuth>
+                }
+            />
+            <Route
+                path="/checkout"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <CheckoutPage />
+                  </RequireAuth>
+                }
+            />
+            <Route
+                path="/order-confirmation/:orderId"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <OrderConfirmation />
+                  </RequireAuth>
+                }
+            />
+            <Route
+                path="/book-lab-test/:testId"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <LabTestBookingForm />
+                  </RequireAuth>
+                }
+            />
+
+            {/* User Dashboard Routes */}
+            <Route
+                path="/user"
+                element={
+                  <RequireAuth allowedRoles={['user']}>
+                    <MainLayout />
+                  </RequireAuth>
+                }
+            >
               <Route index element={<Profile />} />
               <Route path="orders" element={<Orders />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="labtest" element={<LabBookings />} />
               <Route path="messages" element={<ConversationPage userType="user" />} />
             </Route>
-            <Route path="/doctor" element={< DoctorsMainLayout/>}>
+
+            {/* Doctor Dashboard Routes */}
+            <Route
+                path="/doctor"
+                element={
+                  <RequireAuth allowedRoles={['doctor']}>
+                    <DoctorsMainLayout />
+                  </RequireAuth>
+                }
+            >
               <Route index element={<DoctorsProfile />} />
               <Route path="appointments" element={<DoctorsAppointments />} />
-              <Route path="blogs" element={< DoctorsBlogs/>} />
-              <Route path="labtest" element={< DoctorLabBookings/>} />
+              <Route path="blogs" element={<DoctorsBlogs />} />
+              <Route path="labtest" element={<DoctorLabBookings />} />
               <Route path="messages" element={<ConversationPage userType="doctor" />} />
             </Route>
+
+            {/* Auth Pages - Prevent access when logged in */}
+            <Route
+                path="/login-option"
+                element={
+                  <PreventAuth>
+                    <LoginOption />
+                  </PreventAuth>
+                }
+            />
+            <Route
+                path="/login"
+                element={
+                  <PreventAuth>
+                    <Login />
+                  </PreventAuth>
+                }
+            />
+            <Route
+                path="/signup"
+                element={
+                  <PreventAuth>
+                    <Signup />
+                  </PreventAuth>
+                }
+            />
           </Routes>
 
           <Footer />

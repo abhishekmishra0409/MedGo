@@ -26,7 +26,7 @@ const BlogCard = ({id, image, author, date, title, description }) => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
                 <p className="text-gray-600 text-sm mt-1">{description}</p>
-                <button className="text-teal-600 font-semibold flex items-center mt-3 cursor-pointer">
+                <button className="text-teal-600 font-semibold flex items-center mt-3 cursor-pointer ">
                     read more <FiArrowRight className="ml-1" />
                 </button>
             </div>

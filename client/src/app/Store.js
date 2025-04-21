@@ -9,6 +9,7 @@ import appointmentReducer from "../features/Appointment/AppointmentSlice.js";
 import clinicReducer from "../features/Clinic/ClinicSlice.js";
 import labTestReducer from "../features/Labtest/LabtestSlice.js";
 import messagesReducer from "../features/Messages/MessageSlice.js";
+import authMiddleware from "../Middleware/authMiddleware.js";
 
 export const store = configureStore({
     reducer: {
@@ -23,6 +24,8 @@ export const store = configureStore({
         labTest: labTestReducer,
         messages: messagesReducer
     },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(authMiddleware),
 });
 
 export default store;

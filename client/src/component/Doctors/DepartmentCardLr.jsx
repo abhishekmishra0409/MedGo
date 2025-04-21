@@ -7,7 +7,7 @@ const DepartmentCardLr = ({ icon, title, category, description }) => {
         navigate(`/doctorlists`);
     };
     return (
-        <div className="w-70 bg-slate-100 shadow-md rounded-xl p-6 text-center border border-gray-200 cursor-pointer"
+        <div className=" bg-slate-100 shadow-md rounded-xl p-6 text-center border border-gray-200 cursor-pointer"
              onClick={handleCardClick}>
             <div
                 className="w-20 h-20 border-2 border-white rounded-full flex items-center justify-center mx-auto bg-white">

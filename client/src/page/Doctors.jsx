@@ -5,7 +5,7 @@ import DepartmentCardLr from "../component/Doctors/DepartmentCardLr.jsx";
 import ClinicCard from "../component/Doctors/ClinicCard.jsx";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchClinics } from '../features/Clinic/ClinicSlice.js';
+import { fetchClinics } from '../features/clinic/clinicSlice';
 
 // Services array
 const services = [
@@ -58,8 +58,22 @@ const specialties = [
 
 function Doctors() {
     const [activeTab, setActiveTab] = useState("specialties");
+    const [showAllSpecialties, setShowAllSpecialties] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
     const dispatch = useDispatch();
     const { clinics, isLoading, isError, message } = useSelector((state) => state.clinic);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+
+        handleResize(); // Set initial value
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (activeTab === "clinic") {
@@ -83,48 +97,56 @@ function Doctors() {
         );
     }
 
+    // Determine how many specialties to show
+    const displayedSpecialties = showAllSpecialties
+        ? specialties
+        : (isMobile ? specialties.slice(0, 3) : specialties);
+
     return (
         <>
-            <div className="relative w-full h-[450px] bg-cover bg-center flex items-center justify-start px-32"
-                 style={{backgroundImage: "url('/hero_healthcare.png')"}}>
-                <div className="text-left max-w-md">
-                    <p className="text-gray-600 text-sm">Book Now!</p>
-                    <h1 className="text-4xl font-bold text-gray-900">Meet Our Qualified Doctors</h1>
-
+            {/* Hero Section */}
+            <div className="relative w-full h-64 md:h-[450px] bg-cover bg-center flex items-center justify-start px-4 md:px-8 lg:px-16 xl:px-32"
+                 style={{ backgroundImage: "url('/hero_healthcare.png')" }}>
+                <div className="text-left max-w-md p-4">
+                    <p className="text-black text-xs sm:text-sm font-medium mb-1 sm:mb-2">Book Now!</p>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[2.5rem] font-bold text-black drop-shadow-lg leading-tight">
+                        Meet Our Qualified Doctors
+                    </h1>
                     <Link to={"/doctorlists"}>
                         <button
-                            className="mt-4 px-6 py-2 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition-all">
-                            Book Appointment
+                            className="mt-3 sm:mt-4 px-4 py-2 md:px-5 md:py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg shadow-md transition-all text-xs sm:text-sm md:text-base font-medium">
+                            Get Appointment
                         </button>
                     </Link>
                 </div>
             </div>
-
-            <section className="py-10 bg-gray-100 px-28">
-                <div className="container mx-auto px-4">
-                    <div className="flex flex-wrap justify-center gap-6 ">
+            {/* Services Section */}
+            <section className="py-8 md:py-10 bg-gray-100 px-4 sm:px-6 md:px-8 lg:px-16 xl:px-28">
+                <div className="container mx-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
                         {services.map((service, index) => (
                             <div key={index}
-                                 className="bg-white shadow-lg rounded-xl py-8 w-48 text-center transition transform hover:scale-105 flex flex-col justify-center items-center">
-                                <div className="text-teal-500 text-3xl mb-3">{service.icon}</div>
-                                <h3 className="text-gray-900 font-medium text-sm">{service.title}</h3>
+                                 className="bg-white shadow-lg rounded-xl  text-center transition transform hover:scale-105 flex flex-col justify-center items-center py-10">
+                                <div className="text-teal-500 text-2xl md:text-3xl mb-2 md:mb-3">{service.icon}</div>
+                                <h3 className="text-gray-900 font-medium text-xs sm:text-sm">{service.title}</h3>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            <div className="bg-white py-10 px-32">
+            {/* Tabs Section */}
+            <div className="bg-white py-6 md:py-10 px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32">
                 {/* Tabs */}
                 <div className="flex justify-center border-b border-gray-300">
                     <button
-                        className={`py-3 px-6 text-lg font-medium ${activeTab === "specialties" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
+                        className={`py-2 px-4 md:py-3 md:px-6 text-sm md:text-lg font-medium ${activeTab === "specialties" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
                         onClick={() => setActiveTab("specialties")}
                     >
                         Specialties
                     </button>
                     <button
-                        className={`py-3 px-6 text-lg font-medium ${activeTab === "clinic" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
+                        className={`py-2 px-4 md:py-3 md:px-6 text-sm md:text-lg font-medium ${activeTab === "clinic" ? "text-teal-500 border-b-2 border-teal-500" : "text-gray-500"}`}
                         onClick={() => setActiveTab("clinic")}
                     >
                         Clinics
@@ -132,39 +154,53 @@ function Doctors() {
                 </div>
 
                 {/* Content */}
-                <div className="text-center px-12 mt-8">
-                    <h2 className="text-2xl font-bold text-gray-900">
+                <div className="text-center px-2 sm:px-4 md:px-12 mt-6 md:mt-8">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                         {activeTab === "specialties"
                             ? "Explore our Medical Specialties"
                             : "Discover our Clinical Services"}
                     </h2>
-                    <p className="text-gray-600 mt-3">
+                    <p className="text-gray-600 mt-2 md:mt-3 text-sm md:text-base">
                         {activeTab === "specialties"
                             ? "Our team of specialized physicians provides expert care across various medical disciplines, using the latest technologies and treatments."
                             : "Our clinical facilities offer comprehensive healthcare services with patient-centered care and modern medical equipment."}
                     </p>
-                    <p className="text-gray-600 mt-4 font-medium">
+                    <p className="text-gray-600 mt-2 md:mt-4 font-medium text-sm md:text-base">
                         Learn about the world-class healthcare we provide
                     </p>
                 </div>
             </div>
 
-            <div className="py-10 bg-gradient-to-b from-gray-100 to-white px-32">
-                <div className="container mx-auto px-4 flex flex-wrap justify-center gap-6">
-                    {activeTab === "specialties"
-                        ? specialties.map((department, index) => (
-                            <DepartmentCardLr
-                                key={index}
-                                icon={department.icon}
-                                title={department.title}
-                                category={department.category}
-                                description={department.description}
-                            />
-                        ))
-                        : clinics.map((clinic) => (
-                            <ClinicCard key={clinic._id} clinic={clinic} />
-                        ))
-                    }
+            {/* Cards Section */}
+            <div className="py-8 md:py-10 bg-gradient-to-b from-gray-100 to-white px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32">
+                <div className="container mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center">
+                        {activeTab === "specialties"
+                            ? displayedSpecialties.map((department, index) => (
+                                <div key={index} className="w-full max-w-xs">
+                                    <DepartmentCardLr
+                                        icon={department.icon}
+                                        title={department.title}
+                                        category={department.category}
+                                        description={department.description}
+                                    />
+                                </div>
+                            ))
+                            : clinics.map((clinic) => (
+                                <ClinicCard key={clinic._id} clinic={clinic} />
+                            ))
+                        }
+                    </div>
+                    {activeTab === "specialties" && isMobile && !showAllSpecialties && specialties.length > 3 && (
+                        <div className="text-center mt-6">
+                            <button
+                                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all"
+                                onClick={() => setShowAllSpecialties(true)}
+                            >
+                                View All Specialties
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
