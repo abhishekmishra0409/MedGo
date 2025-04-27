@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 
-const authMiddleware = (store) => (next) => (action) => {
+const authMiddlewares = (store) => (next) => (action) => {
     const state = store.getState();
     const isAuthenticated = state.auth.isAuthenticated;
 
@@ -21,4 +21,4 @@ const authMiddleware = (store) => (next) => (action) => {
 };
 
 
-export default authMiddleware;
+export default authMiddlewares;
