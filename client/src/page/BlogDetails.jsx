@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { BsPerson } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBlogById } from "../features/blog/blogSlice";
+import { fetchBlogById } from "../features/Blog/BlogSlice.js";
 
 const BlogDetail = () => {
     const { id } = useParams();

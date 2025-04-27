@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { bookLabTest } from '../features/labTest/labTestSlice';
-import {fetchClinics, fetchAvailableSlots, clearAvailableSlots } from '../features/clinic/clinicSlice';
+import { bookLabTest } from '../features/LabTest/LabTestSlice';
+import {fetchClinics, fetchAvailableSlots, clearAvailableSlots } from '../features/Clinic/ClinicSlice.js';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';

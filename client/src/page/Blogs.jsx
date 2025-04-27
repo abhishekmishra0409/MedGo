@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllBlogs } from "../features/blog/blogSlice";
+import { fetchAllBlogs } from "../features/Blog/BlogSlice.js";
 import BlogCard from "../component/Common/BlogCard.jsx";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
 

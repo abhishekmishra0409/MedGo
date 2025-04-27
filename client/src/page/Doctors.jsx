@@ -5,7 +5,7 @@ import DepartmentCardLr from "../component/Doctors/DepartmentCardLr.jsx";
 import ClinicCard from "../component/Doctors/ClinicCard.jsx";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchClinics } from '../features/clinic/clinicSlice';
+import { fetchClinics } from '../features/Clinic/ClinicSlice.js';
 
 // Services array
 const services = [

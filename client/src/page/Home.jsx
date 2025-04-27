@@ -6,7 +6,7 @@ import BlogCard from "../component/Common/BlogCard.jsx";
 
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts } from "../features/Product/ProductSlice.js";
-import { fetchAllBlogs } from "../features/blog/blogSlice";
+import { fetchAllBlogs } from "../features/Blog/BlogSlice.js";
 
 import React, { useEffect } from "react";
 
