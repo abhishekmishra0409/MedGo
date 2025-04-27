@@ -32,7 +32,7 @@ const Navbar = () => {
             {/* Logo and Mobile Menu Button */}
             <div className="flex items-center justify-between w-full md:w-auto">
                 <Link to="/" className="flex items-center">
-                    <img src="/Logo.png" alt="Sunrise Logo" className="h-12 lg:h-14" />
+                    <img src="./Logo.png" alt="Sunrise Logo" className="h-12 lg:h-14" />
                 </Link>
 
                 <div className="flex items-center gap-4 md:hidden">
