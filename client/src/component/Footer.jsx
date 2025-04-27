@@ -8,7 +8,7 @@ const Footer = () => {
                 {/* Top Section - Centered on mobile */}
                 <div className="flex flex-col items-center text-center md:flex-row md:justify-between md:items-center md:text-left">
                     <div className="mb-6 md:mb-0">
-                        <img src="/Logo.png" alt="Sunrise Logo" className="h-14 md:h-16 mx-auto md:mx-0" />
+                        <img src="./Logo.png" alt="Logo" className="h-14 md:h-16 mx-auto md:mx-0" />
                     </div>
                 </div>
 

@@ -31,7 +31,9 @@ app.use(cors(
             "http://localhost:5175",
             "http://localhost:5174",
             "http://192.168.1.71:5174",
-            "http://192.168.1.71:5173"
+            "http://192.168.1.71:5173",
+            "https://med-go-pi.vercel.app/",
+            "https://med-go-abhishekmishra0409s-projects.vercel.app/"
         ],
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true,
