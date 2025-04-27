@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { bookLabTest } from '../features/LabTest/LabtestSlice.js';
+import { bookLabTest } from '../features/Labtest/LabtestSlice.js';
 import {fetchClinics, fetchAvailableSlots, clearAvailableSlots } from '../features/Clinic/ClinicSlice.js';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
