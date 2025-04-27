@@ -1,5 +1,5 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL";
+import { base_url } from "../../utils/baseURL.js";
 import userConfig from "../../utils/userConfig";
 import doctorConfig from "../../utils/doctorConfig";
 
