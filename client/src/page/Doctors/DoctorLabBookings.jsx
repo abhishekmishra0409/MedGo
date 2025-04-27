@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchClinicsByDoctor } from '../../features/Clinic/ClinicSlice';
+import { fetchClinicsByDoctor } from '../../features/Clinic/ClinicSlice.js';
 import { fetchClinicBookings, updateLabTestStatus, uploadLabTestReport } from '../../features/LabTest/LabtestSlice.js';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';

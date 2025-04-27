@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchDoctorById } from "../features/Doctor/DoctorSlice";
-import { fetchClinicsByDoctor } from "../features/Clinic/ClinicSlice";
-import { checkAvailability, bookAppointment } from "../features/Appointment/AppointmentSlice";
+import { fetchDoctorById } from "../features/Doctor/DoctorSlice.js";
+import { fetchClinicsByDoctor } from "../features/Clinic/ClinicSlice.js";
+import { checkAvailability, bookAppointment } from "../features/Appointment/AppointmentSlice.js";
 import { toast } from "react-toastify";
 
 const AppointmentForm = () => {

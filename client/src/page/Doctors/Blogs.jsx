@@ -6,7 +6,7 @@ import {
     updateBlog,
     deleteBlog,
     resetBlogState
-} from '../../features/Blog/BlogSlice';
+} from '../../features/Blog/BlogSlice.js';
 import { toast } from 'react-toastify';
 import { FiEdit, FiTrash2, FiPlus, FiUpload } from 'react-icons/fi';
 

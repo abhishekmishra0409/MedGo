@@ -5,7 +5,7 @@ import {
     updateAppointmentStatus,
     cancelAppointment,
     completeAppointment
-} from "../../features/Appointment/AppointmentSlice";
+} from "../../features/Appointment/AppointmentSlice.js";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
 

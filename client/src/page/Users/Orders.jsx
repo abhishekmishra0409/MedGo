@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMyOrders, getOrderById } from '../../features/Order/OrderSlice';
+import { getMyOrders, getOrderById } from '../../features/Order/OrderSlice.js';
 import { toast } from 'react-toastify';
 import { FiX, FiShoppingBag, FiClock, FiCheckCircle, FiTruck, FiDollarSign } from 'react-icons/fi';
 

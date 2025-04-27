@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getMyAppointments } from "../../features/Appointment/AppointmentSlice";
+import { getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
 import { toast } from "react-toastify";
 import { format, isAfter, isBefore } from "date-fns";
 
