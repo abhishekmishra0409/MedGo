@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import labTestService from "./labTestService";
+import labTestService from "./LabtestService.js";
 import { toast } from "react-toastify";
 
 // Initial State

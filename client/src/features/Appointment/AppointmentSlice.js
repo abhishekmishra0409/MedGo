@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import appointmentService from "./AppointmentService";
+import appointmentService from "./AppointmentService.js";
 import { toast } from "react-toastify";
 
 // Initial state
