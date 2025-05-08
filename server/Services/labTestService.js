@@ -6,7 +6,13 @@ const { createClient } = require('@supabase/supabase-js');
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_API_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey,{
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+    },
+});
 
 class LabTestService {
     static async bookLabTest(bookingData) {
