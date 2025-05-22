@@ -93,7 +93,7 @@ const Signup = () => {
                     <p className='text-sm text-white text-center mt-3'>
                         Already have an account?
                         <span
-                            onClick={() => navigate("/login-option")}
+                            onClick={() => navigate("/login")}
                             className="ml-1 cursor-pointer font-medium hover:underline"
                         >
                             Login

@@ -1,1 +1,1 @@
-export const base_url = 'https://medgo-production.up.railway.app/api/';
+export const base_url = 'https://medgo-fa8d.onrender.com/api/';
