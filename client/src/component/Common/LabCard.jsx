@@ -1,10 +1,7 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const LabCard = ({ test }) => {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleBookClick = () => {

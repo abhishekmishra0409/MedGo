@@ -1,131 +1,121 @@
-import React, { useState, useEffect } from "react";
-import {useDispatch, useSelector } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
-import DoctorCard from "../component/Common/DoctorCard.jsx";
-import {fetchDoctors} from "../features/Doctor/DoctorSlice.js";
+import DoctorCard from "../component/Common/DoctorCardModern.jsx";
+import { fetchDoctors } from "../features/Doctor/DoctorSlice.js";
 
 const DoctorLists = () => {
     const dispatch = useDispatch();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { doctors, isLoading } = useSelector((state) => state.doctor);
 
-    // Get doctors data from Redux store
-    const {doctors} = useSelector((state) => state.doctor);
-
-    // console.log(doctors )
-
-    // Extract unique specialities from doctors data
-    const specialities = [...new Set(doctors.map(doctor => doctor.specialty))];
-
-    const [filteredSpeciality, setFilteredSpeciality] = useState("");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [filteredSpeciality, setFilteredSpeciality] = useState(searchParams.get("speciality") || "");
+    const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
 
     useEffect(() => {
-        dispatch(fetchDoctors());
-    }, [dispatch]);
+        dispatch(
+            fetchDoctors({
+                search: searchQuery || undefined,
+                specialty: filteredSpeciality || undefined,
+            })
+        );
+    }, [dispatch, filteredSpeciality, searchQuery]);
 
-    // Simulate loading state
-    useEffect(() => {
-        if (searchQuery || filteredSpeciality) {
-            setIsLoading(true);
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-            }, 500);
-            return () => clearTimeout(timer);
+    const specialities = useMemo(() => [...new Set(doctors.map((doctor) => doctor.specialty).filter(Boolean))], [doctors]);
+
+    const filteredDoctors = useMemo(() => doctors, [doctors]);
+
+    const syncSearchParams = (nextSearch, nextSpeciality) => {
+        const params = new URLSearchParams();
+        if (nextSearch) {
+            params.set("search", nextSearch);
         }
-    }, [searchQuery, filteredSpeciality]);
+        if (nextSpeciality) {
+            params.set("speciality", nextSpeciality);
+        }
+        setSearchParams(params);
+    };
 
     const handleSearch = (query) => {
-        setSearchQuery(query.toLowerCase());
+        setSearchQuery(query);
+        syncSearchParams(query, filteredSpeciality);
     };
 
     const handleFilter = (speciality) => {
         setFilteredSpeciality(speciality);
+        syncSearchParams(searchQuery, speciality);
     };
 
     const handleClear = () => {
         setSearchQuery("");
         setFilteredSpeciality("");
+        setSearchParams(new URLSearchParams());
     };
 
-    // Filter Doctors Based on Search and Speciality
-    const filteredDoctors = doctors.filter((doctor) => {
-        const matchesSearch =
-            doctor.name.toLowerCase().includes(searchQuery) ||
-            doctor.specialty.toLowerCase().includes(searchQuery) ||
-            doctor.contact.address.toLowerCase().includes(searchQuery);
-        const matchesSpeciality = filteredSpeciality ?
-            doctor.specialty === filteredSpeciality : true;
-        return matchesSearch && matchesSpeciality;
-    });
-
     return (
-        <>
-            <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{ backgroundImage: "url('/appointmentmain.jpg')" }}>
-                <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900"></h1>    {/* addting any word for appointment main page  */}
-                </div>
-            </div>
+        <div className="section-shell space-y-8 py-10">
+            <section className="hero-panel">
+                <span className="eyebrow">Doctor discovery</span>
+                <h1 className="section-title max-w-3xl">Find the right specialist with clearer context before booking.</h1>
+                <p className="section-copy max-w-2xl">
+                    Compare specialties, qualifications, and clinic locations in one focused directory built to reduce decision friction.
+                </p>
+            </section>
 
-            <div className="container mx-auto p-6 bg-gradient-to-b from-gray-100 to-white">
-                {/*<h1 className="text-3xl font-bold text-gray-800 mb-8">Find Your Doctor</h1>*/}
+            <section className="grid gap-8 lg:grid-cols-[320px_1fr]">
+                <SearchFilter
+                    onSearch={handleSearch}
+                    onFilter={handleFilter}
+                    options={specialities}
+                    onClear={handleClear}
+                    initialSearch={searchQuery}
+                    initialFilter={filteredSpeciality}
+                    placeholder="Search doctors, specialties, or clinics"
+                    filterLabel="Speciality"
+                    optionType="speciality"
+                />
 
-                <div className="grid md:grid-cols-4 sm:grid-cols-1 gap-8 mt-16">
-                    {/* Left Side - Search & Filter */}
-                    <div className="col-span-1">
-                        <SearchFilter
-                            onSearch={handleSearch}
-                            onFilter={handleFilter}
-                            options={specialities}
-                            onClear={handleClear}
-                            placeholder="Search doctors..."
-                            filterLabel="Speciality"
-                            optionType="speciality"
-                        />
+                <div className="space-y-6">
+                    <div className="section-heading-row">
+                        <div>
+                            <p className="eyebrow">Results</p>
+                            <h2 className="text-2xl font-semibold text-slate-950">{filteredDoctors.length} doctors available</h2>
+                        </div>
                     </div>
 
-                    {/* Right Side - Doctor Cards */}
-                    <div className="col-span-3">
-                        {isLoading ? (
-                            <div className="flex justify-center items-center h-64">
-                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-                            </div>
-                        ) : filteredDoctors.length > 0 ? (
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {filteredDoctors.map((doctor) => (
-                                    <DoctorCard
-                                        id={doctor._id}
-                                        key={doctor._id}
-                                        image={doctor.image}
-                                        name={doctor.name}
-                                        specialty={doctor.specialty}
-                                        qualification={doctor.qualification}
-                                        rating={doctor.rating}
-                                        reviews={doctor.reviews}
-                                        hospital={doctor.contact.address}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-gray-50 rounded-lg p-8 text-center">
-                                <h3 className="text-xl font-medium text-gray-600 mb-2">No doctors found</h3>
-                                <p className="text-gray-500">
-                                    {searchQuery || filteredSpeciality
-                                        ? "Try adjusting your search or filter criteria"
-                                        : "Currently no doctors available in this category"}
-                                </p>
-                                <button
-                                    onClick={handleClear}
-                                    className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
-                                >
-                                    Clear filters
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {isLoading ? (
+                        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <div key={index} className="h-72 animate-pulse rounded-[30px] bg-white shadow-sm" />
+                            ))}
+                        </div>
+                    ) : filteredDoctors.length ? (
+                        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                            {filteredDoctors.map((doctor) => (
+                                <DoctorCard
+                                    key={doctor._id}
+                                    id={doctor._id}
+                                    image={doctor.image}
+                                    name={doctor.name}
+                                    specialty={doctor.specialty}
+                                    qualification={doctor.qualification}
+                                    hospital={doctor.contact?.address}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="empty-state">
+                            <h3 className="text-2xl font-semibold text-slate-950">No doctors matched your filters.</h3>
+                            <p className="max-w-lg text-sm text-slate-600">Try a broader specialty or clear the filters to see the full care network.</p>
+                            <button onClick={handleClear} className="btn-primary px-5 py-3 text-sm">
+                                Reset filters
+                            </button>
+                        </div>
+                    )}
                 </div>
-            </div>
-        </>
+            </section>
+        </div>
     );
 };
 

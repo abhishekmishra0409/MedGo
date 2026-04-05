@@ -1,12 +1,5 @@
-const getTokenFromLocalStorage = localStorage.getItem("doctorToken")
+import { createAuthConfig } from "./api.js";
 
-const doctorConfig = {
-    headers: {
-        Authorization: `Bearer ${
-            getTokenFromLocalStorage !== null ? getTokenFromLocalStorage : ""
-        }`,
-        Accept: "application/json",
-    },
-};
+const doctorConfig = () => createAuthConfig("doctorToken");
 
 export default doctorConfig;

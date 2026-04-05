@@ -4,9 +4,9 @@ import { getAllProducts, getProductById } from "./ProductService.js";
 // Fetch all products
 export const fetchAllProducts = createAsyncThunk(
     "products/fetchAll",
-    async (_, thunkAPI) => {
+    async (params = {}, thunkAPI) => {
         try {
-            return await getAllProducts();
+            return await getAllProducts(params);
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch products");
         }

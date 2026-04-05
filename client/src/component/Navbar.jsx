@@ -1,253 +1,258 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaUser, FaBars, FaTimes } from "react-icons/fa";
-import { IoMdMedical } from "react-icons/io";
-import { GiAmbulance } from "react-icons/gi";
-import { FaMicroblog } from "react-icons/fa";
-import { MdLocalHospital, MdLocalPharmacy } from "react-icons/md";
+import { useMemo, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Menu, X, Search, ShoppingCart, UserRound, LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../features/User/UserSlice";
 import { logoutDoctor } from "../features/Doctor/DoctorSlice";
 
+const navLinks = [
+    { to: "/doctorlists", label: "Doctors" },
+    { to: "/productlists", label: "Pharmacy" },
+    { to: "/labtestlists", label: "Lab Tests" },
+    { to: "/blogs", label: "Blogs" },
+    { to: "/ambulance", label: "Emergency" },
+];
+
 const Navbar = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { user } = useSelector((state) => state.auth);
-    const { doctor } = useSelector((state) => state.doctor);
+    const { profile: userProfile, isAuthenticated: userAuthenticated } = useSelector((state) => state.auth);
+    const { profile: doctorProfile, isAuthenticated: doctorAuthenticated } = useSelector((state) => state.doctor);
     const [showDropdown, setShowDropdown] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const isLoggedIn = user || doctor;
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const session = useMemo(() => {
+        if (userAuthenticated && userProfile) {
+            return { role: "user", profile: userProfile };
+        }
+
+        if (doctorAuthenticated && doctorProfile) {
+            return { role: "doctor", profile: doctorProfile };
+        }
+
+        return null;
+    }, [doctorAuthenticated, doctorProfile, userAuthenticated, userProfile]);
 
     const handleLogout = () => {
-        if (user) {
+        if (session?.role === "user") {
             dispatch(logoutUser());
-        } else if (doctor) {
+        } else if (session?.role === "doctor") {
             dispatch(logoutDoctor());
         }
-        navigate("/login");
+
+        setShowDropdown(false);
+        setMenuOpen(false);
+        navigate(`/login?role=${session?.role || "user"}`);
     };
 
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const query = searchQuery.trim();
+
+        navigate(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+        setMenuOpen(false);
+    };
+
+    const dashboardLinks =
+        session?.role === "doctor"
+            ? [
+                  { to: "/doctor", label: "Profile" },
+                  { to: "/doctor/appointments", label: "Appointments" },
+                  { to: "/doctor/blogs", label: "Blogs" },
+                  { to: "/doctor/labtest", label: "Lab bookings" },
+              ]
+            : [
+                  { to: "/user", label: "Profile" },
+                  { to: "/user/orders", label: "Orders" },
+                  { to: "/user/appointments", label: "Appointments" },
+                  { to: "/user/labtest", label: "Lab bookings" },
+              ];
+
     return (
-        <nav className="bg-teal-300 px-4 py-3 md:px-6 lg:px-8 flex flex-wrap items-center justify-between relative">
-            {/* Logo and Mobile Menu Button */}
-            <div className="flex items-center justify-between w-full md:w-auto">
-                <Link to="/" className="flex items-center">
-                    <img src="/android-icon-512x512.png" alt="Logo" className="h-12 lg:h-14" />
-                </Link>
-
-                <div className="flex items-center gap-4 md:hidden">
-                    {user && (
-                        <Link to="/cart" className="text-gray-700">
-                            <FaShoppingCart className="text-xl" />
-                        </Link>
-                    )}
-
-                    {/* Login Button - Mobile Only */}
-                    {!isLoggedIn && (
-                        <Link to="/login" className="text-gray-700">
-                            <FaUser className="text-xl" />
-                        </Link>
-                    )}
-
-                    {/* Profile Dropdown - Mobile Only */}
-                    {isLoggedIn && (
-                        <button onClick={() => setShowDropdown(!showDropdown)} className="text-gray-700">
-                            <FaUser className="text-xl" />
-                        </button>
-                    )}
-
-                    <button
-                        className="text-gray-700 text-2xl focus:outline-none"
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        {menuOpen ? <FaTimes /> : <FaBars />}
-                    </button>
-                </div>
-            </div>
-
-            {/* Search Bar - Hidden on mobile */}
-            <div className="hidden md:block w-full md:w-auto md:flex-grow max-w-xl md:ml-4 lg:ml-6">
-                <div className="flex items-center bg-white px-4 py-2 rounded-lg shadow-md">
-                    <FaSearch className="text-gray-600" />
-                    <input
-                        type="text"
-                        placeholder="Search Medicines"
-                        className="ml-2 outline-none w-full bg-transparent text-gray-700"
-                    />
-                </div>
-            </div>
-
-            {/* Desktop Nav Links - UNCHANGED */}
-            <div className="hidden md:flex gap-4 lg:gap-6 text-white text-sm font-medium ml-4">
-                <Link to="/doctors" className="flex items-center gap-1 hover:text-teal-100 transition">
-                    <IoMdMedical className="text-blue-400 text-xl" />
-                    <span>Doctors</span>
-                </Link>
-                <Link to="/store" className="flex items-center gap-1 hover:text-teal-100 transition">
-                    <MdLocalHospital className="text-pink-400 text-xl" />
-                    <span>Store</span>
-                </Link>
-                <Link to="/ambulance" className="flex items-center gap-1 hover:text-teal-100 transition">
-                    <GiAmbulance className="text-red-500 text-xl" />
-                    <span>Ambulance</span>
-                </Link>
-                <Link to="/blogs" className="flex items-center gap-1 hover:text-teal-100 transition">
-                    <FaMicroblog className="text-blue-500 text-xl" />
-                    <span>Blogs</span>
-                </Link>
-                <Link to="/labtest" className="flex items-center gap-1 hover:text-teal-100 transition">
-                    <MdLocalPharmacy className="text-blue-500 text-xl" />
-                    <span>LabTest</span>
-                </Link>
-            </div>
-
-            {/* Right Icons - Desktop - UNCHANGED */}
-            <div className="hidden md:flex items-center gap-4">
-                {user && (
-                    <Link to="/cart" className="text-gray-700 hover:text-gray-900">
-                        <FaShoppingCart className="text-xl" />
+        <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
+            <div className="section-shell py-4">
+                <div className="flex items-center justify-between gap-4">
+                    <Link to="/" className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] shadow-[0_18px_40px_rgba(13,148,136,0.18)]">
+                            <img src="/android-icon-192x192.png" alt="MedGo" className="h-9 w-9 rounded-xl" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">MedGo</p>
+                            <p className="text-sm text-slate-500">Clinical care, pharmacy and diagnostics</p>
+                        </div>
                     </Link>
-                )}
 
-                {isLoggedIn ? (
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowDropdown(!showDropdown)}
-                            className="flex items-center gap-2 border border-gray-500 px-3 py-1 rounded-lg bg-teal-400 hover:bg-teal-500 transition"
-                        >
-                            <FaUser className="text-gray-700" />
-                            <span>Profile</span>
-                        </button>
-                        {showDropdown && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
-                                {user ? (
-                                    <>
-                                        <Link to="/user" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</Link>
-                                        <Link to="/user/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Orders</Link>
-                                        <Link to="/user/appointments" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Appointments</Link>
-                                        <Link to="/user/labtest" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">LabTest</Link>
-                                    </>
-                                ) : doctor ? (
-                                    <>
-                                        <Link to="/doctor" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</Link>
-                                        <Link to="/doctor/appointments" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Appointments</Link>
-                                        <Link to="/doctor/blogs" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Blogs</Link>
-                                    </>
-                                ) : null}
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 border-t border-gray-200"
+                    <form onSubmit={handleSearchSubmit} className="hidden min-w-0 flex-1 items-center md:flex">
+                        <div className="mx-auto flex w-full max-w-2xl items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                            <Search className="h-5 w-5 text-slate-400" />
+                            <input
+                                type="search"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                                placeholder="Search doctors, medicines, or lab tests"
+                                className="w-full border-0 bg-transparent text-sm text-slate-700 outline-none"
+                            />
+                            <button type="submit" className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="hidden items-center gap-3 lg:flex">
+                        <nav className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
+                            {navLinks.map((item) => (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    className={({ isActive }) =>
+                                        `rounded-full px-4 py-2 text-sm font-medium transition ${
+                                            isActive ? "bg-white text-slate-950 shadow-sm" : "text-slate-600 hover:text-slate-950"
+                                        }`
+                                    }
                                 >
-                                    Logout
+                                    {item.label}
+                                </NavLink>
+                            ))}
+                        </nav>
+
+                        {session?.role === "user" && (
+                            <Link to="/cart" className="rounded-full border border-slate-200 bg-white p-3 text-slate-600 transition hover:border-teal-200 hover:text-teal-700">
+                                <ShoppingCart className="h-5 w-5" />
+                            </Link>
+                        )}
+
+                        {session ? (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowDropdown((value) => !value)}
+                                    className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition hover:border-teal-200"
+                                >
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-sm font-semibold text-teal-800">
+                                        {(session.profile?.username || session.profile?.name || "M").charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-sm font-semibold text-slate-900">{session.profile?.username || session.profile?.name || "My account"}</p>
+                                        <p className="text-xs text-slate-500">{session.role === "doctor" ? "Doctor dashboard" : "Patient account"}</p>
+                                    </div>
                                 </button>
+
+                                {showDropdown && (
+                                    <div className="absolute right-0 mt-3 w-64 rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl">
+                                        <div className="mb-2 rounded-2xl bg-slate-50 p-4">
+                                            <p className="text-sm font-semibold text-slate-900">{session.profile?.email || "Signed in"}</p>
+                                            <p className="text-xs text-slate-500">Access your records, appointments, and communication hub.</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {dashboardLinks.map((item) => (
+                                                <Link
+                                                    key={item.to}
+                                                    to={item.to}
+                                                    onClick={() => setShowDropdown(false)}
+                                                    className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                                >
+                                                    {item.label}
+                                                </Link>
+                                            ))}
+                                            <button
+                                                onClick={handleLogout}
+                                                className="flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                                            >
+                                                <LogOut className="h-4 w-4" />
+                                                Logout
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="btn-primary px-5 py-3 text-sm"
+                            >
+                                Login
+                            </Link>
                         )}
                     </div>
-                ) : (
-                    <Link to="/login" className="flex items-center gap-2 border border-gray-500 px-3 py-1 rounded-lg bg-teal-400 hover:bg-teal-500 transition">
-                        <FaUser className="text-gray-700" />
-                        <span>Login</span>
-                    </Link>
-                )}
-            </div>
 
-            {/* Doctor Illustration - Desktop - UNCHANGED */}
-            <div className="hidden lg:block">
-                <img src="/Mask%20group.png" alt="Doctor" className="h-20 lg:h-24" />
-            </div>
+                    <button
+                        type="button"
+                        onClick={() => setMenuOpen((value) => !value)}
+                        className="rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-sm lg:hidden"
+                    >
+                        {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    </button>
+                </div>
 
-            {/* Mobile Menu - Full screen overlay */}
-            {menuOpen && (
-                <div className="fixed inset-0 bg-teal-400 z-40 pt-16 px-4 md:hidden">
-                    <div className="flex flex-col gap-6 text-lg text-white">
-                        <Link
-                            to="/doctors"
-                            className="flex items-center gap-3 py-3 border-b border-teal-500"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            <IoMdMedical className="text-blue-400 text-2xl" /> Doctors
-                        </Link>
-                        <Link
-                            to="/store"
-                            className="flex items-center gap-3 py-3 border-b border-teal-500"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            <MdLocalHospital className="text-pink-400 text-2xl" /> Store
-                        </Link>
-                        <Link
-                            to="/ambulance"
-                            className="flex items-center gap-3 py-3 border-b border-teal-500"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            <GiAmbulance className="text-red-500 text-2xl" /> Ambulance
-                        </Link>
-                        <Link
-                            to="/blogs"
-                            className="flex items-center gap-3 py-3 border-b border-teal-500"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            <FaMicroblog className="text-blue-500 text-2xl" /> Blogs
-                        </Link>
-                        <Link
-                            to="/labtest"
-                            className="flex items-center gap-3 py-3 border-b border-teal-500"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            <MdLocalPharmacy className="text-blue-500 text-2xl" /> LabTest
-                        </Link>
+                {menuOpen && (
+                    <div className="mt-4 space-y-4 rounded-[32px] border border-slate-200 bg-white p-5 shadow-2xl lg:hidden">
+                        <form onSubmit={handleSearchSubmit} className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                            <Search className="h-5 w-5 text-slate-400" />
+                            <input
+                                type="search"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                                placeholder="Search services"
+                                className="w-full border-0 bg-transparent text-sm outline-none"
+                            />
+                        </form>
 
-                        <div className="mt-8">
-                            {isLoggedIn ? (
-                                <>
+                        <nav className="grid gap-2">
+                            {navLinks.map((item) => (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                >
+                                    {item.label}
+                                </NavLink>
+                            ))}
+                        </nav>
+
+                        {session ? (
+                            <div className="space-y-2 rounded-2xl bg-slate-50 p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-800">
+                                        <UserRound className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-900">{session.profile?.username || session.profile?.name || "My account"}</p>
+                                        <p className="text-xs text-slate-500">{session.profile?.email || "Account access"}</p>
+                                    </div>
+                                </div>
+                                <div className="grid gap-2">
+                                    {dashboardLinks.map((item) => (
+                                        <Link
+                                            key={item.to}
+                                            to={item.to}
+                                            onClick={() => setMenuOpen(false)}
+                                            className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-700"
+                                        >
+                                            {item.label}
+                                        </Link>
+                                    ))}
                                     <button
                                         onClick={handleLogout}
-                                        className="w-full py-3 px-4 bg-red-500 text-white rounded-lg text-center"
+                                        className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white"
                                     >
                                         Logout
                                     </button>
-                                </>
-                            ) : (
-                                <Link
-                                    to="/login"
-                                    className="block py-3 px-4 bg-teal-600 text-white rounded-lg text-center"
-                                    onClick={() => setMenuOpen(false)}
-                                >
-                                    Login
-                                </Link>
-                            )}
-                        </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link
+                                to="/login"
+                                onClick={() => setMenuOpen(false)}
+                                className="btn-primary block rounded-2xl px-4 py-3 text-center text-sm"
+                            >
+                                Login
+                            </Link>
+                        )}
                     </div>
-                </div>
-            )}
-
-            {/* Profile Dropdown - Mobile */}
-            {showDropdown && (
-                <div className="fixed inset-0 z-30 md:hidden" onClick={() => setShowDropdown(false)}>
-                    <div className="absolute right-4 top-16 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
-                        {user ? (
-                            <>
-                                <Link to="/user" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</Link>
-                                <Link to="/user/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Orders</Link>
-                                <Link to="/user/appointments" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Appointments</Link>
-                                <Link to="/user/labtest" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">LabTest</Link>
-                            </>
-                        ) : doctor ? (
-                            <>
-                                <Link to="/doctor" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</Link>
-                                <Link to="/doctor/appointments" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Appointments</Link>
-                                <Link to="/doctor/blogs" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Blogs</Link>
-                            </>
-                        ) : null}
-                        <button
-                            onClick={handleLogout}
-                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 border-t border-gray-200"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            )}
-        </nav>
+                )}
+            </div>
+        </header>
     );
 };
 

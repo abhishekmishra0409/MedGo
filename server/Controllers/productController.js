@@ -43,12 +43,13 @@ class ProductController {
 
     static async getAllProducts(req, res) {
         try {
-            const { category, isHot, isNew } = req.query;
+            const { category, isHot, isNew, search } = req.query;
             const filter = {};
 
             if (category) filter.category = category;
-            if (isHot) filter.isHot = isHot === 'true';
-            if (isNew) filter.isNew = isNew === 'true';
+            if (typeof isHot !== "undefined") filter.isHot = isHot === 'true';
+            if (typeof isNew !== "undefined") filter.isNew = isNew === 'true';
+            if (search) filter.search = search;
 
             const products = await ProductService.getAllProducts(filter);
             res.status(200).json({

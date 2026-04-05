@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const clinicSchema = new mongoose.Schema({
     name: {
@@ -18,7 +19,7 @@ const clinicSchema = new mongoose.Schema({
             type: String,
             required: true,
             validate: {
-                validator: function(v) {
+                validator: function (v) {
                     return /^[0-9]{10,15}$/.test(v);
                 },
                 message: props => `${props.value} is not a valid phone number!`
@@ -31,10 +32,21 @@ const clinicSchema = new mongoose.Schema({
             match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email format']
         }
     },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     doctors: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Doctor'
+        ref: 'User'
     }],
+    accessCode: {
+        type: String,
+        unique: true,
+        uppercase: true,
+        select: false,
+        default: () => crypto.randomBytes(4).toString('hex').toUpperCase(),
+    },
     facilities: [String],
     operatingHours: {
         weekdays: {
@@ -62,6 +74,15 @@ const clinicSchema = new mongoose.Schema({
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
+});
+
+clinicSchema.index({ isActive: 1, name: 1, "address.city": 1, "address.state": 1 });
+clinicSchema.index({
+    name: "text",
+    facilities: "text",
+    "address.street": "text",
+    "address.city": "text",
+    "address.state": "text"
 });
 
 const Clinic = mongoose.model('Clinic', clinicSchema);

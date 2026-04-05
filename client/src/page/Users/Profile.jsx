@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUser, getUserData } from '../../features/User/UserSlice.js';
-import { toast } from 'react-toastify';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -42,9 +41,6 @@ const Profile = () => {
             .then(() => {
                 setIsEditing(false);
                 dispatch(getUserData()); // Refresh user data after update
-            })
-            .catch((error) => {
-                toast.error(error.message || 'Failed to update profile');
             });
     };
 

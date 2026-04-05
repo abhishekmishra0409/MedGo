@@ -14,7 +14,6 @@ const LabTestBookingForm = () => {
 
     // Get data from Redux store
     const { clinics, availableSlots, isLoading: clinicLoading } = useSelector((state) => state.clinic);
-    const { user } = useSelector((state) => state.auth);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -68,7 +67,7 @@ const LabTestBookingForm = () => {
             await dispatch(bookLabTest(bookingData)).unwrap();
             // toast.success('Lab test booked successfully!');
             navigate('/my-bookings');
-        } catch (error) {
+        } catch {
             // toast.error(error.message || 'Failed to book test');
         }
     };

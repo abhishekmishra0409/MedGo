@@ -1,66 +1,95 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL.js";
-import config from "../../utils/userConfig.js";
+import { buildApiUrl, getErrorMessage } from "../../utils/api.js";
 
-// Register function
 const register = async (userData) => {
     try {
-        const response = await axios.post(`${base_url}users/register`, userData);
+        const response = await axios.post(buildApiUrl("users/register"), userData);
         return response.data;
     } catch (error) {
-        console.log(error.response.data.error)
-        throw error.response.data.error || error.message;
+        throw getErrorMessage(error, "Registration failed");
     }
 };
 
-// Login function
+const uploadDoctorProfileImage = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+        const response = await axios.post(buildApiUrl("users/upload-profile-image"), formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to upload profile image");
+    }
+};
+
 const login = async (loginData) => {
     try {
-        const response = await axios.post(`${base_url}users/login`, loginData);
-        if (response.data.token) {
-            localStorage.setItem('userToken', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data));
-        }
+        const response = await axios.post(buildApiUrl("users/login"), loginData);
         return response.data;
     } catch (error) {
-        throw error.response?.data || error.message;
+        throw getErrorMessage(error, "Invalid credentials");
     }
 };
 
-// Update user profile or address
-const updateUser = async (userData) => {
+const requestPasswordReset = async (email) => {
     try {
-        const response = await axios.put(`${base_url}users/profile`, userData, config);
+        const response = await axios.post(buildApiUrl("users/forgot-password"), { email });
         return response.data;
     } catch (error) {
-        throw error.response?.data || error.message;
+        throw getErrorMessage(error, "Failed to start password reset");
     }
 };
 
-// Get Orders function
-const getUserdata = async () => {
+const resetPassword = async ({ token, password, confirmPassword }) => {
     try {
-        const response = await axios.get(`${base_url}users/me`, config);
+        const response = await axios.post(buildApiUrl(`users/reset-password/${token}`), {
+            password,
+            confirmPassword,
+        });
         return response.data;
     } catch (error) {
-        throw error.response?.data || error.message;
+        throw getErrorMessage(error, "Failed to reset password");
     }
 };
 
-// Logout function
+const updateUser = async (userData, config) => {
+    try {
+        const response = await axios.put(buildApiUrl("users/profile"), userData, config);
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to update profile");
+    }
+};
+
+const getUserdata = async (config) => {
+    try {
+        const response = await axios.get(buildApiUrl("users/me"), config);
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to fetch user data");
+    }
+};
+
 const logout = async () => {
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('cartItems');
-    localStorage.removeItem('cartCoupon');
-
-
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userSession");
+    localStorage.removeItem("cartItems");
+    localStorage.removeItem("cartCoupon");
 };
 
 export const authService = {
     register,
+    uploadDoctorProfileImage,
     login,
+    requestPasswordReset,
+    resetPassword,
     logout,
     updateUser,
-    getUserdata
+    getUserdata,
 };

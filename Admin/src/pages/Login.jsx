@@ -14,7 +14,7 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { isLoading, isError, isSuccess, message } = useSelector(
+    const { isLoading, isError, message } = useSelector(
         (state) => state.auth
     );
 
@@ -41,15 +41,16 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef5fb_100%)] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Admin Dashboard Login
+                <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">Admin access</p>
+                <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
+                    MedGo operations console
                 </h2>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <div className="rounded-[32px] border border-slate-200 bg-white py-8 px-4 shadow-sm sm:px-10">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {isError && (
                             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">

@@ -6,19 +6,13 @@ import { toast } from 'react-toastify';
 
 const LabBookings = () => {
     const dispatch = useDispatch();
-    const { myBookings, isLoading, isError, message } = useSelector((state) => state.labTest);
+    const { myBookings, isLoading } = useSelector((state) => state.labTest);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [expandedBooking, setExpandedBooking] = useState(null);
 
     useEffect(() => {
         dispatch(fetchMyBookings());
     }, [dispatch]);
-
-    useEffect(() => {
-        if (isError) {
-            toast.error(message);
-        }
-    }, [isError, message]);
 
     const formatDate = (dateString) => {
         return format(new Date(dateString), 'MMMM dd, yyyy');
@@ -153,7 +147,7 @@ const LabBookings = () => {
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     {getStatusBadge(booking.status)}
-                                    {/*{getPaymentBadge(booking.paymentStatus)}*/}
+                                    {booking.paymentStatus ? getPaymentBadge(booking.paymentStatus) : null}
                                     <svg
                                         className={`h-5 w-5 text-gray-400 transform transition-transform ${expandedBooking === booking._id ? 'rotate-180' : ''}`}
                                         xmlns="http://www.w3.org/2000/svg"
@@ -165,8 +159,20 @@ const LabBookings = () => {
                                 </div>
                             </div>
 
-                            {expandedBooking === booking._id && (
+                                    {expandedBooking === booking._id && (
                                 <div className="border-t border-gray-200 p-4 bg-gray-50">
+                                    <div className="mb-4 grid gap-3 md:grid-cols-4">
+                                        {["booked", "sample-collected", "processing", "completed"].map((step) => {
+                                            const order = ["booked", "sample-collected", "processing", "completed"];
+                                            const active = order.indexOf(booking.status) >= order.indexOf(step);
+                                            return (
+                                                <div key={step} className={`rounded-2xl border p-3 text-xs capitalize ${active ? "border-teal-200 bg-teal-50 text-teal-800" : "border-slate-200 bg-white text-slate-500"}`}>
+                                                    <p className="font-semibold">{step.replace("-", " ")}</p>
+                                                    <p className="mt-1">{active ? "Reached" : "Pending"}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div>
                                             <h4 className="text-sm font-medium text-gray-500 mb-2">Test Details</h4>

@@ -23,12 +23,7 @@ const ConversationPage = ({ userType }) => {
         conversations,
         messages,
         isLoading,
-        isSuccess,
-        isError,
-        message: errorMessage,
     } = useSelector((state) => state.messages);
-
-    // console.log(messages)
 
     const { myAppointments, doctorAppointments } = useSelector((state) => state.appointment);
 
@@ -61,13 +56,6 @@ const ConversationPage = ({ userType }) => {
             dispatch(resetMessageState());
         };
     }, [dispatch, userType]);
-
-    // Handle errors
-    useEffect(() => {
-        if (isError) {
-            toast.error(errorMessage);
-        }
-    }, [isError, errorMessage]);
 
     // Handle conversation click
     const handleConversationClick = (conversationId) => {
@@ -150,7 +138,6 @@ const ConversationPage = ({ userType }) => {
                     setShowNewConversationModal(false);
                     setSelectedAppointment(null);
                     setInitialMessage('');
-                    toast.success('Conversation started successfully');
 
                     // Load messages for the new conversation
                     userType === 'user'
@@ -158,8 +145,8 @@ const ConversationPage = ({ userType }) => {
                         : dispatch(getDoctorMessages(newConversation._id));
                 }
             }
-        } catch (error) {
-            toast.error('Failed to start conversation');
+        } catch {
+            return;
         }
     };
 
@@ -181,6 +168,11 @@ const ConversationPage = ({ userType }) => {
     // Get appointments for new conversation
     const getAvailableAppointments = () => {
         return userType === 'user' ? myAppointments : doctorAppointments;
+    };
+
+    const isOwnMessage = (message) => {
+        const role = message.sender?.role || message.senderRole || message.senderModel?.toLowerCase();
+        return role === userType;
     };
 
     return (
@@ -283,12 +275,12 @@ const ConversationPage = ({ userType }) => {
                                             <div
                                                 key={msg._id}
                                                 className={`mb-4 flex ${
-                                                    msg.senderModel?.toLowerCase() === userType ? 'justify-end' : 'justify-start'
+                                                    isOwnMessage(msg) ? 'justify-end' : 'justify-start'
                                                 }`}
                                             >
                                                 <div
                                                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                                        msg.senderModel?.toLowerCase() === userType
+                                                        isOwnMessage(msg)
                                                             ? 'bg-blue-500 text-white'
                                                             : 'bg-white border border-gray-300'
                                                     }`}
@@ -296,7 +288,7 @@ const ConversationPage = ({ userType }) => {
                                                     <p>{msg.content}</p>
                                                     <p
                                                         className={`text-xs mt-1 ${
-                                                            msg.senderModel?.toLowerCase() === userType ? 'text-blue-100' : 'text-gray-500'
+                                                            isOwnMessage(msg) ? 'text-blue-100' : 'text-gray-500'
                                                         }`}
                                                     >
                                                         {formatDate(msg.createdAt)}

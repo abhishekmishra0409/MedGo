@@ -7,7 +7,6 @@ import {
     resetOrderAdminState
 } from '../../features/Orders/OrderSlice.js';
 import {
-    Search,
     ChevronDown,
     Check,
     X,
@@ -15,8 +14,7 @@ import {
     Truck,
     Box,
     ArrowUp,
-    ArrowDown,
-    Eye
+    ArrowDown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -28,10 +26,7 @@ const OrdersPage = () => {
         totalOrders,
         pages,
         currentPage,
-        isLoading,
-        isError,
-        isSuccess,
-        message
+        isLoading
     } = useSelector((state) => state.order);
 
     // State for pagination, filtering and sorting
@@ -67,7 +62,6 @@ const OrdersPage = () => {
 
     // Handle status update
     const handleStatusUpdate = async (orderId, newStatus) => {
-        console.log(orderId)
         try {
             await dispatch(updateOrderStatus({
                 orderId: orderId,
@@ -158,7 +152,6 @@ const OrdersPage = () => {
 
     // Get current orders to display
     const displayOrders = statusFilter === 'all' ? orders : statusOrders;
-    const displayTotal = statusFilter === 'all' ? totalOrders : statusOrders.length;
 
     return (
         <div className="p-6">

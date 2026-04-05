@@ -156,7 +156,31 @@ class ProductService {
 
     static async getAllProducts(filter = {}) {
         try {
-            return await Product.find(filter);
+            const query = {};
+            const search = filter.search?.trim();
+
+            if (filter.category) {
+                query.category = filter.category;
+            }
+
+            if (typeof filter.isHot === "boolean") {
+                query.isHot = filter.isHot;
+            }
+
+            if (typeof filter.isNew === "boolean") {
+                query.isNew = filter.isNew;
+            }
+
+            if (search) {
+                query.$text = { $search: search };
+            }
+
+            return await Product.find(query)
+                .sort(
+                    search
+                        ? { score: { $meta: 'textScore' }, isHot: -1, rating: -1, createdAt: -1 }
+                        : { isHot: -1, isNew: -1, rating: -1, createdAt: -1 }
+                );
         } catch (error) {
             throw new Error(`Failed to fetch products: ${error.message}`);
         }

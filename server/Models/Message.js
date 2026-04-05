@@ -14,7 +14,13 @@ const messageSchema = new mongoose.Schema({
     senderModel: {
         type: String,
         required: true,
-        enum: ['Doctor', 'User']
+        enum: ['User'],
+        default: 'User'
+    },
+    senderRole: {
+        type: String,
+        enum: ['doctor', 'user', 'admin'],
+        default: 'user'
     },
     recipient: {
         type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +30,13 @@ const messageSchema = new mongoose.Schema({
     recipientModel: {
         type: String,
         required: true,
-        enum: ['Doctor', 'User']
+        enum: ['User'],
+        default: 'User'
+    },
+    recipientRole: {
+        type: String,
+        enum: ['doctor', 'user', 'admin'],
+        default: 'user'
     },
     content: {
         type: String,

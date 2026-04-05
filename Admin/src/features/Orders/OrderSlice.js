@@ -90,7 +90,7 @@ const orderAdminSlice = createSlice({
             .addCase(updateOrderStatus.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(updateOrderStatus.fulfilled, (state, action) => {
+            .addCase(updateOrderStatus.fulfilled, (state) => {
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.message = "Order status updated successfully";

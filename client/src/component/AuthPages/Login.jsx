@@ -1,85 +1,149 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { LoaderCircle } from "lucide-react";
 import { loginUser } from "../../features/User/UserSlice.js";
 import { loginDoctor } from "../../features/Doctor/DoctorSlice.js";
+import AuthShell from "./AuthShell.jsx";
+import { normalizeAuthRole } from "./authConfig.js";
+
+const getRedirectTarget = ({ role, location, searchParams }) => {
+    const redirect = searchParams.get("redirect");
+
+    if (redirect === "checkout") {
+        return "/checkout";
+    }
+
+    if (redirect?.startsWith("/")) {
+        return redirect;
+    }
+
+    const fromPath = location.state?.from?.pathname;
+    const fromSearch = location.state?.from?.search || "";
+
+    if (fromPath && fromPath !== "/login") {
+        return `${fromPath}${fromSearch}`;
+    }
+
+    return role === "doctor" ? "/doctor" : "/user";
+};
 
 const Login = () => {
-    const [formData, setFormData] = useState({ email: "", password: "", role: "user" });
-    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const role = normalizeAuthRole(searchParams.get("role"));
+    const [formData, setFormData] = useState({ email: "", password: "" });
 
-    // Get login status from Redux store
-    const { user, doctor } = useSelector((state) => ({
-        user: state.auth.user,
-        doctor: state.doctor.doctor,
-    }));
+    const userState = useSelector((state) => state.auth);
+    const doctorState = useSelector((state) => state.doctor);
 
-    useEffect(() => {
-        if (user || doctor) {
-            navigate("/");
-        }
-    }, [user, doctor, navigate]);
+    const isLoading = role === "doctor" ? doctorState.isLoading : userState.isLoading;
+    const errorMessage = role === "doctor" ? doctorState.message : userState.message;
+    const showError = role === "doctor" ? doctorState.isError : userState.isError;
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const helperCopy = useMemo(
+        () =>
+            role === "doctor"
+                ? "Use your doctor workspace credentials to access appointments, messages, and lab bookings."
+                : "Use your patient account to continue with bookings, orders, and your care timeline.",
+        [role]
+    );
+
+    const handleRoleChange = (nextRole) => {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set("role", normalizeAuthRole(nextRole));
+        setSearchParams(nextParams, { replace: true });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (formData.role === "user") {
-            dispatch(loginUser({ email: formData.email, password: formData.password }));
-        } else {
-            dispatch(loginDoctor({ email: formData.email, password: formData.password }));
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((current) => ({ ...current, [name]: value }));
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const action =
+            role === "doctor"
+                ? loginDoctor({ email: formData.email, password: formData.password })
+                : loginUser({ email: formData.email, password: formData.password });
+
+        try {
+            await dispatch(action).unwrap();
+            navigate(getRedirectTarget({ role, location, searchParams }), { replace: true });
+        } catch {
+            // Toast and error state are handled in the slices.
         }
     };
 
     return (
-        <div className="flex items-center justify-center h-screen bg-gradient-to-b from-teal-300 to-white">
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg w-80 bg-gradient-to-b from-[#24AEB1] to-[#0F4A4B] text-white">
-                <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+        <AuthShell
+            role={role}
+            mode="login"
+            onRoleChange={handleRoleChange}
+            title={`Welcome back, ${role === "doctor" ? "doctor" : "patient"}`}
+            description={helperCopy}
+            footer={
+                <div className="flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        Need a new account?{" "}
+                        <Link to={`/signup?role=${role}`} className="auth-link font-semibold">
+                            Create one here
+                        </Link>
+                    </p>
+                    <p>
+                        Trouble signing in?{" "}
+                        <Link to={`/forgot-password?role=${role}`} className="auth-link font-semibold">
+                            Reset your password
+                        </Link>
+                    </p>
+                </div>
+            }
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <label className="auth-field">
+                    <span>Email address</span>
+                    <input
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        placeholder={role === "doctor" ? "doctor@medgo.com" : "patient@example.com"}
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="auth-input"
+                        required
+                    />
+                </label>
 
-                <label htmlFor="role">Select Role</label>
-                <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded mb-3 bg-gray-200 text-black border-gray-400"
-                >
-                    <option value="user">User</option>
-                    <option value="doctor">Doctor</option>
-                </select>
+                <label className="auth-field">
+                    <div className="flex items-center justify-between gap-3">
+                        <span>Password</span>
+                        <Link to={`/forgot-password?role=${role}`} className="auth-link text-xs font-semibold">
+                            Forgot password?
+                        </Link>
+                    </div>
+                    <input
+                        type="password"
+                        name="password"
+                        autoComplete={role === "doctor" ? "current-password" : "current-password"}
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="auth-input"
+                        required
+                    />
+                </label>
 
-                <label htmlFor="email">Email</label>
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded mb-3 bg-gray-200 text-black border-gray-400"
-                    required
-                />
+                {showError && errorMessage ? <div className="auth-alert auth-alert--error">{errorMessage}</div> : null}
 
-                <label htmlFor="password">Password</label>
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded mb-3 bg-gray-200 text-black border-gray-400"
-                    required
-                />
-
-                <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 bg-gradient-to-r from-teal-400 to-teal-600 cursor-pointer hover:scale-105 transition-all ease-in-out">
-                    Submit
+                <button type="submit" className="btn-primary auth-submit" disabled={isLoading}>
+                    {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                    {isLoading ? "Signing you in..." : "Continue"}
                 </button>
-
-                <p className="text-sm">Does not have an account? <span onClick={() => navigate("/signup")} className="cursor-pointer underline">Signup</span></p>
             </form>
-        </div>
+        </AuthShell>
     );
 };
 

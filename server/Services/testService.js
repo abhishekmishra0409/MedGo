@@ -1,8 +1,21 @@
 const Test = require('../Models/TestModel');
 
 class TestService {
-    static async getAllTests() {
-        return await Test.find({ isActive: true }).select('-__v');
+    static async getAllTests(filters = {}) {
+        const query = { isActive: true };
+        const search = filters.search?.trim();
+
+        if (filters.category) {
+            query.category = filters.category;
+        }
+
+        if (search) {
+            query.$text = { $search: search };
+        }
+
+        return await Test.find(query)
+            .select('-__v')
+            .sort(search ? { score: { $meta: 'textScore' }, createdAt: -1 } : { createdAt: -1 });
     }
 
     static async createTest(testData) {

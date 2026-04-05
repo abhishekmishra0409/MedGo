@@ -186,6 +186,21 @@ const ClinicPage = () => {
                                                 <p className="text-sm text-gray-500 mt-1">
                                                     {clinic.address.street}, {clinic.address.city}
                                                 </p>
+                                                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                                                    {clinic.owner?.name ? (
+                                                        <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 font-medium text-indigo-700">
+                                                            Owner: {clinic.owner.name}
+                                                        </span>
+                                                    ) : null}
+                                                    {clinic.accessCode ? (
+                                                        <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 font-medium text-teal-700">
+                                                            Access code: {clinic.accessCode}
+                                                        </span>
+                                                    ) : null}
+                                                    <span className={`inline-flex items-center rounded-full px-3 py-1 font-medium ${clinic.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                                        {clinic.isActive ? 'Active' : 'Pending activation'}
+                                                    </span>
+                                                </div>
 
                                                 <div className="mt-2 flex items-center text-sm text-gray-500">
                                                     <Phone className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
@@ -304,6 +319,7 @@ const ClinicPage = () => {
                                                                     >
                                                                         <option value="">Select a doctor</option>
                                                                         {allDoctors
+                                                                            .filter(doctor => doctor.approvalStatus === 'approved')
                                                                             .filter(doctor => !clinic.doctors?.some(d => d._id === doctor._id))
                                                                             .map(doctor => (
                                                                                 <option key={doctor._id} value={doctor._id}>

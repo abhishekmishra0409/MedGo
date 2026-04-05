@@ -17,7 +17,7 @@ const blogSchema = new mongoose.Schema(
         },
         author: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Doctor',
+            ref: 'User',
             required: true,
         },
         date: {

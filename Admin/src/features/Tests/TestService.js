@@ -11,25 +11,23 @@ const getAllTests = async () => {
 // Create a new test (admin only)
 const createTest = async (testData) => {
     try{
-    const response = await axios.post(`${base_url}tests`, testData, config);
+    const response = await axios.post(`${base_url}tests`, testData, config());
     return response.data;
     }
     catch (error) {
-        console.log(error)
         throw error.response?.data?.error
     }
 };
 
 // Update a test by ID (admin only)
 const updateTest = async ({ id, testData }) => {
-    const response = await axios.put(`${base_url}tests/${id}`, testData, config);
-    console.log(response.data)
+    const response = await axios.put(`${base_url}tests/${id}`, testData, config());
     return response.data;
 };
 
 // Deactivate a test by ID (admin only)
 const deactivateTest = async (id) => {
-    const response = await axios.delete(`${base_url}tests/${id}`, config);
+    const response = await axios.delete(`${base_url}tests/${id}`, config());
     return response.data;
 };
 

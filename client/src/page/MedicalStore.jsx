@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ProductCard from '../component/Common/PoductCard.jsx';
 import { Link } from "react-router-dom";
 import { fetchAllProducts } from "../features/Product/ProductSlice.js";
@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 function MedicalStore() {
     const dispatch = useDispatch();
-    const { products, isLoading } = useSelector((state) => state.products);
+    const { products } = useSelector((state) => state.products);
 
     useEffect(() => {
         dispatch(fetchAllProducts());
@@ -17,7 +17,7 @@ function MedicalStore() {
         return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     });
 
-    const calculateTimeLeft = () => {
+    const calculateTimeLeft = useCallback(() => {
         const now = new Date();
         const difference = targetDate - now;
         let timeLeft = {};
@@ -31,7 +31,7 @@ function MedicalStore() {
             };
         }
         return timeLeft;
-    };
+    }, [targetDate]);
 
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
@@ -40,7 +40,7 @@ function MedicalStore() {
             setTimeLeft(calculateTimeLeft());
         }, 1000);
         return () => clearInterval(timer);
-    }, [targetDate]);
+    }, [calculateTimeLeft]);
 
     const timerComponents = {
         days: timeLeft.days || 0,
@@ -205,4 +205,4 @@ function MedicalStore() {
     );
 }
 
-export default MedicalStore;
+export default MedicalStore;

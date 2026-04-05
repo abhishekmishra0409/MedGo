@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addCartItem } from "../../features/Cart/CartSlice.js";
 
 const ProductCard = ({
@@ -13,10 +13,9 @@ const ProductCard = ({
                          rating,
                          reviews,
                          category
-                     }) => {
+    }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { cartItems } = useSelector((state) => state.cart);
     const hasDiscount = originalPrice && originalPrice > price;
 
     const handleProductClick = () => {

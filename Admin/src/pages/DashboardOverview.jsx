@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
-    // Sample data - in a real app, this would come from an API
     const stats = [
         { title: "Total Users", value: "1,234", icon: Users, change: "+12%", trend: "up" },
         { title: "Total Orders", value: "567", icon: ShoppingCart, change: "+5%", trend: "up" },
@@ -29,16 +28,23 @@ const Dashboard = () => {
 
     return (
         <>
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">Operations overview</p>
+                        <h1 className="mt-2 text-3xl font-semibold text-slate-950">Track growth, throughput, and service readiness.</h1>
+                    </div>
+                    <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        Snapshot values are placeholders now and can be replaced with live metrics from the API layer next.
+                    </div>
+                </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mb-6">
                     {stats.map((stat, index) => (
-                        <div key={index} className="bg-white p-4 rounded-lg shadow">
+                        <div key={index} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                                    <p className="text-2xl font-semibold mt-1">{stat.value}</p>
+                                    <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+                                    <p className="mt-2 text-3xl font-semibold text-slate-950">{stat.value}</p>
                                 </div>
                                 <div className={`p-3 rounded-full ${stat.trend === 'up' ? 'bg-green-100 text-green-600' : stat.trend === 'down' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
                                     <stat.icon className="w-5 h-5" />
@@ -51,10 +57,8 @@ const Dashboard = () => {
                     ))}
                 </div>
 
-                {/* Charts and Recent Activity */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    {/* Sales Chart */}
-                    <div className="bg-white p-4 rounded-lg shadow lg:col-span-2">
+                    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold">Sales Overview</h2>
                             <div className="flex items-center space-x-2">
@@ -62,13 +66,12 @@ const Dashboard = () => {
                                 <Activity className="w-4 h-4 text-gray-400" />
                             </div>
                         </div>
-                        <div className="h-64 bg-gray-50 rounded flex items-center justify-center text-gray-400">
+                        <div className="h-64 rounded-[24px] bg-[linear-gradient(180deg,#f8fbff_0%,#eef8f6_100%)] flex items-center justify-center text-gray-400">
                             [Sales Chart Placeholder]
                         </div>
                     </div>
 
-                    {/* Recent Orders */}
-                    <div className="bg-white p-4 rounded-lg shadow">
+                    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
                         <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
                         <div className="space-y-4">
                             {recentOrders.map((order, index) => (
@@ -93,8 +96,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Recent Activities */}
-                <div className="bg-white p-4 rounded-lg shadow">
+                <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
                     <h2 className="text-lg font-semibold mb-4">Recent Activities</h2>
                     <div className="space-y-3">
                         {[

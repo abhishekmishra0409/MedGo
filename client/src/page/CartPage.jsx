@@ -20,12 +20,16 @@ const CartPage = () => {
     const [couponMessage, setCouponMessage] = useState("");
     const [localCartItems, setLocalCartItems] = useState([]);
 
-    // Initialize from local storage or Redux
+    // Fetch the latest cart data on mount
+    useEffect(() => {
+        dispatch(fetchCart());
+    }, [dispatch]);
+
+    // Initialize and sync local cart state from local storage or Redux
     useEffect(() => {
         const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
         setLocalCartItems(savedCart.length ? savedCart : reduxCartItems);
-        dispatch(fetchCart());
-    }, [dispatch]);
+    }, [reduxCartItems]);
 
     // Sync Redux to local storage
     useEffect(() => {

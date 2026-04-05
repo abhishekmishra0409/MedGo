@@ -41,7 +41,6 @@ const DoctorModal = ({
         reviews: 0
     });
 
-    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
     useEffect(() => {
@@ -96,16 +95,18 @@ const DoctorModal = ({
                 reviews: 0
             });
         }
-        setImageFile(null);
     }, [doctor]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
+                setFormData(prev => ({
+                    ...prev,
+                    image: reader.result
+                }));
             };
             reader.readAsDataURL(file);
         }
@@ -190,8 +191,7 @@ const DoctorModal = ({
 
         onSubmit({
             id: doctor?._id,
-            updatedData,
-            imageFile
+            updatedData
         });
     };
 
@@ -237,7 +237,7 @@ const DoctorModal = ({
                                     <label className="flex flex-col items-center px-4 py-2 bg-white rounded-md border border-gray-300 shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
                                         <div className="flex items-center">
                                             <Upload className="h-5 w-5 mr-2 text-gray-500" />
-                                            <span>{imageFile ? 'Change Image' : 'Upload Image'}</span>
+                                            <span>{imagePreview ? 'Change Image' : 'Upload Image'}</span>
                                         </div>
                                         <input
                                             type="file"

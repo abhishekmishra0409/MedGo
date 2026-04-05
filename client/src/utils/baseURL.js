@@ -1,1 +1,1 @@
-export const base_url = 'https://medgo-fa8d.onrender.com/api/';
+export { base_url, buildApiUrl } from "./api.js";

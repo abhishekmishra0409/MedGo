@@ -54,7 +54,7 @@ export const fetchClinicsByDoctor = createAsyncThunk(
             return await clinicService.getClinicByDoctor(doctorId);
         } catch (error) {
             return thunkAPI.rejectWithValue(
-                error.response?.data?.message || "Failed to fetch clinics for doctor"
+                error || "Failed to fetch clinics for doctor"
             );
         }
     }

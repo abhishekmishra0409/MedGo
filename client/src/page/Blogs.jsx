@@ -135,4 +135,4 @@ function BlogsPage() {
     );
 }
 
-export default BlogsPage;
+export default BlogsPage;

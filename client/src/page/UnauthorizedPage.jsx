@@ -1,16 +1,20 @@
 import { Link } from 'react-router-dom';
+import { ShieldAlert } from "lucide-react";
 
 const UnauthorizedPage = () => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                <h1 className="text-3xl font-bold text-red-600 mb-4">403 - Unauthorized Access</h1>
-                <p className="text-gray-700 mb-6">
-                    You don't have permission to access this page.
+        <div className="section-shell flex min-h-[70vh] items-center justify-center py-12">
+            <div className="hero-panel max-w-2xl text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+                    <ShieldAlert className="h-8 w-8" />
+                </div>
+                <h1 className="mt-6 text-4xl font-semibold text-slate-950">403 - Unauthorized access</h1>
+                <p className="mt-4 text-base leading-8 text-slate-600">
+                    This area is protected for a different account type. Use the correct login or return to the public experience.
                 </p>
                 <Link
                     to="/"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    className="btn-primary mt-6 px-5 py-3 text-sm"
                 >
                     Return to Home
                 </Link>

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { doctorService } from "./doctorService";
+import { doctorService } from "./DoctorService.js";
 
 const initialState = {
     doctors: [],
@@ -10,9 +10,9 @@ const initialState = {
 };
 
 // Get all doctors
-export const getAllDoctors = createAsyncThunk("doctor/getAll", async (_, thunkAPI) => {
+export const getAllDoctors = createAsyncThunk("doctor/getAll", async (params = {}, thunkAPI) => {
     try {
-        return await doctorService.getAllDoctors();
+        return await doctorService.getAllDoctors(params);
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message || "Failed to fetch doctors");
     }
@@ -33,6 +33,14 @@ export const updateDoctor = createAsyncThunk("doctor/update", async ({ id, updat
         return await doctorService.updateDoctor({ id, updatedData });
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message || "Failed to update doctor");
+    }
+});
+
+export const updateDoctorApproval = createAsyncThunk("doctor/updateApproval", async ({ id, approvalStatus, approvalNotes }, thunkAPI) => {
+    try {
+        return await doctorService.updateDoctorApproval({ id, approvalStatus, approvalNotes });
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error.message || "Failed to update doctor approval");
     }
 });
 
@@ -86,6 +94,15 @@ const doctorSlice = createSlice({
                 state.doctors = state.doctors.map(doc => doc._id === action.payload.data._id ? action.payload.data : doc);
             })
             .addCase(updateDoctor.rejected, (state, action) => {
+                state.isError = true;
+                state.message = action.payload;
+            })
+
+            .addCase(updateDoctorApproval.fulfilled, (state, action) => {
+                state.isSuccess = true;
+                state.doctors = state.doctors.map(doc => doc._id === action.payload.data._id ? action.payload.data : doc);
+            })
+            .addCase(updateDoctorApproval.rejected, (state, action) => {
                 state.isError = true;
                 state.message = action.payload;
             })

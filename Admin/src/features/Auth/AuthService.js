@@ -14,19 +14,19 @@ const login = async (loginData) => {
 
 // Get All Users (admin only)
 const getAllUsers = async () => {
-    const response = await axios.get(`${base_url}users`, config);
+    const response = await axios.get(`${base_url}users`, config());
     return response.data;
 };
 
 // Get User by ID (admin only)
 const getUser = async (id) => {
-    const response = await axios.get(`${base_url}users/${id}`, config);
+    const response = await axios.get(`${base_url}users/${id}`, config());
     return response.data;
 };
 
 // Delete user account
 const deleteAccount = async () => {
-    const response = await axios.delete(`${base_url}users/account`, config);
+    const response = await axios.delete(`${base_url}users/account`, config());
     return response.data;
 };
 

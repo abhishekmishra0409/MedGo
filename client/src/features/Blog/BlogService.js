@@ -1,40 +1,34 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL.js";
+import { buildApiUrl } from "../../utils/baseURL.js";
 import doctorConfig from "../../utils/doctorConfig.js";
 
-// Get all blogs (public)
 const getAllBlogs = async () => {
-    const response = await axios.get(`${base_url}blogs`);
+    const response = await axios.get(buildApiUrl("blogs"));
     return response.data;
 };
 
-// Get a single blog (public)
 const getBlogById = async (id) => {
-    const response = await axios.get(`${base_url}blogs/${id}`);
+    const response = await axios.get(buildApiUrl(`blogs/${id}`));
     return response.data;
 };
 
-// Get logged-in doctor's blogs (protected)
 const getMyBlogs = async () => {
-    const response = await axios.get(`${base_url}blogs/me/blogs`,doctorConfig);
+    const response = await axios.get(buildApiUrl("blogs/me/blogs"), doctorConfig());
     return response.data;
 };
 
-// Create a new blog (protected)
 const createBlog = async (blogData) => {
-    const response = await axios.post(`${base_url}blogs`, blogData, doctorConfig);
+    const response = await axios.post(buildApiUrl("blogs"), blogData, doctorConfig());
     return response.data;
 };
 
-// Update a blog (protected)
 const updateBlog = async (id, blogData) => {
-    const response = await axios.put(`${base_url}blogs/${id}`, blogData, doctorConfig);
+    const response = await axios.put(buildApiUrl(`blogs/${id}`), blogData, doctorConfig());
     return response.data;
 };
 
-// Delete a blog (protected)
 const deleteBlog = async (id) => {
-    const response = await axios.delete(`${base_url}blogs/${id}`, doctorConfig);
+    const response = await axios.delete(buildApiUrl(`blogs/${id}`), doctorConfig());
     return response.data;
 };
 

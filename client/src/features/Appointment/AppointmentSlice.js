@@ -100,7 +100,9 @@ const appointmentSlice = createSlice({
             .addCase(bookAppointment.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.myAppointments.push(action.payload);
+                if (action.payload?.data) {
+                    state.myAppointments.unshift(action.payload.data);
+                }
                 toast.success("Appointment booked successfully.");
             })
             .addCase(bookAppointment.rejected, (state, action) => {
@@ -144,7 +146,7 @@ const appointmentSlice = createSlice({
             .addCase(updateAppointmentStatus.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
+            .addCase(updateAppointmentStatus.fulfilled, (state) => {
                 state.isLoading = false;
                 state.isSuccess = true;
                 toast.success("Appointment status updated.");
@@ -159,7 +161,7 @@ const appointmentSlice = createSlice({
             .addCase(cancelAppointment.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(cancelAppointment.fulfilled, (state, action) => {
+            .addCase(cancelAppointment.fulfilled, (state) => {
                 state.isLoading = false;
                 state.isSuccess = true;
                 toast.success("Appointment canceled.");
@@ -174,7 +176,7 @@ const appointmentSlice = createSlice({
             .addCase(completeAppointment.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(completeAppointment.fulfilled, (state, action) => {
+            .addCase(completeAppointment.fulfilled, (state) => {
                 state.isLoading = false;
                 state.isSuccess = true;
                 toast.success("Appointment completed.");

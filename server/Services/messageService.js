@@ -1,18 +1,18 @@
 const Conversation = require('../Models/Conversation');
 const Message = require('../Models/Message');
-const Doctor = require('../Models/DoctorModel');
 const User = require('../Models/UserModel');
 const { getWSSInstance } = require('../config/websocket');
+const { buildDoctorAccount } = require('../Utils/doctorAccount');
 
 class MessageService {
     static async getOrCreateConversation(doctorId, patientId) {
         // Verify both users exist and have correct roles
         const [doctor, patient] = await Promise.all([
-            Doctor.findById(doctorId),
+            User.findOne({ _id: doctorId, role: 'doctor' }),
             User.findById(patientId)
         ]);
 
-        if (!doctor || !patient) {
+        if (!doctor || !patient || patient.role !== 'user') {
             throw new Error('Doctor or patient not found');
         }
 
@@ -34,33 +34,34 @@ class MessageService {
 
     static async sendMessage({ senderId, recipientId, content, attachments, appointmentId }) {
         // Determine sender and recipient types
-        const sender = await Doctor.findById(senderId) || await User.findById(senderId);
-        const recipient = await Doctor.findById(recipientId) || await User.findById(recipientId);
+        const sender = await User.findById(senderId);
+        const recipient = await User.findById(recipientId);
 
         if (!sender || !recipient) {
             throw new Error('Participants not found');
         }
 
         // Ensure conversation is between doctor and patient
-        if ((sender instanceof Doctor && recipient instanceof Doctor) ||
-            (sender instanceof User && recipient instanceof User)) {
+        if (sender.role === recipient.role) {
             throw new Error('Messages only allowed between doctors and patients');
         }
 
-        const doctorId = sender instanceof Doctor ? senderId : recipientId;
-        const patientId = sender instanceof User ? senderId : recipientId;
+        const doctorId = sender.role === 'doctor' ? senderId : recipientId;
+        const patientId = sender.role === 'user' ? senderId : recipientId;
 
         const conversation = await this.getOrCreateConversation(doctorId, patientId);
 
         const message = new Message({
             conversation: conversation._id,
             sender: senderId,
-            senderModel: sender instanceof Doctor ? 'Doctor' : 'User',
+            senderModel: 'User',
             recipient: recipientId,
-            recipientModel: recipient instanceof Doctor ? 'Doctor' : 'User',
+            recipientModel: 'User',
             content,
             attachments,
-            metadata: { appointment: appointmentId }
+            metadata: { appointment: appointmentId },
+            senderRole: sender.role,
+            recipientRole: recipient.role,
         });
 
         // Update conversation
@@ -92,7 +93,8 @@ class MessageService {
             .sort({ createdAt: 1 })
             .skip((page - 1) * limit)
             .limit(limit)
-            .populate('sender recipient');
+            .populate('sender', 'username name email role')
+            .populate('recipient', 'username name email role');
     }
 
     static async getUserConversations(userId, userType) {
@@ -100,18 +102,23 @@ class MessageService {
             ? { doctor: userId }
             : { patient: userId };
 
-        return await Conversation.find(query)
+        const conversations = await Conversation.find(query)
             .populate({
                 path: 'doctor',
-                select: '_id name speciality'
+                select: '_id name username email phone avatar role doctorProfile'
             })
             .populate({
                 path: 'patient',
-                select: '_id username email'
+                select: '_id username name email role'
             })
             .populate('lastMessage')
             .sort({ updatedAt: -1 });
 
+        return conversations.map((conversation) => {
+            const item = conversation.toObject();
+            item.doctor = item.doctor ? buildDoctorAccount(item.doctor) : null;
+            return item;
+        });
     }
 
     static async markAsRead(userId, conversationId) {

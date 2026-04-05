@@ -124,7 +124,7 @@ const DoctorsAppointments = () => {
                 setEditingAppointment(null);
                 dispatch(getDoctorAppointments());
             })
-            .catch((error) => {
+            .catch(() => {
                 // toast.error(error.message || "Failed to update appointment");
             });
     };

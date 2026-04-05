@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Doctor = require('../Models/DoctorModel');
+const User = require('../Models/UserModel');
 const config = require('../config/config');
 
 module.exports = async (req, res, next) => {
@@ -15,8 +15,8 @@ module.exports = async (req, res, next) => {
         const decoded = jwt.verify(token, config.JWT_SECRET);
 
         // 3. Check if doctor still exists
-        const currentDoctor = await Doctor.findById(decoded.id).select('-password');
-        if (!currentDoctor) {
+        const currentDoctor = await User.findById(decoded.id).select('-password');
+        if (!currentDoctor || currentDoctor.role !== 'doctor') {
             return res.status(401).json({ error: 'Doctor not found' });
         }
 

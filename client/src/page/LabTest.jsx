@@ -182,4 +182,4 @@ const HealthConditionSection = () => {
     );
 };
 
-export default LabTest;
+export default LabTest;

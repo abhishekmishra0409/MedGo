@@ -1,36 +1,36 @@
-import { useState, useEffect } from "react";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { Search, X } from "lucide-react";
 
 const SearchFilter = ({
-                          onSearch,
-                          onFilter,
-                          options,
-                          onClear,
-                          placeholder = "Search by name or keyword",
-                          filterLabel = "Filter by",
-                          optionType = "speciality" // default to 'speciality' for backward compatibility
-                      }) => {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedOption, setSelectedOption] = useState("");
+    onSearch,
+    onFilter,
+    options,
+    onClear,
+    initialSearch = "",
+    initialFilter = "",
+    placeholder = "Search by name or keyword",
+    filterLabel = "Filter by",
+    optionType = "category",
+}) => {
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
+    const [selectedOption, setSelectedOption] = useState(initialFilter);
 
-    // Handle search when Enter key is pressed
     useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === 'Enter') {
-                handleSearch();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [searchTerm]);
+        setSearchTerm(initialSearch);
+    }, [initialSearch]);
+
+    useEffect(() => {
+        setSelectedOption(initialFilter);
+    }, [initialFilter]);
 
     const handleSearch = () => {
-        onSearch(searchTerm);
+        onSearch(searchTerm.trim());
     };
 
-    const handleFilter = (e) => {
-        setSelectedOption(e.target.value);
-        onFilter(e.target.value);
+    const handleFilterChange = (event) => {
+        const value = event.target.value;
+        setSelectedOption(value);
+        onFilter(value);
     };
 
     const handleClearAll = () => {
@@ -40,52 +40,59 @@ const SearchFilter = ({
     };
 
     return (
-        <div className="bg-white shadow-md p-4 rounded-md w-full max-w-sm sticky top-4">
-            <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-blue-900">FILTERS</h3>
-                <button
-                    onClick={handleClearAll}
-                    className="text-teal-500 text-sm hover:underline flex items-center gap-1"
-                >
-                    <FaTimes size={12} /> Clear all
+        <aside className="sticky top-28 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="eyebrow">Filters</p>
+                    <h3 className="mt-2 text-xl font-semibold text-slate-950">Narrow the result set</h3>
+                </div>
+                <button onClick={handleClearAll} className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-rose-600">
+                    <X className="h-4 w-4" />
+                    Clear
                 </button>
             </div>
 
-            {/* Search Box */}
-            <div className="relative mb-4">
-                <input
-                    type="text"
-                    placeholder={placeholder}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md p-2 pl-4 pr-10 focus:ring-2 focus:ring-teal-300 focus:border-teal-300"
-                />
-                <button
-                    onClick={handleSearch}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-teal-300 to-teal-500 p-2 rounded-md text-white hover:from-teal-400 hover:to-teal-600 transition-colors"
-                    aria-label="Search"
-                >
-                    <FaSearch />
+            <div className="mt-6 space-y-5">
+                <label className="block text-sm font-medium text-slate-700">
+                    Search
+                    <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                        <Search className="h-4 w-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder={placeholder}
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                    handleSearch();
+                                }
+                            }}
+                            className="w-full border-0 bg-transparent text-sm text-slate-700 outline-none"
+                        />
+                    </div>
+                </label>
+
+                <label className="block text-sm font-medium text-slate-700">
+                    {filterLabel}
+                    <select
+                        value={selectedOption}
+                        onChange={handleFilterChange}
+                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-teal-500"
+                    >
+                        <option value="">All {optionType}s</option>
+                        {options.map((option) => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <button onClick={handleSearch} className="w-full rounded-2xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-700">
+                    Apply search
                 </button>
             </div>
-
-            {/* Filter Dropdown */}
-            <div>
-                <label className="text-blue-900 font-semibold">{filterLabel}</label>
-                <select
-                    value={selectedOption}
-                    onChange={handleFilter}
-                    className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-teal-300 focus:border-teal-300"
-                >
-                    <option value="">All {optionType}s</option>
-                    {options.map((option, index) => (
-                        <option key={index} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        </div>
+        </aside>
     );
 };
 

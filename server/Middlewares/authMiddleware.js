@@ -17,7 +17,7 @@ module.exports = async (req, res, next) => {
         // 3. Check if user still exists
         const currentUser = await User.findById(decoded.id);
         if (!currentUser) {
-            return res.status(401).json({ error: 'Doctor not found' });
+            return res.status(401).json({ error: 'User not found' });
         }
 
         // 4. Attach user to request

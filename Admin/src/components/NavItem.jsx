@@ -10,10 +10,8 @@ const NavItem = ({ item }) => {
             <div className="flex flex-col">
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className={`flex items-center justify-between w-full p-3 rounded-lg transition-colors duration-200 ${
-                        location.pathname.includes(item.path)
-                            ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                            : "hover:bg-gray-100"
+                    className={`flex items-center justify-between w-full rounded-2xl p-3 transition-colors duration-200 ${
+                        isExpanded ? "bg-teal-50 text-teal-700" : "hover:bg-slate-50"
                     }`}
                 >
           <span className="flex items-center gap-2">
@@ -41,10 +39,10 @@ const NavItem = ({ item }) => {
         <NavLink
             to={item.path}
             className={({ isActive }) =>
-                `flex items-center gap-2 p-3 rounded-lg transition-colors duration-200 ${
+                `flex items-center gap-2 rounded-2xl p-3 transition-colors duration-200 ${
                     isActive
-                        ? "bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium"
-                        : "hover:bg-gray-100"
+                        ? "bg-teal-50 text-teal-700 hover:bg-teal-100 font-medium"
+                        : "hover:bg-slate-50"
                 }`
             }
         >

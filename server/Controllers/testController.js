@@ -2,7 +2,10 @@ const TestService = require('../Services/testService');
 
 exports.getAllTests = async (req, res) => {
     try {
-        const tests = await TestService.getAllTests();
+        const tests = await TestService.getAllTests({
+            search: req.query.search,
+            category: req.query.category
+        });
         res.json({ success: true, data: tests });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

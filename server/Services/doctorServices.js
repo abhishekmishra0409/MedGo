@@ -1,249 +1,221 @@
-const Doctor = require('../Models/DoctorModel');
-const cloudinary = require("cloudinary").v2;
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
 const mongoose = require('mongoose');
+const User = require('../Models/UserModel');
+const Clinic = require('../Models/ClinicModel');
+const { buildDoctorAccount, buildDoctorSearchQuery } = require('../Utils/doctorAccount');
 
-// Image Upload Function
-async function uploadToCloudinary(file) {
-    try {
-        if (!file) throw new Error('No file provided');
+const normalizeStringArray = (value) =>
+    Array.isArray(value)
+        ? value.map((item) => String(item).trim()).filter(Boolean)
+        : [];
 
-        const result = await cloudinary.uploader.upload(file.path, {
-            folder: 'doctors',
-            use_filename: true,
-            resource_type: 'auto'
-        });
+const sanitizeWorkingHours = (value) =>
+    Array.isArray(value)
+        ? value
+            .map((slot) => ({
+                days: String(slot?.days || '').trim(),
+                hours: String(slot?.hours || '').trim(),
+            }))
+            .filter((slot) => slot.days || slot.hours)
+        : [];
 
-        return {
-            url: result.secure_url,
-            public_id: result.public_id
-        };
-    } catch (error) {
-        console.error('Cloudinary upload error:', error);
-        throw new Error('Failed to upload image: ' + error.message);
-    }
-}
-
-// Authentication Services
-const loginDoctor = async (email, password) => {
-    try {
-        if (!email || !password) {
-            throw new Error('Email and password are required');
-        }
-
-        const doctor = await Doctor.findOne({ email: email.toLowerCase().trim() })
-            .select('+password');
-        if (!doctor) {
-            throw new Error('Invalid credentials');
-        }
-
-        const isMatch = await bcrypt.compare(password, doctor.password);
-        if (!isMatch) {
-            throw new Error('Invalid credentials');
-        }
-
-        const token = jwt.sign(
-            {
-                id: doctor._id,
-                role: 'doctor'
-            },
-            config.JWT_SECRET,
-            { expiresIn: config.JWT_EXPIRES_IN }
-        );
-
-        const doctorData = doctor.toObject();
-        delete doctorData.password;
-        delete doctorData.__v;
-
-        return { doctor: doctorData, token };
-    } catch (error) {
-        console.error('Login error:', error.message);
-        throw new Error('Login failed: ' + error.message);
-    }
-};
-
-
-// Doctor CRUD Services
-const createDoctor = async (doctorData, file) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        if (!file) throw new Error('Doctor image is required');
-        // if (!doctorData.password) throw new Error('Password is required');
-
-        // Check if email already exists
-        const existingDoctor = await Doctor.findOne({ email: doctorData.email.toLowerCase().trim() });
-        if (existingDoctor) {
-            throw new Error('Email already in use');
-        }
-
-        doctorData.password = "123456"; // Default password for new doctors
-        // Upload image
-        const uploadResult = await uploadToCloudinary(file);
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(doctorData.password, 10);
-
-        const doctor = new Doctor({
-            ...doctorData,
-            password: hashedPassword,
-            image: uploadResult.url,
-            cloudinary_id: uploadResult.public_id
-        });
-
-        await doctor.save({ session });
-        await session.commitTransaction();
-
-        const newDoctor = doctor.toObject();
-        delete newDoctor.password;
-        delete newDoctor.__v;
-
-        return newDoctor;
-    } catch (error) {
-        await session.abortTransaction();
-        console.error('Create doctor error:', error.message);
-        throw new Error('Failed to create doctor: ' + error.message);
-    } finally {
-        session.endSession();
-    }
-};
+const buildDoctorProfileFromPayload = (payload = {}, existingProfile = {}) => ({
+    ...existingProfile,
+    specialty: payload.specialty?.trim() ?? existingProfile.specialty ?? '',
+    qualification: payload.qualification?.trim() ?? existingProfile.qualification ?? '',
+    image: payload.image?.trim() ?? payload.avatar?.trim() ?? existingProfile.image ?? '',
+    contactEmail: payload.contact?.email?.toLowerCase().trim() ?? existingProfile.contactEmail ?? payload.email?.toLowerCase().trim() ?? '',
+    address: payload.contact?.address?.trim() ?? existingProfile.address ?? '',
+    workingHours: payload.workingHours ? sanitizeWorkingHours(payload.workingHours) : existingProfile.workingHours || [],
+    education: payload.education ? normalizeStringArray(payload.education) : existingProfile.education || [],
+    biography: payload.biography ? normalizeStringArray(payload.biography) : existingProfile.biography || [],
+    specializations: payload.specializations ? normalizeStringArray(payload.specializations) : existingProfile.specializations || [],
+    rating: payload.rating !== undefined ? Number(payload.rating) || 0 : existingProfile.rating ?? 0,
+    reviews: payload.reviews !== undefined ? Number(payload.reviews) || 0 : existingProfile.reviews ?? 0,
+});
 
 const getAllDoctors = async (filters = {}) => {
-    try {
-        return await Doctor.find(filters)
-            .select('-password -__v')
-            .lean();
-    } catch (error) {
-        console.error('Get all doctors error:', error.message);
-        throw new Error('Failed to fetch doctors');
-    }
+    const search = filters.search?.trim();
+    const doctors = await User.find(buildDoctorSearchQuery(filters))
+        .select('-password -__v')
+        .sort(
+            search
+                ? { score: { $meta: 'textScore' }, 'doctorProfile.rating': -1, 'doctorProfile.reviews': -1, createdAt: -1 }
+                : { 'doctorProfile.rating': -1, 'doctorProfile.reviews': -1, createdAt: -1 }
+        )
+        .lean();
+
+    return doctors.map(buildDoctorAccount);
+};
+
+const getAllDoctorsAdmin = async (filters = {}) => {
+    const doctors = await User.find(buildDoctorSearchQuery({ ...filters, approvalStatus: filters.approvalStatus || 'all' }))
+        .select('-password -__v')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    return doctors.map(buildDoctorAccount);
 };
 
 const getDoctorById = async (id) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            throw new Error('Invalid doctor ID');
-        }
+    const approvedVisibilityFilter = buildDoctorSearchQuery({ approvalStatus: 'approved' });
+    const idMatchers = [{ legacyDoctorId: id }];
 
-        const doctor = await Doctor.findById(id)
-            .select('-password -__v')
-            .lean();
-        if (!doctor) {
-            throw new Error('Doctor not found');
-        }
-
-        return doctor;
-    } catch (error) {
-        console.error('Get doctor by ID error:', error.message);
-        throw error;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        idMatchers.push({ _id: id });
     }
+
+    const doctor = await User.findOne({
+        role: 'doctor',
+        $and: [
+            approvedVisibilityFilter,
+            { $or: idMatchers },
+        ],
+    })
+        .select('-password -__v')
+        .lean();
+
+    if (!doctor) {
+        throw new Error('Doctor not found');
+    }
+
+    return buildDoctorAccount(doctor);
 };
 
-const updateDoctor = async (id, updatedData, file) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+const createDoctor = async (doctorData) => {
+    const normalizedEmail = doctorData.email?.toLowerCase().trim();
+    const normalizedPhone = doctorData.contact?.phone?.trim() || doctorData.phone?.trim();
 
-    try {
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            throw new Error('Invalid doctor ID');
-        }
-
-        const doctor = await Doctor.findById(id).session(session);
-        if (!doctor) {
-            throw new Error('Doctor not found');
-        }
-
-        // Handle password update
-        if (updatedData.password) {
-            updatedData.password = await bcrypt.hash(updatedData.password, 10);
-        }
-
-        // Handle image update
-        let oldPublicId = null;
-        if (file) {
-            const uploadResult = await uploadToCloudinary(file);
-            oldPublicId = doctor.cloudinary_id;
-            updatedData.image = uploadResult.url;
-            updatedData.cloudinary_id = uploadResult.public_id;
-        }
-
-        const updatedDoctor = await Doctor.findByIdAndUpdate(
-            id,
-            updatedData,
-            {
-                new: true,
-                runValidators: true,
-                session
-            }
-        ).select('-password -__v');
-
-        // Delete old image if new one was uploaded
-        if (oldPublicId) {
-            try {
-                await cloudinary.uploader.destroy(oldPublicId);
-            } catch (cleanupError) {
-                console.error('Failed to cleanup old image:', cleanupError);
-            }
-        }
-
-        await session.commitTransaction();
-        return updatedDoctor;
-    } catch (error) {
-        await session.abortTransaction();
-        console.error('Update doctor error:', error.message);
-        throw new Error('Failed to update doctor: ' + error.message);
-    } finally {
-        session.endSession();
+    if (!normalizedEmail || !normalizedPhone || !doctorData.name || !doctorData.password) {
+        throw new Error('Name, email, phone, and password are required');
     }
+
+    const existingDoctor = await User.findOne({
+        $or: [{ email: normalizedEmail }, { phone: normalizedPhone }],
+    });
+
+    if (existingDoctor) {
+        throw new Error('Email or phone already in use');
+    }
+
+    const hashedPassword = await bcrypt.hash(doctorData.password, 10);
+    const doctor = await User.create({
+        username: doctorData.name.trim(),
+        name: doctorData.name.trim(),
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        password: hashedPassword,
+        role: 'doctor',
+        avatar: doctorData.image?.trim() || doctorData.avatar?.trim() || '',
+        doctorProfile: {
+            ...buildDoctorProfileFromPayload(doctorData),
+            approvalStatus: doctorData.approvalStatus || 'approved',
+            clinicRole: doctorData.clinicRole || null,
+            registrationMode: doctorData.registrationMode || null,
+            requestedClinicAccessCode: doctorData.requestedClinicAccessCode || '',
+        },
+    });
+
+    return buildDoctorAccount(doctor.toObject());
+};
+
+const updateDoctor = async (id, updatedData) => {
+    const doctor = await User.findOne({ _id: id, role: 'doctor' }).select('+password');
+
+    if (!doctor) {
+        throw new Error('Doctor not found');
+    }
+
+    if (updatedData.email) {
+        doctor.email = updatedData.email.toLowerCase().trim();
+    }
+
+    if (updatedData.name) {
+        doctor.name = updatedData.name.trim();
+        doctor.username = updatedData.name.trim();
+    }
+
+    if (updatedData.contact?.phone || updatedData.phone) {
+        doctor.phone = updatedData.contact?.phone?.trim() || updatedData.phone?.trim();
+    }
+
+    if (updatedData.password) {
+        doctor.password = await bcrypt.hash(updatedData.password, 10);
+    }
+
+    if (updatedData.image || updatedData.avatar) {
+        doctor.avatar = updatedData.image?.trim() || updatedData.avatar?.trim() || '';
+    }
+
+    doctor.doctorProfile = buildDoctorProfileFromPayload(updatedData, doctor.doctorProfile?.toObject?.() || doctor.doctorProfile || {});
+    await doctor.save();
+
+    return buildDoctorAccount(doctor.toObject());
+};
+
+const updateDoctorApproval = async (id, approvalStatus, approvalNotes = '') => {
+    const doctor = await User.findOne({ _id: id, role: 'doctor' });
+
+    if (!doctor) {
+        throw new Error('Doctor not found');
+    }
+
+    if (!['pending', 'approved', 'rejected'].includes(approvalStatus)) {
+        throw new Error('Invalid approval status');
+    }
+
+    doctor.doctorProfile = {
+        ...(doctor.doctorProfile?.toObject?.() || doctor.doctorProfile || {}),
+        approvalStatus,
+        approvalNotes: approvalNotes?.trim() || '',
+    };
+
+    if (approvalStatus === 'approved' && doctor.doctorProfile?.primaryClinic) {
+        await Clinic.findByIdAndUpdate(
+            doctor.doctorProfile.primaryClinic,
+            {
+                $set: {
+                    isActive: true,
+                    ...(doctor.doctorProfile.clinicRole === 'owner' ? { owner: doctor._id } : {}),
+                },
+                $addToSet: { doctors: doctor._id },
+            },
+            { new: true }
+        );
+    }
+
+    if (approvalStatus !== 'approved' && doctor.doctorProfile?.clinicRole === 'owner' && doctor.doctorProfile?.primaryClinic) {
+        await Clinic.findByIdAndUpdate(doctor.doctorProfile.primaryClinic, { isActive: false });
+    }
+
+    await doctor.save();
+    return buildDoctorAccount(doctor.toObject());
 };
 
 const deleteDoctor = async (id) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    const doctor = await User.findOneAndDelete({ _id: id, role: 'doctor' });
 
-    try {
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            throw new Error('Invalid doctor ID');
-        }
-
-        const doctor = await Doctor.findById(id).session(session);
-        if (!doctor) {
-            throw new Error('Doctor not found');
-        }
-
-        const publicId = doctor.cloudinary_id;
-        await Doctor.findByIdAndDelete(id).session(session);
-
-        if (publicId) {
-            try {
-                await cloudinary.uploader.destroy(publicId);
-            } catch (cleanupError) {
-                console.error('Failed to cleanup image:', cleanupError);
-            }
-        }
-
-        await session.commitTransaction();
-        return { message: 'Doctor deleted successfully' };
-    } catch (error) {
-        await session.abortTransaction();
-        console.error('Delete doctor error:', error.message);
-        throw new Error('Failed to delete doctor: ' + error.message);
-    } finally {
-        session.endSession();
+    if (!doctor) {
+        throw new Error('Doctor not found');
     }
+
+    await Clinic.updateMany(
+        { doctors: doctor._id },
+        {
+            $pull: { doctors: doctor._id },
+            ...(doctor.doctorProfile?.clinicRole === 'owner' ? { $set: { isActive: false } } : {}),
+        }
+    );
+
+    return { message: 'Doctor deleted successfully' };
 };
 
 module.exports = {
-    // Authentication
-    loginDoctor,
-
-    // CRUD Operations
     createDoctor,
+    deleteDoctor,
     getAllDoctors,
+    getAllDoctorsAdmin,
     getDoctorById,
     updateDoctor,
-    deleteDoctor
+    updateDoctorApproval,
 };

@@ -22,7 +22,6 @@ export const createClinic = createAsyncThunk("clinic/create", async (clinicData,
     try {
         return await clinicService.createClinic(clinicData);
     } catch (error) {
-        console.log(error)
         return thunkAPI.rejectWithValue(error.message || "Failed to create clinic");
     }
 });
@@ -106,7 +105,7 @@ const clinicSlice = createSlice({
             })
 
             // Add doctor to clinic
-            .addCase(addDoctorToClinic.fulfilled, (state, action) => {
+            .addCase(addDoctorToClinic.fulfilled, (state) => {
                 state.isSuccess = true;
             })
             .addCase(addDoctorToClinic.rejected, (state, action) => {

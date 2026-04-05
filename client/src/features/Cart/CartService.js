@@ -1,34 +1,31 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL.js";
-import config from "../../utils/userConfig.js";
+import { buildApiUrl } from "../../utils/baseURL.js";
+import userConfig from "../../utils/userConfig.js";
 
-// Get Cart
+const API_URL = buildApiUrl("carts");
+
 const getCart = async () => {
-    const response = await axios.get(`${base_url}carts`, config);
+    const response = await axios.get(API_URL, userConfig());
     return response.data;
 };
 
-// Add Item to Cart
 const addToCart = async (productData) => {
-    const response = await axios.post(`${base_url}carts/add`, productData, config);
+    const response = await axios.post(`${API_URL}/add`, productData, userConfig());
     return response.data;
 };
 
-// Update Cart Item
 const updateCartItem = async ({ productId, updatedData }) => {
-    const response = await axios.put(`${base_url}carts/${productId}`, updatedData, config);
+    const response = await axios.put(`${API_URL}/${productId}`, updatedData, userConfig());
     return response.data;
 };
 
-// Remove Item from Cart
 const removeFromCart = async (productId) => {
-    const response = await axios.delete(`${base_url}carts/${productId}`, config);
+    const response = await axios.delete(`${API_URL}/${productId}`, userConfig());
     return response.data;
 };
 
-// Clear Entire Cart
 const clearCart = async () => {
-    const response = await axios.delete(`${base_url}carts`, config);
+    const response = await axios.delete(API_URL, userConfig());
     return response.data;
 };
 

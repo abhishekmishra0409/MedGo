@@ -1,35 +1,29 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL.js";
+import { buildApiUrl, getErrorMessage } from "../../utils/api.js";
 
-const API_URL = `${base_url}clinics`;
+const API_URL = buildApiUrl("clinics");
 
-// Get All Clinics
 const getClinics = async () => {
-    try{
-    const response = await axios.get(API_URL);
-    return response.data;
-    }
-    catch (error) {
-        console.log(error)
-        throw error.message
+    try {
+        const response = await axios.get(API_URL);
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to fetch clinics");
     }
 };
 
-// Get Single Clinic by ID
 const getClinic = async (clinicId) => {
     const response = await axios.get(`${API_URL}/${clinicId}`);
     return response.data;
 };
 
-// Get Available Slots for a Clinic on Specific Date
 const getAvailableSlots = async ({ clinicId, date }) => {
     const response = await axios.get(`${API_URL}/${clinicId}/slots?date=${date}`);
     return response.data;
 };
 
-// Get Clinics by Doctor ID
 const getClinicByDoctor = async (doctorId) => {
-    const response = await axios.get(`${API_URL}/doctor/${doctorId}`);
+    const response = await axios.get(`${API_URL}/all-by-doctor/${doctorId}`);
     return response.data;
 };
 

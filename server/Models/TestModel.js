@@ -36,4 +36,13 @@ const testSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+testSchema.index({ isActive: 1, category: 1, name: 1 });
+testSchema.index({
+    name: "text",
+    code: "text",
+    category: "text",
+    description: "text",
+    preparationInstructions: "text"
+});
+
 module.exports = mongoose.model('Test', testSchema);

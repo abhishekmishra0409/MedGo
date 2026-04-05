@@ -1,6 +1,19 @@
 const Blog = require('../Models/BlogModel');
-const Doctor = require('../Models/DoctorModel');
 const cloudinary = require('cloudinary').v2;
+const { buildDoctorAccount } = require('../Utils/doctorAccount');
+
+const serializeBlog = (blog) => {
+    if (!blog) {
+        return blog;
+    }
+
+    const source = blog.toObject ? blog.toObject() : blog;
+
+    return {
+        ...source,
+        author: source.author ? buildDoctorAccount(source.author) : null,
+    };
+};
 
 class BlogService {
     static async createBlog(blogData, file, doctorId) {
@@ -27,7 +40,8 @@ class BlogService {
 
     static async getBlogById(id) {
         try {
-            return await Blog.findById(id).populate('author', 'name specialty');
+            const blog = await Blog.findById(id).populate('author', '_id name username email phone avatar role doctorProfile');
+            return serializeBlog(blog);
         } catch (error) {
             throw new Error(`Blog not found: ${error.message}`);
         }
@@ -35,7 +49,8 @@ class BlogService {
 
     static async getAllBlogs() {
         try {
-            return await Blog.find().populate('author', 'name specialty image');
+            const blogs = await Blog.find().populate('author', '_id name username email phone avatar role doctorProfile');
+            return blogs.map(serializeBlog);
         } catch (error) {
             throw new Error(`Failed to fetch blogs: ${error.message}`);
         }

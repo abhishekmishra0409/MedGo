@@ -65,9 +65,7 @@ const DoctorLabBookings = () => {
                     dispatch(fetchClinicBookings(doctorClinics[0]._id));
                 }
             })
-            .catch((error) => {
-                toast.error(error || 'Failed to update status');
-            });
+            .catch(() => {});
     };
 
     const handleFileUpload = (bookingId, e) => {
@@ -78,14 +76,11 @@ const DoctorLabBookings = () => {
                 dispatch(uploadLabTestReport({ bookingId, file }))
                     .unwrap()
                     .then(() => {
-                        toast.success('Report uploaded successfully');
                         if (doctorClinics && doctorClinics.length > 0) {
                             dispatch(fetchClinicBookings(doctorClinics[0]._id));
                         }
                     })
-                    .catch((error) => {
-                        toast.error(error || 'Failed to upload report');
-                    })
+                    .catch(() => {})
                     .finally(() => setUploadingReport(null));
             } else {
                 toast.error('Please upload a PDF file');

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 const DepartmentCardLr = ({ icon, title, category, description }) => {
     const navigate = useNavigate();
 
-    const handleCardClick = (e) => {
+    const handleCardClick = () => {
         navigate(`/doctorlists`);
     };
     return (

@@ -7,7 +7,6 @@ import { FiX, FiShoppingBag, FiClock, FiCheckCircle, FiTruck, FiDollarSign } fro
 const Orders = () => {
     const dispatch = useDispatch();
     const { orders, order, isLoading } = useSelector((state) => state.order);
-    const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // console.log(order)
@@ -15,8 +14,17 @@ const Orders = () => {
         dispatch(getMyOrders());
     }, [dispatch]);
 
+    const buildTimeline = (currentStatus) => {
+        const steps = ["processing", "shipped", "delivered"];
+        const currentIndex = steps.indexOf(currentStatus);
+
+        return steps.map((step, index) => ({
+            step,
+            complete: currentIndex >= index,
+        }));
+    };
+
     const handleViewOrder = (orderId) => {
-        setSelectedOrderId(orderId);
         dispatch(getOrderById(orderId))
             .unwrap()
             .then(() => {
@@ -223,6 +231,18 @@ const Orders = () => {
                                                             {order.total.toFixed(2)}
                             </span>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-6">
+                                                <h4 className="text-sm font-medium text-gray-500 mb-3">Status Timeline</h4>
+                                                <div className="grid gap-3 sm:grid-cols-3">
+                                                    {buildTimeline(order.status).map((item) => (
+                                                        <div key={item.step} className={`rounded-2xl border p-3 text-sm ${item.complete ? "border-teal-200 bg-teal-50 text-teal-800" : "border-slate-200 bg-white text-slate-500"}`}>
+                                                            <p className="font-semibold capitalize">{item.step}</p>
+                                                            <p className="mt-1 text-xs">{item.complete ? "Reached" : "Pending"}</p>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
 

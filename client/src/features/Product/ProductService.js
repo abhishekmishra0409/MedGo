@@ -1,15 +1,12 @@
 import axios from "axios";
-import { base_url } from "../../utils/baseURL.js";
+import { buildApiUrl } from "../../utils/baseURL.js";
 
-
-// Fetch all products
-export const getAllProducts = async () => {
-    const response = await axios.get(`${base_url}products`);
+export const getAllProducts = async (params = {}) => {
+    const response = await axios.get(buildApiUrl("products"), { params });
     return response.data;
 };
 
-// Fetch a single product by ID
 export const getProductById = async (productId) => {
-    const response = await axios.get(`${base_url}products/${productId}`);
+    const response = await axios.get(buildApiUrl(`products/${productId}`));
     return response.data;
 };

@@ -86,6 +86,15 @@ const productSchema = new mongoose.Schema(
     }
 );
 
+productSchema.index({ category: 1, isHot: 1, isNew: 1, createdAt: -1 });
+productSchema.index({
+    name: "text",
+    category: "text",
+    description: "text",
+    benefits: "text",
+    dosage: "text"
+});
+
 const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;

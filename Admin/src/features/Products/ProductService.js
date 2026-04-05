@@ -16,19 +16,19 @@ const getProductById = async (id) => {
 
 // Create product (admin only)
 const createProduct = async (productData) => {
-    const response = await axios.post(`${base_url}products/`, productData, config);
+    const response = await axios.post(`${base_url}products/`, productData, config());
     return response.data;
 };
 
 // Update product (admin only)
 const updateProduct = async (id, updatedData) => {
-    const response = await axios.put(`${base_url}products/${id}`, updatedData, config);
+    const response = await axios.put(`${base_url}products/${id}`, updatedData, config());
     return response.data;
 };
 
 // Delete product (admin only)
 const deleteProduct = async (id) => {
-    const response = await axios.delete(`${base_url}products/${id}`, config);
+    const response = await axios.delete(`${base_url}products/${id}`, config());
     return response.data;
 };
 

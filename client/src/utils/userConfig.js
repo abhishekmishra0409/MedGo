@@ -1,12 +1,5 @@
-const getTokenFromLocalStorage = localStorage.getItem("userToken")
+import { createAuthConfig } from "./api.js";
 
-const config = {
-    headers: {
-        Authorization: `Bearer ${
-            getTokenFromLocalStorage !== null ? getTokenFromLocalStorage : ""
-        }`,
-        Accept: "application/json",
-    },
-};
+const userConfig = () => createAuthConfig("userToken");
 
-export default config;
+export default userConfig;

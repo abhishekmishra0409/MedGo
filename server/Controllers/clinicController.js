@@ -1,5 +1,4 @@
 const ClinicService = require('../Services/clinicService');
-const Clinic = require('../Models/ClinicModel');
 
 class ClinicController {
     static async createClinic(req, res) {
@@ -40,7 +39,7 @@ class ClinicController {
 
     static async getClinics(req, res) {
         try {
-            const clinics = await Clinic.find().populate('doctors', 'name specialty image');
+            const clinics = await ClinicService.getClinics();
             res.status(200).json({
                 success: true,
                 count: clinics.length,
@@ -155,6 +154,22 @@ class ClinicController {
             res.status(400).json({
                 success: false,
                 error: error.message
+            });
+        }
+    }
+
+    static async getClinicsAdmin(req, res) {
+        try {
+            const clinics = await ClinicService.getClinics({ includeInactive: true, includeAccessCode: true });
+            res.status(200).json({
+                success: true,
+                count: clinics.length,
+                data: clinics,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
             });
         }
     }

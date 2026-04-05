@@ -14,9 +14,9 @@ const initialState = {
 };
 
 // Fetch All Lab Tests
-export const fetchAllTests = createAsyncThunk("labTest/fetchAllTests", async (_, thunkAPI) => {
+export const fetchAllTests = createAsyncThunk("labTest/fetchAllTests", async (params = {}, thunkAPI) => {
     try {
-        return await labTestService.getAllTests();
+        return await labTestService.getAllTests(params);
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch tests");
     }

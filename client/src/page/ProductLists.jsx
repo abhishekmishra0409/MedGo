@@ -1,154 +1,155 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts } from "../features/Product/ProductSlice.js";
 import SearchFilter from "../component/Common/SearchFilter.jsx";
-import ProductCard from "../component/Common/PoductCard.jsx";
+import ProductCard from "../component/Common/ProductCardModern.jsx";
 
 const ProductLists = () => {
     const dispatch = useDispatch();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { products, isLoading } = useSelector((state) => state.products);
 
-    const categories = [...new Set(products.map(product => product.category))];
-    const [filteredCategory, setFilteredCategory] = useState("All");
-    const [searchQuery, setSearchQuery] = useState("");
+    const categories = [...new Set(products.map((product) => product.category).filter(Boolean))];
+    const [filteredCategory, setFilteredCategory] = useState(searchParams.get("category") || "");
+    const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
     const [sortOption, setSortOption] = useState("featured");
 
     useEffect(() => {
-        dispatch(fetchAllProducts());
-    }, [dispatch]);
+        dispatch(
+            fetchAllProducts({
+                search: searchQuery || undefined,
+                category: filteredCategory || undefined,
+            })
+        );
+    }, [dispatch, filteredCategory, searchQuery]);
 
     const handleSearch = (query) => {
-        setSearchQuery(query.toLowerCase());
+        setSearchQuery(query);
+        syncSearchParams(query, filteredCategory);
     };
 
     const handleFilter = (category) => {
         setFilteredCategory(category);
+        syncSearchParams(searchQuery, category);
     };
 
     const handleClear = () => {
         setSearchQuery("");
-        setFilteredCategory("All");
+        setFilteredCategory("");
         setSortOption("featured");
+        setSearchParams(new URLSearchParams());
     };
 
     const handleSort = (e) => {
         setSortOption(e.target.value);
     };
 
-    // console.log(products)
-    // Filter and sort products
-    const filteredProducts = (products || [])
-        .filter((product) => {
-            const matchesSearch =
-                product.name.toLowerCase().includes(searchQuery) ||
-                product.description.toLowerCase().includes(searchQuery) ||
-                product.category.toLowerCase().includes(searchQuery);
-            const matchesCategory = filteredCategory === "All" || product.category === filteredCategory;
-            return matchesSearch && matchesCategory;
-        })
-        .sort((a, b) => {
-            switch (sortOption) {
-                case "price-low":
-                    return a.price - b.price;
-                case "price-high":
-                    return b.price - a.price;
-                case "rating":
-                    return b.rating - a.rating;
-                case "newest":
-                    return b.isNew - a.isNew;
-                default: // featured
-                    return (b.isHot - a.isHot) || (b.rating - a.rating);
-            }
-        });
+    const syncSearchParams = (nextSearch, nextCategory) => {
+        const params = new URLSearchParams();
+        if (nextSearch) {
+            params.set("search", nextSearch);
+        }
+        if (nextCategory) {
+            params.set("category", nextCategory);
+        }
+        setSearchParams(params);
+    };
+
+    const filteredProducts = useMemo(
+        () =>
+            [...(products || [])]
+                .filter(Boolean)
+                .sort((a, b) => {
+                    switch (sortOption) {
+                        case "price-low":
+                            return a.price - b.price;
+                        case "price-high":
+                            return b.price - a.price;
+                        case "rating":
+                            return b.rating - a.rating;
+                        case "newest":
+                            return Number(b.isNew) - Number(a.isNew);
+                        default:
+                            return Number(b.isHot) - Number(a.isHot) || b.rating - a.rating;
+                    }
+                }),
+        [products, sortOption]
+    );
 
 
     return (
-        <>
-            <div className="relative w-full h-[350px] bg-cover bg-center flex items-center justify-center"
-                 style={{backgroundImage: "url('/Product/productmain.jpg')"}}>
-                <div className="">
-                    <h1 className="text-4xl font-bold text-gray-900"></h1>
-                </div>
-            </div>
+        <div className="section-shell space-y-8 py-10">
+            <section className="hero-panel">
+                <span className="eyebrow">Digital pharmacy</span>
+                <h1 className="section-title max-w-3xl">Browse medicines and wellness products with stronger visibility into value.</h1>
+                <p className="section-copy max-w-2xl">Filter by category, search by product intent, and sort with clearer prioritization for price, freshness, and relevance.</p>
+            </section>
 
-            <div className="container mx-auto px-4 py-16 ">
+            <section className="grid gap-8 lg:grid-cols-[320px_1fr]">
+                <SearchFilter
+                    onSearch={handleSearch}
+                    onFilter={handleFilter}
+                    options={categories}
+                    onClear={handleClear}
+                    initialSearch={searchQuery}
+                    initialFilter={filteredCategory}
+                    placeholder="Search products, categories, or use cases"
+                    filterLabel="Categories"
+                    optionType="category"
+                />
 
-                <div className="grid lg:grid-cols-4 gap-8">
-                    {/* Left Side - Search & Filter */}
-                    <div className="lg:col-span-1">
-                        <SearchFilter
-                            onSearch={handleSearch}
-                            onFilter={handleFilter}
-                            options={categories}
-                            onClear={handleClear}
-                            placeholder="Search products..."
-                            filterLabel="Categories"
-                            optionType="category"
-                        />
-                    </div>
-
-                    {/* Right Side - Product Cards */}
-                    <div className="lg:col-span-3">
-                        <div className="flex justify-between items-center mb-6">
-                            <p className="text-sm text-gray-600">
-                                Showing {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="sort" className="text-sm text-gray-600">Sort by:</label>
-                                <select
-                                    id="sort"
-                                    value={sortOption}
-                                    onChange={handleSort}
-                                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-teal-500 focus:border-teal-500"
-                                >
-                                    <option value="featured">Featured</option>
-                                    <option value="price-low">Price: Low to High</option>
-                                    <option value="price-high">Price: High to Low</option>
-                                    <option value="rating">Highest Rating</option>
-                                    <option value="newest">Newest</option>
-                                </select>
-                            </div>
+                <div className="space-y-6">
+                    <div className="section-heading-row">
+                        <div>
+                            <p className="eyebrow">Results</p>
+                            <h2 className="text-2xl font-semibold text-slate-950">Showing {filteredProducts.length} products</h2>
                         </div>
-
-                        {isLoading ? (
-                            <div className="flex justify-center items-center h-64">
-                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-                            </div>
-                        ) : filteredProducts.length > 0 ? (
-                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {filteredProducts.map((product) => (
-                                    <ProductCard
-                                        id={product._id}
-                                        key={product._id}
-                                        image={product.image}
-                                        name={product.name}
-                                        price={product.price}
-                                        originalPrice={product.originalPrice}
-                                        isHot={product.isHot}
-                                        isNew={product.isNew}
-                                        category={product.category}
-                                        description={product.description}
-                                        rating={product.rating}
-                                        reviews={product.reviews}
-                                        stock={product.stock}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-gray-50 rounded-lg p-8 text-center">
-                                <h3 className="text-xl font-medium text-gray-600 mb-2">No products found</h3>
-                                <p className="text-gray-500 mb-4">
-                                    Try adjusting your search or filter criteria
-                                </p>
-                                <button onClick={handleClear} className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
-                                    Reset filters
-                                </button>
-                            </div>
-                        )}
+                        <select value={sortOption} onChange={handleSort} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Highest Rating</option>
+                            <option value="newest">Newest</option>
+                        </select>
                     </div>
+
+                    {isLoading ? (
+                        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                            {Array.from({ length: 8 }).map((_, index) => (
+                                <div key={index} className="h-80 animate-pulse rounded-[30px] bg-white shadow-sm" />
+                            ))}
+                        </div>
+                    ) : filteredProducts.length ? (
+                        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                            {filteredProducts.map((product) => (
+                                <ProductCard
+                                    key={product._id}
+                                    id={product._id}
+                                    image={product.image}
+                                    name={product.name}
+                                    price={product.price}
+                                    originalPrice={product.originalPrice}
+                                    isHot={product.isHot}
+                                    isNew={product.isNew}
+                                    category={product.category}
+                                    rating={product.rating}
+                                    reviews={product.reviews}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="empty-state">
+                            <h3 className="text-2xl font-semibold text-slate-950">No products matched your search.</h3>
+                            <p className="max-w-lg text-sm text-slate-600">Adjust the search or clear filters to return to the full catalog.</p>
+                            <button onClick={handleClear} className="btn-primary px-5 py-3 text-sm">
+                                Reset filters
+                            </button>
+                        </div>
+                    )}
                 </div>
-            </div>
-        </>
+            </section>
+        </div>
     );
 };
 
