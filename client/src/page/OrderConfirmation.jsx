@@ -19,14 +19,14 @@ const OrderConfirmation = () => {
     }, [dispatch]);
 
     return (
-        <div className="container mx-auto px-4 py-12 text-center">
-            <div className="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div className="container mx-auto px-4 py-8 text-center sm:py-12">
+            <div className="max-w-lg mx-auto bg-white p-4 rounded-lg shadow-md sm:p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 <h1 className="text-2xl font-bold mb-4">Order Confirmed!</h1>
                 <p className="text-gray-600 mb-6">Thank you for your purchase. Your order has been received and is being processed.</p>
-                <p className="font-medium mb-6">Order ID: <span className="text-blue-600">{orderId}</span></p>
+                <p className="mb-6 break-words font-medium">Order ID: <span className="text-blue-600">{orderId}</span></p>
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
                     <p className="text-sm text-gray-600">We've sent a confirmation email with your order details.</p>
                 </div>

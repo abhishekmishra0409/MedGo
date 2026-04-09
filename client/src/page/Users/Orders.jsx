@@ -70,7 +70,7 @@ const Orders = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-8">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Orders</h1>
 
             {isLoading && !orders.length ? (
@@ -84,8 +84,8 @@ const Orders = () => {
                     <p className="mt-1 text-gray-500">You haven't placed any orders yet.</p>
                 </div>
             ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto bg-white shadow sm:rounded-lg">
+                    <table className="min-w-[44rem] divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -166,7 +166,7 @@ const Orders = () => {
                                 <div className="mt-4">
                                     {order ? (
                                         <div>
-                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2">
                                                 <div>
                                                     <h4 className="text-sm font-medium text-gray-500">Order Date</h4>
                                                     <p className="mt-1 text-sm text-gray-900">
@@ -249,7 +249,7 @@ const Orders = () => {
                                             <h4 className="text-sm font-medium text-gray-500 mb-2">Items</h4>
                                             <div className="border-t border-gray-200">
                                                 {order.items.map((item) => (
-                                                    <div key={item._id} className="py-4 flex border-b border-gray-200">
+                                                    <div key={item._id} className="py-4 flex flex-col gap-3 border-b border-gray-200 sm:flex-row">
                                                         <div className="flex-shrink-0">
                                                             <img
                                                                 className="h-20 w-20 rounded-md object-cover"
@@ -257,7 +257,7 @@ const Orders = () => {
                                                                 alt={item.name}
                                                             />
                                                         </div>
-                                                        <div className="ml-4 flex-1">
+                                                        <div className="flex-1 sm:ml-4">
                                                             <div className="flex justify-between">
                                                                 <h5 className="text-sm font-medium text-gray-900">{item.name}</h5>
                                                                 <p className="text-sm text-gray-900">

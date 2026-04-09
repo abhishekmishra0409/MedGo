@@ -80,13 +80,13 @@ const CheckoutPage = () => {
     };
 
     return (
-        <div className="container mx-auto px-32 py-8 bg-gradient-to-b from-gray-100 to-white">
-            <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-16 xl:px-24 bg-gradient-to-b from-gray-100 to-white">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Checkout</h1>
 
             <div className="grid md:grid-cols-3 gap-8">
                 {/* Shipping Information */}
                 <div className="md:col-span-2">
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
                         <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
                         <form onSubmit={handleSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -208,7 +208,7 @@ const CheckoutPage = () => {
 
                             <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
                             <div className="space-y-3 mb-6">
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -219,7 +219,7 @@ const CheckoutPage = () => {
                                     />
                                     <span>Cash on Delivery</span>
                                 </label>
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -230,7 +230,7 @@ const CheckoutPage = () => {
                                     />
                                     <span>Credit Card</span>
                                 </label>
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -241,7 +241,7 @@ const CheckoutPage = () => {
                                     />
                                     <span>Debit Card</span>
                                 </label>
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -252,7 +252,7 @@ const CheckoutPage = () => {
                                     />
                                     <span>UPI</span>
                                 </label>
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center gap-2">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -278,19 +278,19 @@ const CheckoutPage = () => {
 
                 {/* Order Summary */}
                 <div className="md:col-span-1">
-                    <div className="bg-white p-6 rounded-lg shadow-md sticky top-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md md:sticky md:top-4">
                         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
                         <div className="space-y-4 mb-6">
                             {cartItems.map(item => (
-                                <div key={item.product._id} className="flex justify-between items-center border-b pb-2">
-                                    <div className="flex items-center space-x-3">
+                                <div key={item.product._id} className="flex flex-col gap-3 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex min-w-0 items-center gap-3">
                                         <img
                                             src={item.product.image}
                                             alt={item.product.name}
                                             className="w-12 h-12 object-cover rounded"
                                         />
-                                        <div>
+                                        <div className="min-w-0">
                                             <p className="font-medium">{item.product.name}</p>
                                             <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                         </div>

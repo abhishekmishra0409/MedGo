@@ -17,7 +17,7 @@ const DoctorCard = ({ id, name, position, specialty, qualification, hospital, im
 
     return (
         <div
-            className="bg-white w-84 shadow-lg rounded-lg p-6 text-center max-w-sm mx-auto cursor-pointer hover:shadow-xl transition-shadow"
+            className="bg-white w-full shadow-lg rounded-lg p-6 text-center max-w-sm mx-auto cursor-pointer hover:shadow-xl transition-shadow"
             onClick={handleCardClick}
         >
             <img src={image} alt={name} className="w-24 h-24 mx-auto rounded-full border-2 border-gray-300"/>

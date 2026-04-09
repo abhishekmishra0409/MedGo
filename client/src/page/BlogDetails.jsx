@@ -25,7 +25,7 @@ const BlogDetail = () => {
 
     if (error || !blog) {
         return (
-            <div className="max-w-3xl mx-auto p-6 text-center">
+            <div className="max-w-3xl mx-auto p-4 text-center sm:p-6">
                 <h1 className="text-2xl font-bold text-red-500">Blog Not Found</h1>
                 <p className="text-gray-600 mt-2">
                     {error || "The requested blog post does not exist."}
@@ -35,13 +35,13 @@ const BlogDetail = () => {
     }
 
     return (
-        <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+        <div className="mx-3 my-4 max-w-3xl bg-white p-4 shadow-lg rounded-lg sm:mx-auto sm:p-6">
             {/* Blog Image */}
             {blog.image && (
                 <img
                     src={blog.image}
                     alt={blog.title}
-                    className="w-full h-64 object-cover rounded-lg"
+                    className="h-48 w-full object-cover rounded-lg sm:h-64"
                 />
             )}
 

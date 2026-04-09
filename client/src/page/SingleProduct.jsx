@@ -21,7 +21,7 @@ const SingleProduct = () => {
 
     if (loading) {
         return (
-            <div className="container mx-auto px-6 py-8 text-center">
+            <div className="container mx-auto px-4 py-8 text-center sm:px-6">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto"></div>
             </div>
         );
@@ -29,7 +29,7 @@ const SingleProduct = () => {
 
     if (error || !product) {
         return (
-            <div className="container mx-auto px-4 sm:px-32 py-8 text-center">
+            <div className="container mx-auto px-4 py-8 text-center sm:px-6 lg:px-16 xl:px-24">
                 <h1 className="text-2xl">Product not found</h1>
                 <p className="text-gray-400 mt-2">
                     {error || "The requested product does not exist"}
@@ -92,12 +92,12 @@ const SingleProduct = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 sm:px-6 py-8">
+        <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-16 xl:px-24">
             {/* Product Section */}
             <div className="grid md:grid-cols-2 gap-8">
                 {/* Left - Product Images */}
                 <div>
-                    <div className="w-full h-96 bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+                    <div className="flex aspect-square w-full items-center justify-center rounded-lg bg-gray-100 p-4 sm:aspect-[4/3]">
                         <img
                             src={product.images[selectedImage]}
                             alt={product.name}
@@ -132,7 +132,7 @@ const SingleProduct = () => {
 
                 {/* Right - Product Details */}
                 <div className="text-gray-800">
-                    <h1 className="text-3xl font-bold">{product.name}</h1>
+                    <h1 className="text-2xl font-bold sm:text-3xl">{product.name}</h1>
                     {product.sku && <p className="text-sm text-teal-600 mt-1">SKU: {product.sku}</p>}
 
                     <div className="flex items-center mt-4">
@@ -168,7 +168,7 @@ const SingleProduct = () => {
             {product.description || product.benefits || product.dosage ? (
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold mb-4">Product Details</h2>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="bg-white p-4 rounded-lg shadow-sm sm:p-6">
                         {product.description && (
                             <>
                                 <h3 className="text-lg font-medium mb-2">Description:</h3>

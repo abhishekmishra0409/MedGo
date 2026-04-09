@@ -16,13 +16,12 @@ import {
     User,
     Phone,
     Mail,
-    BriefcaseMedical,
     Clock,
     MapPin,
     GraduationCap,
     BookOpen,
-    Star,
-    MessageSquare
+    CalendarDays,
+    ShieldCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DoctorModal from './DoctorFormModal.jsx';
@@ -140,6 +139,16 @@ const DoctorsPage = () => {
         }
 
         await handleApproval(doctorId, selectedStatus);
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Not available';
+
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
     };
 
     return (
@@ -277,12 +286,15 @@ const DoctorsPage = () => {
                                             >
                                                 Update Status
                                             </button>
-                                            <div className="flex items-center text-yellow-500">
-                                                <Star className="h-5 w-5" />
-                                                <span className="ml-1 text-gray-700">{doctor.rating || 0}</span>
-                                                <span className="mx-1 text-gray-400">|</span>
-                                                <MessageSquare className="h-5 w-5 text-gray-400" />
-                                                <span className="ml-1 text-gray-700">{doctor.reviews || 0}</span>
+                                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                                                <span className="inline-flex items-center">
+                                                    <CalendarDays className="mr-1.5 h-4 w-4 text-gray-400" />
+                                                    Joined {formatDate(doctor.createdAt)}
+                                                </span>
+                                                <span className="inline-flex items-center">
+                                                    <ShieldCheck className="mr-1.5 h-4 w-4 text-gray-400" />
+                                                    {doctor.role || 'doctor'}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>

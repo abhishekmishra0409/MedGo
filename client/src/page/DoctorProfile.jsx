@@ -46,7 +46,7 @@ const DoctorProfile = () => {
                         <img
                             src={doctor.image}
                             alt={doctor.name}
-                            className="rounded-lg h-80 w-80 object-cover"
+                            className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover"
                         />
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                         <p className="text-teal-600 text-lg">{doctor.specialty || "Specialist"}</p>
@@ -82,7 +82,7 @@ const DoctorProfile = () => {
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">Working Hours</h3>
                         <div className="space-y-2">
                             {(doctor.workingHours || []).map((item, index) => (
-                                <div key={index} className="flex justify-between text-gray-600">
+                                <div key={index} className="flex flex-col gap-1 text-gray-600 sm:flex-row sm:justify-between">
                                     <span>{item.days}</span>
                                     <span className="font-medium">{item.hours}</span>
                                 </div>

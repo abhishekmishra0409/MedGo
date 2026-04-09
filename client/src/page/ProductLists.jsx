@@ -115,13 +115,13 @@ const ProductLists = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
                             {Array.from({ length: 8 }).map((_, index) => (
                                 <div key={index} className="h-80 animate-pulse rounded-[30px] bg-white shadow-sm" />
                             ))}
                         </div>
                     ) : filteredProducts.length ? (
-                        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
                             {filteredProducts.map((product) => (
                                 <ProductCard
                                     key={product._id}

@@ -13,7 +13,7 @@ const LabCard = ({ test }) => {
     };
 
     return (
-        <div className="w-92 mx-auto p-4 border rounded-lg shadow-lg bg-white text-center hover:shadow-xl transition-shadow duration-300 relative">
+        <div className="w-full max-w-sm mx-auto p-4 border rounded-lg shadow-lg bg-white text-center hover:shadow-xl transition-shadow duration-300 relative">
             {/* Active Badge */}
             {test?.isActive && (
                 <div className="absolute -mt-3 -mr-3 right-0 top-0 bg-green-500 text-white text-xs px-2 py-1 rounded-full">

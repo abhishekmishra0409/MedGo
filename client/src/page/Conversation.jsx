@@ -176,11 +176,11 @@ const ConversationPage = ({ userType }) => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex min-h-[calc(100dvh-5rem)] flex-col overflow-hidden rounded-3xl bg-gray-100 md:h-[calc(100dvh-4rem)] md:flex-row">
             {/* Sidebar with conversations */}
-            <div className="w-1/3 border-r border-gray-300 bg-white">
-                <div className="p-4 border-b border-gray-300 flex justify-between items-center">
-                    <h2 className="text-xl font-semibold">
+            <div className="max-h-72 w-full border-b border-gray-300 bg-white md:max-h-none md:w-1/3 md:border-b-0 md:border-r">
+                <div className="p-4 border-b border-gray-300 flex justify-between items-center gap-3">
+                    <h2 className="text-lg font-semibold md:text-xl">
                         {userType === 'user' ? 'Your Conversations' : 'Patient Conversations'}
                     </h2>
                     <button
@@ -234,12 +234,12 @@ const ConversationPage = ({ userType }) => {
             </div>
 
             {/* Main chat area */}
-            <div className="flex flex-col w-2/3">
+            <div className="flex min-h-[26rem] w-full flex-1 flex-col md:w-2/3">
                 {activeConversation ? (
                     <>
                         {/* Chat header */}
                         <div className="p-4 border-b border-gray-300 bg-white">
-                            <h2 className="text-xl font-semibold">
+                            <h2 className="text-lg font-semibold md:text-xl">
                                 {userType === 'user'
                                     ? `Conversation with ${
                                         conversations.find(c => c._id === activeConversation)?.doctor?.name || 'Unknown'
@@ -279,7 +279,7 @@ const ConversationPage = ({ userType }) => {
                                                 }`}
                                             >
                                                 <div
-                                                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                                                    className={`max-w-[82vw] px-4 py-2 rounded-lg md:max-w-xs lg:max-w-md ${
                                                         isOwnMessage(msg)
                                                             ? 'bg-blue-500 text-white'
                                                             : 'bg-white border border-gray-300'

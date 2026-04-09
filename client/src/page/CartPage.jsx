@@ -18,27 +18,40 @@ const CartPage = () => {
     const [coupon, setCoupon] = useState(localStorage.getItem(COUPON_STORAGE_KEY) || "");
     const [discount, setDiscount] = useState(0);
     const [couponMessage, setCouponMessage] = useState("");
-    const [localCartItems, setLocalCartItems] = useState([]);
+    const [localCartItems, setLocalCartItems] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
+        } catch {
+            return [];
+        }
+    });
 
     // Fetch the latest cart data on mount
     useEffect(() => {
         dispatch(fetchCart());
     }, [dispatch]);
 
-    // Initialize and sync local cart state from local storage or Redux
+    // Keep the page in sync with the latest Redux cart. Local storage is only a fallback while the server cart loads.
     useEffect(() => {
-        const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
-        setLocalCartItems(savedCart.length ? savedCart : reduxCartItems);
+        if (Array.isArray(reduxCartItems)) {
+            setLocalCartItems(reduxCartItems);
+        }
     }, [reduxCartItems]);
 
     // Sync Redux to local storage
     useEffect(() => {
-        if (reduxCartItems?.length > 0) {
+        if (!Array.isArray(reduxCartItems)) {
+            return;
+        }
+
+        if (reduxCartItems.length > 0) {
             localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(reduxCartItems));
+        } else {
+            localStorage.removeItem(CART_STORAGE_KEY);
         }
     }, [reduxCartItems]);
 
-    const displayCartItems = localCartItems?.length > 0 ? localCartItems : reduxCartItems;
+    const displayCartItems = localCartItems;
 
     // Quantity handlers with optimistic updates
     const updateQty = async (id, qty) => {
@@ -71,9 +84,7 @@ const CartPage = () => {
 
     // New: Force refresh cart from server
     const refreshCart = () => {
-        window.location.reload()
         dispatch(fetchCart());
-        setLocalCartItems(reduxCartItems);
     };
 
     // New: Proceed to checkout
@@ -103,7 +114,7 @@ const CartPage = () => {
 
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 bg-gradient-to-b from-gray-100 to-white shadow-lg rounded-lg m-8">
+        <div className="mx-3 my-4 max-w-4xl p-4 md:mx-auto md:my-8 md:p-6 bg-gradient-to-b from-gray-100 to-white shadow-lg rounded-lg">
             <h2 className="text-2xl font-bold mb-6">Your Shopping Cart ({displayCartItems?.length || 0})</h2>
 
             {isLoading ? (
@@ -121,7 +132,7 @@ const CartPage = () => {
             ) : (
                 <>
                     <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
+                        <table className="min-w-[44rem] w-full border-collapse">
                             <thead>
                             <tr className="border-b">
                                 <th className="text-left p-3">Product</th>
@@ -208,7 +219,7 @@ const CartPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-between mt-6 gap-4">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={emptyCart}
                                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded transition"
@@ -234,13 +245,13 @@ const CartPage = () => {
                         <div className="border p-4 rounded-lg">
                             <h3 className="font-semibold text-lg mb-3">Coupon Code</h3>
                             <p className="text-sm text-gray-600 mb-3">Enter your coupon code if you have one</p>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2 sm:flex-row">
                                 <input
                                     type="text"
                                     placeholder="Enter coupon code"
                                     value={coupon}
                                     onChange={(e) => setCoupon(e.target.value)}
-                                    className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="min-w-0 flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 <button
                                     onClick={applyCoupon}

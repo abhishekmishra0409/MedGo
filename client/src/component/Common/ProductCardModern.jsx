@@ -26,7 +26,7 @@ const ProductCardModern = ({ id, image, name, price, originalPrice, isHot, isNew
     };
 
     return (
-        <div className="group relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl" onClick={handleProductClick}>
+        <div className="group relative w-full cursor-pointer overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl" onClick={handleProductClick}>
             <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                 {isHot && <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold text-white">Hot</span>}
                 {isNew && <span className="rounded-full bg-teal-500 px-3 py-1 text-xs font-semibold text-white">New</span>}
@@ -66,7 +66,7 @@ const ProductCardModern = ({ id, image, name, price, originalPrice, isHot, isNew
                     )}
                 </div>
 
-                <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 py-3 text-sm font-semibold text-white transition hover:bg-teal-700" onClick={handleAddToCart}>
+                <button className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-teal-600 py-3 text-sm font-semibold text-white transition hover:bg-teal-700" onClick={handleAddToCart}>
                     <ShoppingBag className="h-4 w-4" />
                     Add to cart
                     <ArrowRight className="h-4 w-4" />

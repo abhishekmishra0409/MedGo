@@ -5,7 +5,7 @@ import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaCalendarAlt, FaClinicMe
 const ClinicCard = ({ clinic }) => {
 
     return (
-        <div className="w-96 bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
+        <div className="w-full max-w-sm bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
             <div className="p-6">
                 <div className="flex items-center mb-4">
                     <FaClinicMedical className="text-teal-500 text-2xl mr-3" />

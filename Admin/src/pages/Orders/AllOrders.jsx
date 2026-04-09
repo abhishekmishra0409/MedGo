@@ -196,9 +196,9 @@ const OrdersPage = () => {
                 </div>
             ) : (
                 <>
-                    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div className="max-h-[calc(100vh-18rem)] overflow-auto bg-white shadow sm:rounded-lg">
                         <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                            <thead className="sticky top-0 z-10 bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Order ID

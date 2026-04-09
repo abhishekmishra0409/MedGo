@@ -36,9 +36,7 @@ const DoctorModal = ({
         ],
         education: [''],
         biography: [''],
-        specializations: [''],
-        rating: 0,
-        reviews: 0
+        specializations: ['']
     });
 
     const [imagePreview, setImagePreview] = useState('');
@@ -66,9 +64,7 @@ const DoctorModal = ({
                 biography: doctor.biography?.length ?
                     [...doctor.biography] : [''],
                 specializations: doctor.specializations?.length ?
-                    [...doctor.specializations] : [''],
-                rating: doctor.rating || 0,
-                reviews: doctor.reviews || 0
+                    [...doctor.specializations] : ['']
             });
             if (doctor.image) {
                 setImagePreview(doctor.image);
@@ -90,9 +86,7 @@ const DoctorModal = ({
                 ],
                 education: [''],
                 biography: [''],
-                specializations: [''],
-                rating: 0,
-                reviews: 0
+                specializations: ['']
             });
         }
     }, [doctor]);
@@ -385,35 +379,6 @@ const DoctorModal = ({
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Rating
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="5"
-                                        step="0.1"
-                                        name="rating"
-                                        value={formData.rating}
-                                        onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Reviews Count
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        name="reviews"
-                                        value={formData.reviews}
-                                        onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                                    />
-                                </div>
                             </div>
                         </div>
 

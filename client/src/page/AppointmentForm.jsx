@@ -379,7 +379,7 @@ const AppointmentForm = () => {
 
     if (doctorLoading || clinicLoading) {
         return (
-            <div className="container mx-auto px-6 py-8 bg-white text-center">
+            <div className="container mx-auto px-4 sm:px-6 py-8 bg-white text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto"></div>
             </div>
         );
@@ -387,7 +387,7 @@ const AppointmentForm = () => {
 
     if (!doctor) {
         return (
-            <div className="container mx-auto px-6 py-8 bg-white text-center">
+            <div className="container mx-auto px-4 sm:px-6 py-8 bg-white text-center">
                 <h1 className="text-2xl font-bold text-gray-800">Doctor not found</h1>
                 <p className="text-gray-600 mt-2">The requested doctor profile does not exist</p>
             </div>
@@ -395,10 +395,10 @@ const AppointmentForm = () => {
     }
 
     return (
-        <div className="container mx-auto px-6 md:px-16 lg:px-24 xl:px-32 py-8 bg-white">
+        <div className="container mx-auto px-4 py-6 sm:px-6 md:px-10 lg:px-16 xl:px-24 bg-white">
             <div className="grid md:grid-cols-3 gap-8">
-                <div className="md:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Appointment with {doctor.name}</h2>
+                <div className="md:col-span-2 bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Appointment with {doctor.name}</h2>
 
                     {step === 1 && (
                         <div>
@@ -455,7 +455,7 @@ const AppointmentForm = () => {
                                     slotsLoading ? (
                                         <p className="text-sm text-gray-500">Loading available slots...</p>
                                     ) : timeSlots.length > 0 ? (
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             {timeSlots.map((slot, index) => (
                                                 <button
                                                     key={index}
@@ -510,7 +510,7 @@ const AppointmentForm = () => {
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Appointment Type</label>
-                                <div className="flex space-x-4">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
                                     <label className="inline-flex items-center">
                                         <input
                                             type="radio"
@@ -580,7 +580,7 @@ const AppointmentForm = () => {
                                 </div>
                             </div>
 
-                            <div className="flex justify-between">
+                            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
                                 <button
                                     type="button"
                                     className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
@@ -596,9 +596,9 @@ const AppointmentForm = () => {
                     )}
                 </div>
 
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex flex-col items-center">
-                        <img src={doctor.image} alt={doctor.name} className="rounded-lg w-80 h-80 object-cover" />
+                        <img src={doctor.image} alt={doctor.name} className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover" />
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                         <p className="text-teal-600 text-lg">{doctor.specialty || "Specialist"}</p>
                         <p className="text-gray-500 text-sm text-center">{doctor.qualification || "Qualification not added"}</p>
@@ -616,7 +616,7 @@ const AppointmentForm = () => {
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">Working Hours</h3>
                         <div className="space-y-2">
                             {(doctor.workingHours || []).map((item, index) => (
-                                <div key={index} className="flex justify-between text-gray-600">
+                                <div key={index} className="flex flex-col gap-1 text-gray-600 sm:flex-row sm:justify-between">
                                     <span>{item.days}</span>
                                     <span className="font-medium">{item.hours}</span>
                                 </div>

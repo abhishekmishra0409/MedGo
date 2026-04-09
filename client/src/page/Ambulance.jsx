@@ -3,11 +3,11 @@ import React from 'react';
 function Ambulance() {
     return (
         <>
-            <div className="min-w-full  ">
+            <div className="w-full overflow-x-hidden">
                 <div className=" bg-white overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         {/* Left Section - Image */}
-                        <div className="md:w-1/2 md:p-8 flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-50">
+                        <div className="flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-50 p-4 md:w-1/2 md:p-8">
                             <img
                                 src="/Ambulance2.png"
                                 alt="Emergency Ambulance"
@@ -16,13 +16,13 @@ function Ambulance() {
                         </div>
 
                         {/* Right Section - Text and Badge */}
-                        <div className="md:w-1/2 p-8 md:p-10 bg-gradient-to-br from-teal-600 to-green-700 text-white flex flex-col items-center justify-center text-center space-y-6">
+                        <div className="flex flex-col items-center justify-center space-y-6 bg-gradient-to-br from-teal-600 to-green-700 p-4 text-center text-white sm:p-8 md:w-1/2 md:p-10">
                             <div className="space-y-2">
-                                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Your Health is our Priority</h2>
-                                <h2 className="text-4xl md:text-5xl font-extrabold text-yellow-300 tracking-wide">INDORE</h2>
+                                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">Your Health is our Priority</h2>
+                                <h2 className="text-3xl font-extrabold text-yellow-300 tracking-wide sm:text-4xl md:text-5xl">INDORE</h2>
                             </div>
 
-                            <div className="bg-blue-900 p-6 rounded-xl shadow-lg w-full max-w-xs transform transition hover:scale-105">
+                            <div className="bg-blue-900 p-4 rounded-xl shadow-lg w-full max-w-xs transform transition hover:scale-105 sm:p-6">
                                 <div className="space-y-2">
                                     <p className="text-4xl md:text-5xl font-bold text-white">24/7</p>
                                     <p className="text-xl md:text-2xl font-semibold text-gray-100">EMERGENCY</p>
@@ -50,7 +50,7 @@ function Ambulance() {
                     <iframe
                         title="Map"
                         width="100%"
-                        height="700"
+                        height="520"
                         src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=indore+(My%20Business%20Name)&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
                     >
                         <a href="https://www.gps.ie/">gps devices</a>

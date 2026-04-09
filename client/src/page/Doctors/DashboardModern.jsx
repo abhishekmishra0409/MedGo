@@ -16,7 +16,7 @@ const menuItems = [
 ];
 
 const DashboardModern = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
@@ -41,13 +41,22 @@ const DashboardModern = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
+        <div className="relative flex min-h-screen w-full overflow-x-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
             <button onClick={() => setIsSidebarOpen((value) => !value)} className="md:hidden fixed left-4 top-4 z-50 rounded-full border border-slate-200 bg-white p-3 shadow-sm">
                 {isSidebarOpen ? <FiX /> : <FiMenu />}
             </button>
 
+            {isSidebarOpen && (
+                <button
+                    type="button"
+                    aria-label="Close sidebar"
+                    className="fixed inset-0 z-30 bg-slate-950/30 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             <aside
-                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-72 transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
+                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(18rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
             >
                 <div className="flex h-full flex-col p-5">
                     <div className="mb-8 flex items-center gap-3">
@@ -103,7 +112,7 @@ const DashboardModern = () => {
                 </div>
             </aside>
 
-            <main className="flex-1 overflow-auto">
+            <main className="min-w-0 flex-1 overflow-auto pt-16 md:pt-0">
                 <div className="p-4 md:p-8">
                     <Outlet />
                 </div>

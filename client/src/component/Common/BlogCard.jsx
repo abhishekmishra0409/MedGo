@@ -13,7 +13,7 @@ const BlogCard = ({id, image, author, date, title, description }) => {
     };
 
     return (
-        <div className="w-80 bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 cursor-pointer"
+        <div className="w-full max-w-sm bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 cursor-pointer"
              onClick={handleCardClick}
         >
             <img src={image} alt={title} className="w-full h-48 object-cover" />

@@ -39,7 +39,7 @@ const ProductCard = ({
 
     return (
         <div
-            className="w-64 bg-white rounded-xl overflow-hidden text-center border border-gray-200 hover:shadow-lg transition-shadow duration-300 relative group cursor-pointer"
+            className="w-full max-w-72 bg-white rounded-xl overflow-hidden text-center border border-gray-200 hover:shadow-lg transition-shadow duration-300 relative group cursor-pointer"
             onClick={handleProductClick}
         >
             {/* Badges */}
@@ -49,8 +49,8 @@ const ProductCard = ({
             </div>
 
             {/* Product Image */}
-            <div className="w-64 h-80 flex items-center justify-center bg-gray-50">
-                <img src={image} alt={name} className="object-contain h-full mx-auto transition-transform group-hover:scale-105 duration-300" />
+            <div className="flex aspect-[4/5] w-full items-center justify-center bg-gray-50">
+                <img src={image} alt={name} className="h-full max-w-full object-contain mx-auto transition-transform group-hover:scale-105 duration-300" />
             </div>
 
             {/* Product Info */}
@@ -80,7 +80,7 @@ const ProductCard = ({
                 {/* Price */}
                 <div className="mt-3">
                     {hasDiscount ? (
-                        <div className="flex justify-center items-center space-x-2">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                             <span className="text-gray-800 font-bold text-lg">${price}</span>
                             <span className="text-gray-500 line-through text-sm">${originalPrice}</span>
                             <span className="text-red-500 text-xs font-bold">

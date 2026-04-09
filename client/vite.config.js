@@ -47,7 +47,7 @@ export default defineConfig({
 
       // Development options
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
         navigateFallback: 'index.html'
       }

@@ -72,52 +72,36 @@ const Navbar = () => {
     return (
         <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
             <div className="section-shell py-4">
-                <div className="flex items-center justify-between gap-4">
-                    <Link to="/" className="flex items-center gap-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(18rem,34rem)_minmax(0,1fr)]">
+                    <Link to="/" className="flex min-w-0 items-center gap-3 justify-self-start">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] shadow-[0_18px_40px_rgba(13,148,136,0.18)]">
                             <img src="/android-icon-192x192.png" alt="MedGo" className="h-9 w-9 rounded-xl" />
                         </div>
-                        <div>
+                        <div className="hidden min-w-0 sm:block">
                             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">MedGo</p>
                             <p className="text-sm text-slate-500">Clinical care, pharmacy and diagnostics</p>
                         </div>
                     </Link>
 
-                    <form onSubmit={handleSearchSubmit} className="hidden min-w-0 flex-1 items-center md:flex">
-                        <div className="mx-auto flex w-full max-w-2xl items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                            <Search className="h-5 w-5 text-slate-400" />
+                    <form onSubmit={handleSearchSubmit} className="relative z-10 hidden w-full items-center md:flex">
+                        <div className="mx-auto flex w-full items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                            <Search className="h-5 w-5 shrink-0 text-slate-400" />
                             <input
                                 type="search"
                                 value={searchQuery}
                                 onChange={(event) => setSearchQuery(event.target.value)}
                                 placeholder="Search doctors, medicines, or lab tests"
-                                className="w-full border-0 bg-transparent text-sm text-slate-700 outline-none"
+                                className="min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-700 outline-none"
                             />
-                            <button type="submit" className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700">
+                            <button type="submit" className="shrink-0 rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700">
                                 Search
                             </button>
                         </div>
                     </form>
 
-                    <div className="hidden items-center gap-3 lg:flex">
-                        <nav className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
-                            {navLinks.map((item) => (
-                                <NavLink
-                                    key={item.to}
-                                    to={item.to}
-                                    className={({ isActive }) =>
-                                        `rounded-full px-4 py-2 text-sm font-medium transition ${
-                                            isActive ? "bg-white text-slate-950 shadow-sm" : "text-slate-600 hover:text-slate-950"
-                                        }`
-                                    }
-                                >
-                                    {item.label}
-                                </NavLink>
-                            ))}
-                        </nav>
-
+                    <div className="hidden items-center justify-self-end lg:flex">
                         {session?.role === "user" && (
-                            <Link to="/cart" className="rounded-full border border-slate-200 bg-white p-3 text-slate-600 transition hover:border-teal-200 hover:text-teal-700">
+                            <Link to="/cart" className="mr-3 rounded-full border border-slate-200 bg-white p-3 text-slate-600 transition hover:border-teal-200 hover:text-teal-700">
                                 <ShoppingCart className="h-5 w-5" />
                             </Link>
                         )}
@@ -178,11 +162,27 @@ const Navbar = () => {
                     <button
                         type="button"
                         onClick={() => setMenuOpen((value) => !value)}
-                        className="rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-sm lg:hidden"
+                        className="justify-self-end rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-sm lg:hidden"
                     >
                         {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </button>
                 </div>
+
+                <nav className="mx-auto mt-4 hidden w-fit items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 lg:flex">
+                    {navLinks.map((item) => (
+                        <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) =>
+                                `rounded-full px-4 py-2 text-sm font-medium transition ${
+                                    isActive ? "bg-white text-slate-950 shadow-sm" : "text-slate-600 hover:text-slate-950"
+                                }`
+                            }
+                        >
+                            {item.label}
+                        </NavLink>
+                    ))}
+                </nav>
 
                 {menuOpen && (
                     <div className="mt-4 space-y-4 rounded-[32px] border border-slate-200 bg-white p-5 shadow-2xl lg:hidden">

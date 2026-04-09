@@ -46,9 +46,9 @@ const SearchResults = () => {
                     <p className="section-copy max-w-2xl">
                         Search results are grouped by care journey so users can move from discovery into booking, shopping, or lab booking without guessing where to go next.
                     </p>
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/70 px-4 py-4 text-sm text-slate-700 backdrop-blur">
-                        <Search className="h-5 w-5 text-teal-700" />
-                        <span>
+                    <div className="flex items-start gap-3 rounded-2xl border border-white/70 bg-white/70 px-4 py-4 text-sm text-slate-700 backdrop-blur sm:items-center">
+                        <Search className="h-5 w-5 shrink-0 text-teal-700" />
+                        <span className="min-w-0 break-words">
                             Showing <strong>{totalResults}</strong> result{totalResults === 1 ? "" : "s"} for <strong>{query || "all services"}</strong>
                         </span>
                     </div>
@@ -108,7 +108,7 @@ const SearchResults = () => {
                             </Link>
                         </div>
                         {productMatches.length ? (
-                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                            <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
                                 {productMatches.slice(0, 8).map((product) => (
                                     <ProductCard
                                         key={product._id}

@@ -135,7 +135,7 @@ const DoctorLabBookings = () => {
     const currentClinic = doctorClinics;
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
+        <div className="max-w-6xl mx-auto p-4 sm:p-6">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Lab Test Bookings</h1>
 
             {/* Clinic Information */}
@@ -170,7 +170,7 @@ const DoctorLabBookings = () => {
             {/* Bookings List */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-[56rem] divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
@@ -266,7 +266,7 @@ const DoctorLabBookings = () => {
             {selectedBooking && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
                      style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center border-b p-4">
                             <h2 className="text-xl font-bold text-gray-800">Update Booking Status</h2>
                             <button
@@ -334,7 +334,7 @@ const DoctorLabBookings = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="flex justify-end space-x-3 pt-4">
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end sm:space-x-3 sm:gap-0">
                                 <button
                                     onClick={() => {
                                         setSelectedBooking(null);
@@ -360,7 +360,7 @@ const DoctorLabBookings = () => {
             {selectedPatient && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
                      style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center border-b p-4">
                             <h2 className="text-xl font-bold text-gray-800">Patient Details</h2>
                             <button

@@ -17,11 +17,17 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-color: var(--color-brand-dark) #e8f2f1;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
 }
 
 body {
     margin: 0;
     min-width: 320px;
+    overflow-x: hidden;
     background:
         radial-gradient(circle at top left, rgba(15, 156, 140, 0.08), transparent 28%),
         linear-gradient(180deg, #f8fbff 0%, #f3f7fb 100%);
@@ -33,11 +39,56 @@ body {
 
 a {
     color: inherit;
+    cursor: pointer;
     text-decoration: none;
+}
+
+button,
+[role="button"],
+summary,
+select,
+label[for],
+input[type="button"],
+input[type="checkbox"],
+input[type="file"],
+input[type="radio"],
+input[type="reset"],
+input[type="submit"] {
+    cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+    cursor: not-allowed;
 }
 
 #root {
     min-height: 100vh;
+    overflow-x: clip;
+}
+
+::-webkit-scrollbar {
+    width: 0.7rem;
+    height: 0.7rem;
+}
+
+::-webkit-scrollbar-track {
+    background: #e8f2f1;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 0.18rem solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--color-brand), var(--color-brand-dark));
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 156, 140, 0.9);
+    background-clip: padding-box;
 }
 
 .Toastify__toast-container {
@@ -157,8 +208,12 @@ a {
     font-size: clamp(2.4rem, 5vw, 4.4rem);
     line-height: 1.05;
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     color: var(--color-ink);
+}
+
+.react-datepicker-wrapper {
+    width: 100%;
 }
 
 .section-copy {

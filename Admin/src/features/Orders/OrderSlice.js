@@ -44,6 +44,12 @@ const orderAdminSlice = createSlice({
     name: "order",
     initialState,
     reducers: {
+        setOrders: (state, action) => {
+            state.orders = action.payload;
+        },
+        setStatusOrders: (state, action) => {
+            state.statusOrders = action.payload;
+        },
         resetOrderAdminState: (state) => {
             state.isLoading = false;
             state.isSuccess = false;
@@ -103,5 +109,5 @@ const orderAdminSlice = createSlice({
     },
 });
 
-export const { resetOrderAdminState } = orderAdminSlice.actions;
+export const { resetOrderAdminState, setOrders, setStatusOrders } = orderAdminSlice.actions;
 export default orderAdminSlice.reducer;

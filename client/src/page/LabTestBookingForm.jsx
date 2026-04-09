@@ -123,8 +123,8 @@ const LabTestBookingForm = () => {
     const filteredSlots = getAvailableTimeSlots();
 
     return (
-        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Book Lab Test</h2>
+        <div className="mx-3 my-4 max-w-2xl bg-white p-4 rounded-lg shadow-md sm:mx-auto sm:p-6">
+            <h2 className="text-xl font-bold mb-6 text-gray-800 sm:text-2xl">Book Lab Test</h2>
 
             <form onSubmit={handleSubmit}>
                 {/* Clinic Selection */}

@@ -10,18 +10,18 @@ const getCart = async () => {
 };
 
 const addToCart = async (productData) => {
-    const response = await axios.post(`${API_URL}/add`, productData, userConfig());
-    return response.data;
+    await axios.post(`${API_URL}/add`, productData, userConfig());
+    return getCart();
 };
 
 const updateCartItem = async ({ productId, updatedData }) => {
-    const response = await axios.put(`${API_URL}/${productId}`, updatedData, userConfig());
-    return response.data;
+    await axios.put(`${API_URL}/${productId}`, updatedData, userConfig());
+    return getCart();
 };
 
 const removeFromCart = async (productId) => {
-    const response = await axios.delete(`${API_URL}/${productId}`, userConfig());
-    return response.data;
+    await axios.delete(`${API_URL}/${productId}`, userConfig());
+    return getCart();
 };
 
 const clearCart = async () => {

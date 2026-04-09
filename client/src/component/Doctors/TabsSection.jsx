@@ -4,7 +4,7 @@ const TabsSection = () => {
     const [activeTab, setActiveTab] = useState("specialties");
 
     return (
-        <div className="bg-white py-10 px-32">
+        <div className="bg-white px-4 py-8 sm:px-6 md:px-12 lg:px-20 xl:px-32">
             {/* Tabs */}
             <div className="flex justify-center border-b border-gray-300">
                 <button
@@ -22,8 +22,8 @@ const TabsSection = () => {
             </div>
 
             {/* Content */}
-            <div className="text-center px-12 mt-8">
-                <h2 className="text-2xl font-bold text-gray-900">Explore our Centres of Clinical Excellence</h2>
+            <div className="mx-auto mt-8 max-w-4xl px-0 text-center sm:px-6 md:px-12">
+                <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Explore our Centres of Clinical Excellence</h2>
                 <p className="text-gray-600 mt-3">
                 Dedicated Centres of Excellence for various key specialties and super specialties, providing state-of-the-art facilities and advanced medical care, ensuring world-class clinical outcomes across multiple locations.
                 </p>

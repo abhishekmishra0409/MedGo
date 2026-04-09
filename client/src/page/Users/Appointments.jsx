@@ -88,7 +88,7 @@ const Appointments = () => {
 
     if (isLoading) {
         return (
-            <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+            <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
                 <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
@@ -98,7 +98,7 @@ const Appointments = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
 
             {/* Tab Navigation */}
@@ -127,8 +127,8 @@ const Appointments = () => {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <div className="">
-                        <table className="min-w-full divide-y divide-gray-200">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-[52rem] divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -202,7 +202,7 @@ const Appointments = () => {
                                 </svg>
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="space-y-4 p-4 sm:p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-sm font-medium text-gray-500">Date</p>
@@ -228,7 +228,7 @@ const Appointments = () => {
 
                             <div className="border-t pt-4">
                                 <h3 className="font-medium text-gray-700 mb-2">Doctor Information</h3>
-                                <div className="flex items-center space-x-4">
+                                <div className="flex items-center gap-4">
                                     {selectedAppointment.doctor?.image && (
                                         <img
                                             src={selectedAppointment.doctor.image}
@@ -245,7 +245,7 @@ const Appointments = () => {
 
                             <div className="border-t pt-4">
                                 <h3 className="font-medium text-gray-700 mb-2">Clinic Information</h3>
-                                <div className="flex justify-between items-start">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <p className="font-medium">{selectedAppointment.clinic?.name || "N/A"}</p>
                                         <p className="text-gray-600">
@@ -311,8 +311,8 @@ const Appointments = () => {
                                 </svg>
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center space-x-4">
+                        <div className="space-y-4 p-4 sm:p-6">
+                            <div className="flex items-center gap-4">
                                 <div className="flex-1">
                                     <h3 className="text-lg font-bold text-gray-800">{selectedClinic?.name || "Clinic"}</h3>
                                     <div className="mt-2 space-y-2">

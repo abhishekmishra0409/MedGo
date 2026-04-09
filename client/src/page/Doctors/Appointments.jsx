@@ -146,7 +146,7 @@ const DoctorsAppointments = () => {
 
     if (isLoading) {
         return (
-            <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+            <div className="max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
                 <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
@@ -156,7 +156,7 @@ const DoctorsAppointments = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
 
             {doctorAppointments.length === 0 ? (
@@ -166,7 +166,7 @@ const DoctorsAppointments = () => {
             ) : (
                 <div className="space-y-4">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
+                        <table className="min-w-[60rem] divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
@@ -228,7 +228,7 @@ const DoctorsAppointments = () => {
             {showPatientModal && selectedPatient && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
                      style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center border-b p-4">
                             <h3 className="text-xl font-bold text-gray-800">Patient Details</h3>
                             <button
@@ -270,7 +270,7 @@ const DoctorsAppointments = () => {
             {showUpdateModal && editingAppointment && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
                      style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center border-b p-4">
                             <h2 className="text-xl font-bold text-gray-800">Update Appointment</h2>
                             <button
@@ -352,7 +352,7 @@ const DoctorsAppointments = () => {
                                 />
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4">
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end sm:space-x-3 sm:gap-0">
                                 <button
                                     onClick={closeUpdateModal}
                                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"

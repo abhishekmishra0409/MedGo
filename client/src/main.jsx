@@ -12,8 +12,23 @@ root.render(
         <App />
     </Provider>
 )
-if ("serviceWorker" in navigator) {
+
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
     navigator.serviceWorker
         .register("/sw.js")
+        .catch(() => null);
+}
+
+if ("serviceWorker" in navigator && import.meta.env.DEV) {
+    navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => registrations.forEach((registration) => registration.unregister()))
+        .catch(() => null);
+}
+
+if ("caches" in window && import.meta.env.DEV) {
+    caches
+        .keys()
+        .then((cacheNames) => cacheNames.forEach((cacheName) => caches.delete(cacheName)))
         .catch(() => null);
 }

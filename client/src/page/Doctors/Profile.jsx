@@ -109,15 +109,15 @@ const DoctorsProfile = () => {
     };
 
     if (isLoading && !profile) {
-        return <div className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-6">Loading profile...</div>;
+        return <div className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-4 sm:p-6">Loading profile...</div>;
     }
 
     return (
-        <div className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Doctor profile</p>
-                    <h1 className="mt-2 text-3xl font-semibold text-slate-950">{profile?.name || "Doctor"}</h1>
+                    <h1 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">{profile?.name || "Doctor"}</h1>
                     <p className="mt-1 text-sm text-slate-500">Update your working hours, qualifications, and contact details.</p>
                 </div>
 
@@ -158,7 +158,7 @@ const DoctorsProfile = () => {
 
                     <div className="rounded-2xl bg-white p-4 text-sm text-slate-700">
                         <p className="font-semibold text-slate-900">Additional Information</p>
-                        <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                        <div className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
                             <div>
                                 <p className="text-slate-500">Member Since</p>
                                 <p className="mt-1 text-sm text-slate-900">{formatDate(profile?.createdAt)}</p>

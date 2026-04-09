@@ -75,7 +75,7 @@ function MedicalStore() {
             {/* Product Discount Section */}
             <div className="w-full flex flex-col md:flex-row items-center justify-center gap-6 py-8 md:py-16 px-4">
                 {/* Sanitizer Card */}
-                <div className="bg-gray-100 p-6 md:p-8 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-[400px] h-[200px] bg-cover bg-center"
+                <div className="flex h-[200px] w-full items-center gap-4 rounded-lg bg-gray-100 bg-cover bg-center p-4 shadow-md sm:p-6 md:w-[400px] md:p-8"
                      style={{ backgroundImage: "url('./Sanetizerbg.png')" }}>
                     <div className="flex-1">
                         <h2 className="text-lg md:text-xl font-bold text-gray-900">Save 20%</h2>
@@ -90,7 +90,7 @@ function MedicalStore() {
                 </div>
 
                 {/* Masks Card */}
-                <div className="bg-gray-100 p-6 md:p-8 rounded-lg shadow-md flex items-end justify-end space-x-4 w-full md:w-[400px] h-[200px] bg-cover bg-center"
+                <div className="flex h-[200px] w-full items-end justify-end gap-4 rounded-lg bg-gray-100 bg-cover bg-center p-4 shadow-md sm:p-6 md:w-[400px] md:p-8"
                      style={{ backgroundImage: "url('./Maskgirlbg.png')" }}>
                     <div className="flex flex-col justify-end items-center">
                         <h2 className="text-lg md:text-xl font-bold text-gray-900">15% Off</h2>

@@ -40,7 +40,7 @@ const SearchFilter = ({
     };
 
     return (
-        <aside className="sticky top-28 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
+        <aside className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-28">
             <div className="flex items-center justify-between">
                 <div>
                     <p className="eyebrow">Filters</p>
@@ -56,7 +56,7 @@ const SearchFilter = ({
                 <label className="block text-sm font-medium text-slate-700">
                     Search
                     <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                        <Search className="h-4 w-4 text-slate-400" />
+                        <Search className="h-4 w-4 shrink-0 text-slate-400" />
                         <input
                             type="text"
                             placeholder={placeholder}
@@ -67,7 +67,7 @@ const SearchFilter = ({
                                     handleSearch();
                                 }
                             }}
-                            className="w-full border-0 bg-transparent text-sm text-slate-700 outline-none"
+                            className="min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-700 outline-none"
                         />
                     </div>
                 </label>
