@@ -163,7 +163,7 @@ const EditProductPage = () => {
     if (isLoading && !product) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
             </div>
         );
     }
@@ -194,7 +194,7 @@ const EditProductPage = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -212,7 +212,7 @@ const EditProductPage = () => {
                                     step="0.01"
                                     value={formData.price}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     required
                                 />
                             </div>
@@ -227,7 +227,7 @@ const EditProductPage = () => {
                                     step="0.01"
                                     value={formData.originalPrice}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                             </div>
                         </div>
@@ -242,7 +242,7 @@ const EditProductPage = () => {
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -258,7 +258,7 @@ const EditProductPage = () => {
                                 min="0"
                                 value={formData.stock}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -271,7 +271,7 @@ const EditProductPage = () => {
                                     name="isHot"
                                     checked={formData.isHot}
                                     onChange={handleChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Hot Product</span>
                             </label>
@@ -281,7 +281,7 @@ const EditProductPage = () => {
                                     name="isNew"
                                     checked={formData.isNew}
                                     onChange={handleChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">New Arrival</span>
                             </label>
@@ -321,7 +321,7 @@ const EditProductPage = () => {
                                                 <UploadCloud className="h-12 w-12 text-gray-400" />
                                             </div>
                                             <div className="flex text-sm text-gray-600">
-                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none">
                                                     <span>Upload a file</span>
                                                     <input
                                                         type="file"
@@ -387,7 +387,7 @@ const EditProductPage = () => {
                                                 <UploadCloud className="h-12 w-12 text-gray-400" />
                                             </div>
                                             <div className="flex text-sm text-gray-600">
-                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none">
                                                     <span>Upload files</span>
                                                     <input
                                                         type="file"
@@ -420,7 +420,7 @@ const EditProductPage = () => {
                         rows={3}
                         value={formData.description}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                 </div>
 
@@ -434,7 +434,7 @@ const EditProductPage = () => {
                         name="dosage"
                         value={formData.dosage}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                 </div>
 
@@ -450,7 +450,7 @@ const EditProductPage = () => {
                                     type="text"
                                     value={benefit}
                                     onChange={(e) => handleBenefitChange(index, e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     placeholder={`Benefit ${index + 1}`}
                                 />
                                 {formData.benefits.length > 1 && (
@@ -467,7 +467,7 @@ const EditProductPage = () => {
                         <button
                             type="button"
                             onClick={addBenefit}
-                            className="flex items-center text-sm text-blue-600 hover:text-blue-800 mt-2"
+                            className="flex items-center text-sm text-teal-600 hover:text-teal-800 mt-2"
                         >
                             <Plus className="h-4 w-4 mr-1" />
                             Add Another Benefit
@@ -480,7 +480,7 @@ const EditProductPage = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        className={`px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
                             isLoading ? 'opacity-70 cursor-not-allowed' : ''
                         }`}
                     >

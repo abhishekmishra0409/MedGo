@@ -86,10 +86,10 @@ const BlogDetail = () => {
 
             {/* Social Share Icons */}
             <div className="mt-6 flex flex-wrap gap-3">
-                <button className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition duration-300">
+                <button className="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded transition duration-300">
                     Facebook
                 </button>
-                <button className="px-3 py-2 bg-sky-400 hover:bg-sky-500 text-white rounded transition duration-300">
+                <button className="px-3 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded transition duration-300">
                     Twitter
                 </button>
                 <button className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-300">

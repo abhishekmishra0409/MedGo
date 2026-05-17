@@ -89,7 +89,7 @@ const ProductsPage = () => {
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                             placeholder="Search products..."
                             value={searchTerm}
                             onChange={(e) => {
@@ -101,7 +101,7 @@ const ProductsPage = () => {
 
                     <button
                         onClick={() => navigate('/dashboard/products/create')}
-                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 whitespace-nowrap"
+                        className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 whitespace-nowrap"
                     >
                         <Plus size={18} />
                         Add Product
@@ -111,7 +111,7 @@ const ProductsPage = () => {
 
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
             ) : (
                 <>
@@ -160,7 +160,7 @@ const ProductsPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full ${
                             product.isHot ? 'bg-red-100 text-red-800' :
-                                product.isNew ? 'bg-blue-100 text-blue-800' :
+                                product.isNew ? 'bg-teal-100 text-teal-800' :
                                     'bg-gray-100 text-gray-800'
                         }`}>
                           {product.isHot ? 'Hot' : product.isNew ? 'New' : 'Normal'}
@@ -170,7 +170,7 @@ const ProductsPage = () => {
                                             <div className="flex space-x-2">
                                                 <button
                                                     onClick={() => navigate(`/dashboard/products/edit/${product._id}`)}
-                                                    className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                                                    className="text-teal-600 hover:text-teal-900 p-1 rounded hover:bg-teal-50"
                                                     title="Edit"
                                                 >
                                                     <Edit size={18} />
@@ -218,7 +218,7 @@ const ProductsPage = () => {
                                         key={i + 1}
                                         onClick={() => setCurrentPage(i + 1)}
                                         className={`px-3 py-1 border rounded-md ${
-                                            currentPage === i + 1 ? 'bg-blue-500 text-white' : ''
+                                            currentPage === i + 1 ? 'bg-teal-500 text-white' : ''
                                         }`}
                                     >
                                         {i + 1}

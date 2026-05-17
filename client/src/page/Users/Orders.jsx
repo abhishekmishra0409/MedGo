@@ -45,7 +45,7 @@ const Orders = () => {
                 );
             case 'shipped':
                 return (
-                    <span className="flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    <span className="flex items-center px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-sm">
             <FiTruck className="mr-1" /> Shipped
           </span>
                 );
@@ -75,7 +75,7 @@ const Orders = () => {
 
             {isLoading && !orders.length ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
             ) : orders.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -130,7 +130,7 @@ const Orders = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
                                         onClick={() => handleViewOrder(order._id)}
-                                        className="text-indigo-600 hover:text-indigo-900"
+                                        className="text-teal-700 hover:text-teal-900 font-medium"
                                     >
                                         View Details
                                     </button>
@@ -299,7 +299,7 @@ const Orders = () => {
                                         </div>
                                     ) : (
                                         <div className="flex justify-center items-center h-32">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
                                         </div>
                                     )}
                                 </div>
@@ -308,7 +308,7 @@ const Orders = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                                 >
                                     Close
                                 </button>

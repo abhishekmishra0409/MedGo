@@ -102,7 +102,7 @@ const TestModal = ({
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -117,7 +117,7 @@ const TestModal = ({
                                         name="code"
                                         value={formData.code}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -130,7 +130,7 @@ const TestModal = ({
                                         name="description"
                                         value={formData.description}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         rows="2"
                                     />
                                 </div>
@@ -147,7 +147,7 @@ const TestModal = ({
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -166,7 +166,7 @@ const TestModal = ({
                                             name="price"
                                             value={formData.price}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -186,7 +186,7 @@ const TestModal = ({
                                             name="reportTime"
                                             value={formData.reportTime}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -207,7 +207,7 @@ const TestModal = ({
                                     name="preparationInstructions"
                                     value={formData.preparationInstructions}
                                     onChange={handleChange}
-                                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                     rows="3"
                                     placeholder="Any special preparation required for this test"
                                 />
@@ -218,14 +218,14 @@ const TestModal = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                                 disabled={isLoading}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Processing...' : test ? 'Update Test' : 'Add Test'}

@@ -11,6 +11,7 @@ const DoctorProfile = () => {
 
     const { doctor, isLoading, isError } = useSelector((state) => state.doctor);
     const { doctorClinics } = useSelector((state) => state.clinic);
+    const clinicList = Array.isArray(doctorClinics) ? doctorClinics : doctorClinics ? [doctorClinics] : [];
 
     const handleButtonClick = () => {
         navigate(`/appointment/${id}`);
@@ -43,11 +44,17 @@ const DoctorProfile = () => {
             <div className="grid md:grid-cols-3 gap-8">
                 <div className="surface-card">
                     <div className="flex flex-col items-center">
-                        <img
-                            src={doctor.image}
-                            alt={doctor.name}
-                            className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover"
-                        />
+                        {doctor.image ? (
+                            <img
+                                src={doctor.image}
+                                alt={doctor.name}
+                                className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover"
+                            />
+                        ) : (
+                            <div className="flex aspect-square h-auto w-full max-w-80 items-center justify-center rounded-lg bg-teal-100 text-6xl font-bold text-teal-800">
+                                {(doctor.name || "D").charAt(0).toUpperCase()}
+                            </div>
+                        )}
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                         <p className="text-teal-600 text-lg">{doctor.specialty || "Specialist"}</p>
                         <p className="text-gray-500 text-sm text-center">{doctor.qualification || "Qualification not added"}</p>
@@ -101,9 +108,9 @@ const DoctorProfile = () => {
                 <div className="md:col-span-2 space-y-6">
                     <div className="surface-card">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Availability snapshot</h2>
-                        {doctorClinics?.length ? (
+                        {clinicList.length ? (
                             <div className="grid gap-4 md:grid-cols-2">
-                                {doctorClinics.slice(0, 4).map((clinic) => (
+                                {clinicList.slice(0, 4).map((clinic) => (
                                     <div key={clinic._id} className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
                                         <p className="font-semibold text-slate-950">{clinic.name}</p>
                                         <p className="mt-1 text-sm text-slate-600">

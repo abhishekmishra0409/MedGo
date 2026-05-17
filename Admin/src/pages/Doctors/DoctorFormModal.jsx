@@ -263,7 +263,7 @@ const DoctorModal = ({
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -282,7 +282,7 @@ const DoctorModal = ({
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -301,7 +301,7 @@ const DoctorModal = ({
                                             name="specialty"
                                             value={formData.specialty}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -316,7 +316,7 @@ const DoctorModal = ({
                                         name="qualification"
                                         value={formData.qualification}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -337,7 +337,7 @@ const DoctorModal = ({
                                             name="contact.phone"
                                             value={formData.contact.phone}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -356,7 +356,7 @@ const DoctorModal = ({
                                             name="contact.email"
                                             value={formData.contact.email}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         />
                                     </div>
                                 </div>
@@ -374,7 +374,7 @@ const DoctorModal = ({
                                             name="contact.address"
                                             value={formData.contact.address}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         />
                                     </div>
                                 </div>
@@ -392,7 +392,7 @@ const DoctorModal = ({
                                 <button
                                     type="button"
                                     onClick={addWorkingHours}
-                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                    className="text-sm text-teal-600 hover:text-teal-800"
                                 >
                                     Add Hours
                                 </button>
@@ -405,7 +405,7 @@ const DoctorModal = ({
                                         placeholder="Days (e.g., Monday - Friday)"
                                         value={wh.days}
                                         onChange={(e) => handleWorkingHoursChange(index, 'days', e.target.value)}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                     />
                                     <div className="flex">
                                         <input
@@ -413,7 +413,7 @@ const DoctorModal = ({
                                             placeholder="Hours (e.g., 9 AM - 5 PM)"
                                             value={wh.hours}
                                             onChange={(e) => handleWorkingHoursChange(index, 'hours', e.target.value)}
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         />
                                         {formData.workingHours.length > 1 && (
                                             <button
@@ -439,7 +439,7 @@ const DoctorModal = ({
                                 <button
                                     type="button"
                                     onClick={() => addArrayFieldItem('education')}
-                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                    className="text-sm text-teal-600 hover:text-teal-800"
                                 >
                                     Add Education
                                 </button>
@@ -452,7 +452,7 @@ const DoctorModal = ({
                                         placeholder="Education (e.g., MBBS from Harvard)"
                                         value={edu}
                                         onChange={(e) => handleArrayFieldChange('education', index, e.target.value)}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                     />
                                     {formData.education.length > 1 && (
                                         <button
@@ -477,7 +477,7 @@ const DoctorModal = ({
                                 <button
                                     type="button"
                                     onClick={() => addArrayFieldItem('biography')}
-                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                    className="text-sm text-teal-600 hover:text-teal-800"
                                 >
                                     Add Biography
                                 </button>
@@ -489,7 +489,7 @@ const DoctorModal = ({
                       placeholder="Biography point (e.g., 10 years of experience)"
                       value={bio}
                       onChange={(e) => handleArrayFieldChange('biography', index, e.target.value)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                       rows="2"
                   />
                                     {formData.biography.length > 1 && (
@@ -514,7 +514,7 @@ const DoctorModal = ({
                                 <button
                                     type="button"
                                     onClick={() => addArrayFieldItem('specializations')}
-                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                    className="text-sm text-teal-600 hover:text-teal-800"
                                 >
                                     Add Specialization
                                 </button>
@@ -527,7 +527,7 @@ const DoctorModal = ({
                                         placeholder="Specialization (e.g., Heart Surgery)"
                                         value={spec}
                                         onChange={(e) => handleArrayFieldChange('specializations', index, e.target.value)}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                     />
                                     {formData.specializations.length > 1 && (
                                         <button
@@ -546,14 +546,14 @@ const DoctorModal = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                                 disabled={isLoading}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Processing...' : doctor ? 'Update Doctor' : 'Add Doctor'}

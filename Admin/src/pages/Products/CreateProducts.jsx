@@ -404,7 +404,7 @@ const CreateProductPage = () => {
                         <button
                             type="button"
                             onClick={addBenefit}
-                            className="flex items-center text-sm text-blue-600 mt-2"
+                            className="flex items-center text-sm text-teal-600 mt-2"
                         >
                             <Plus className="h-4 w-4 mr-1" />
                             Add Benefit
@@ -416,7 +416,7 @@ const CreateProductPage = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
+                        className={`px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 ${
                             isLoading ? 'opacity-70 cursor-not-allowed' : ''
                         }`}
                     >

@@ -138,7 +138,7 @@ function MedicalStore() {
             </div>
 
             {/* Timer Section */}
-            <div className="bg-blue-50 py-8 md:py-16 flex flex-col md:flex-row items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-32 bg-cover bg-center"
+            <div className="bg-teal-50 py-8 md:py-16 flex flex-col md:flex-row items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-32 bg-cover bg-center"
                  style={{ backgroundImage: "url('./TimerBg.png')" }}>
                 <div className="text-center md:text-left mb-6 md:mb-0">
                     <h2 className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900">

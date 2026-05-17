@@ -7,7 +7,7 @@ function Ambulance() {
                 <div className=" bg-white overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         {/* Left Section - Image */}
-                        <div className="flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-50 p-4 md:w-1/2 md:p-8">
+                        <div className="flex items-center justify-center bg-gradient-to-br from-green-100 to-teal-50 p-4 md:w-1/2 md:p-8">
                             <img
                                 src="/Ambulance2.png"
                                 alt="Emergency Ambulance"
@@ -22,7 +22,7 @@ function Ambulance() {
                                 <h2 className="text-3xl font-extrabold text-yellow-300 tracking-wide sm:text-4xl md:text-5xl">INDORE</h2>
                             </div>
 
-                            <div className="bg-blue-900 p-4 rounded-xl shadow-lg w-full max-w-xs transform transition hover:scale-105 sm:p-6">
+                            <div className="bg-teal-900 p-4 rounded-xl shadow-lg w-full max-w-xs transform transition hover:scale-105 sm:p-6">
                                 <div className="space-y-2">
                                     <p className="text-4xl md:text-5xl font-bold text-white">24/7</p>
                                     <p className="text-xl md:text-2xl font-semibold text-gray-100">EMERGENCY</p>

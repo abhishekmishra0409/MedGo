@@ -133,7 +133,7 @@ const DoctorBlogs = () => {
                 <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">My Blogs</h1>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                    className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
                 >
                     <FiPlus className="mr-2" />
                     Create New Blog
@@ -142,14 +142,14 @@ const DoctorBlogs = () => {
 
             {loading && !myBlogs.length ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
             ) : myBlogs.length === 0 ? (
                 <div className="text-center py-12">
                     <p className="text-gray-500 text-lg">You haven't written any blogs yet.</p>
                     <button
                         onClick={openCreateModal}
-                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                        className="mt-4 px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
                     >
                         Write Your First Blog
                     </button>
@@ -171,7 +171,7 @@ const DoctorBlogs = () => {
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => openEditModal(blog)}
-                                            className="text-indigo-600 hover:text-indigo-800"
+                                            className="text-teal-700 hover:text-teal-900"
                                             title="Edit"
                                         >
                                             <FiEdit />
@@ -185,7 +185,7 @@ const DoctorBlogs = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full mb-3">
+                                <span className="inline-block bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full mb-3">
                                     {blog.category}
                                 </span>
                                 <p className="text-gray-600 mb-3 line-clamp-2">
@@ -232,7 +232,7 @@ const DoctorBlogs = () => {
                                     name="title"
                                     value={formData.title}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     required
                                 />
                             </div>
@@ -247,7 +247,7 @@ const DoctorBlogs = () => {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     required
                                 />
                             </div>
@@ -262,7 +262,7 @@ const DoctorBlogs = () => {
                                     name="category"
                                     value={formData.category}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     required
                                 />
                             </div>
@@ -277,7 +277,7 @@ const DoctorBlogs = () => {
                                     value={formData.content}
                                     onChange={handleInputChange}
                                     rows="8"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     required
                                 ></textarea>
                             </div>
@@ -287,7 +287,7 @@ const DoctorBlogs = () => {
                                     Blog Image
                                 </label>
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                    <label className="flex flex-col items-center justify-center w-full max-w-xs px-4 py-6 bg-white text-blue rounded-lg shadow-md tracking-wide border border-blue cursor-pointer hover:bg-blue-100">
+                                    <label className="flex flex-col items-center justify-center w-full max-w-xs px-4 py-6 bg-white text-teal-700 rounded-lg shadow-md tracking-wide border border-teal-200 cursor-pointer hover:bg-teal-50">
                                         <FiUpload className="text-2xl text-gray-600 mb-2" />
                                         <span className="text-sm text-gray-600">
                                             {formData.image ? formData.image.name : 'Choose an image'}
@@ -325,7 +325,7 @@ const DoctorBlogs = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                                 >
                                     {loading ? (
                                         <span className="flex items-center">

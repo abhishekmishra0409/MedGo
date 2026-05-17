@@ -77,14 +77,14 @@ const MainLayout = () => {
                 <div className="flex flex-col h-full p-4">
                     {/* Logo/Brand */}
                     <div className="flex items-center justify-center h-16 mb-8">
-                        <h1 className="text-xl font-bold text-indigo-600">Dashboard</h1>
+                        <h1 className="text-xl font-bold text-teal-700">Dashboard</h1>
                     </div>
 
                     {/* User Profile Summary */}
                     {user && (
-                        <div className="flex items-center mb-8 p-4 rounded-lg bg-indigo-50">
-                            <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center">
-                <span className="text-indigo-600 font-semibold">
+                        <div className="flex items-center mb-8 p-4 rounded-lg bg-teal-50">
+                            <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
+                <span className="text-teal-700 font-semibold">
                   {user.data?.username ? user.data?.username.charAt(0).toUpperCase() : 'U'}
                 </span>
                             </div>
@@ -104,7 +104,7 @@ const MainLayout = () => {
                                         onClick={() => handleNavigation(item.path)}
                                         className={`w-full flex items-center p-3 rounded-lg transition-colors
                                             ${isActive(item.path)
-                                            ? 'bg-indigo-100 text-indigo-700'
+                                            ? 'bg-teal-100 text-teal-700'
                                             : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                     >

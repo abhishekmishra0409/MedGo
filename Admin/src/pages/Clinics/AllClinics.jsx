@@ -142,7 +142,7 @@ const ClinicPage = () => {
                         setSelectedClinic(null);
                         setIsModalOpen(true);
                     }}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    className="flex items-center bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Clinic
@@ -157,7 +157,7 @@ const ClinicPage = () => {
                 <input
                     type="text"
                     placeholder="Search clinics by name, city, email or phone..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -166,7 +166,7 @@ const ClinicPage = () => {
             {/* Clinics List */}
             {isClinicLoading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -177,8 +177,8 @@ const ClinicPage = () => {
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start space-x-4">
                                             <div className="flex-shrink-0">
-                                                <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-                                                    <Building className="h-8 w-8 text-blue-600" />
+                                                <div className="h-16 w-16 rounded-full bg-teal-100 flex items-center justify-center">
+                                                    <Building className="h-8 w-8 text-teal-600" />
                                                 </div>
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -188,7 +188,7 @@ const ClinicPage = () => {
                                                 </p>
                                                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                                                     {clinic.owner?.name ? (
-                                                        <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 font-medium text-indigo-700">
+                                                        <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 font-medium text-teal-700">
                                                             Owner: {clinic.owner.name}
                                                         </span>
                                                     ) : null}
@@ -216,7 +216,7 @@ const ClinicPage = () => {
                                         <div className="flex items-center space-x-2">
                                             <button
                                                 onClick={() => toggleExpand(clinic._id)}
-                                                className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50"
+                                                className="text-teal-600 hover:text-teal-800 p-1 rounded-md hover:bg-teal-50"
                                             >
                                                 {expandedClinic === clinic._id ? (
                                                     <ChevronUp className="h-5 w-5" />
@@ -229,7 +229,7 @@ const ClinicPage = () => {
                                                     setSelectedClinic(clinic);
                                                     setIsModalOpen(true);
                                                 }}
-                                                className="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50"
+                                                className="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-50"
                                                 title="Edit"
                                             >
                                                 <Edit className="h-5 w-5" />
@@ -300,7 +300,7 @@ const ClinicPage = () => {
                                                         <h3 className="text-sm font-medium text-gray-700">Doctors ({clinic.doctors?.length || 0})</h3>
                                                         <button
                                                             onClick={() => setShowAddDoctor(showAddDoctor === clinic._id ? null : clinic._id)}
-                                                            className="text-sm text-blue-600 hover:text-blue-800"
+                                                            className="text-sm text-teal-600 hover:text-teal-800"
                                                         >
                                                             {showAddDoctor === clinic._id ? 'Cancel' : 'Add Doctor'}
                                                         </button>
@@ -315,7 +315,7 @@ const ClinicPage = () => {
                                                                     <select
                                                                         value={selectedDoctorId}
                                                                         onChange={(e) => setSelectedDoctorId(e.target.value)}
-                                                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border mb-2"
+                                                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border mb-2"
                                                                     >
                                                                         <option value="">Select a doctor</option>
                                                                         {allDoctors
@@ -329,7 +329,7 @@ const ClinicPage = () => {
                                                                     </select>
                                                                     <button
                                                                         onClick={() => handleAddDoctor(clinic._id)}
-                                                                        className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                                                                        className="px-3 py-1 bg-teal-600 text-white rounded-md text-sm hover:bg-teal-700"
                                                                         disabled={!selectedDoctorId}
                                                                     >
                                                                         Add Doctor

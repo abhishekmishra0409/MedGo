@@ -185,7 +185,7 @@ const ConversationPage = ({ userType }) => {
                     </h2>
                     <button
                         onClick={() => setShowNewConversationModal(true)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 text-sm"
+                        className="bg-teal-600 text-white px-3 py-1 rounded-lg hover:bg-teal-700 text-sm"
                     >
                         New
                     </button>
@@ -194,7 +194,7 @@ const ConversationPage = ({ userType }) => {
                 <div className="overflow-y-auto h-[calc(100%-60px)]">
                     {isLoading && conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-full">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
                         </div>
                     ) : conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-full text-gray-500">
@@ -205,7 +205,7 @@ const ConversationPage = ({ userType }) => {
                             <div
                                 key={conversation._id}
                                 className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
-                                    activeConversation === conversation._id ? 'bg-blue-50' : ''
+                                    activeConversation === conversation._id ? 'bg-teal-50' : ''
                                 }`}
                                 onClick={() => handleConversationClick(conversation._id)}
                             >
@@ -214,7 +214,7 @@ const ConversationPage = ({ userType }) => {
                                         {getParticipantName(conversation)}
                                     </h3>
                                     {conversation.unreadCount > 0 && (
-                                        <span className="h-5 w-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
+                                        <span className="h-5 w-5 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center">
                                             {conversation.unreadCount}
                                         </span>
                                     )}
@@ -262,7 +262,7 @@ const ConversationPage = ({ userType }) => {
                             <div>
                                 {isLoading && messages.length === 0 ? (
                                     <div className="flex justify-center items-center h-full">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
                                     </div>
                                 ) : messages.length === 0 ? (
                                     <div className="flex justify-center items-center h-full text-gray-500">
@@ -281,14 +281,14 @@ const ConversationPage = ({ userType }) => {
                                                 <div
                                                     className={`max-w-[82vw] px-4 py-2 rounded-lg md:max-w-xs lg:max-w-md ${
                                                         isOwnMessage(msg)
-                                                            ? 'bg-blue-500 text-white'
+                                                            ? 'bg-teal-600 text-white'
                                                             : 'bg-white border border-gray-300'
                                                     }`}
                                                 >
                                                     <p>{msg.content}</p>
                                                     <p
                                                         className={`text-xs mt-1 ${
-                                                            isOwnMessage(msg) ? 'text-blue-100' : 'text-gray-500'
+                                                            isOwnMessage(msg) ? 'text-teal-100' : 'text-gray-500'
                                                         }`}
                                                     >
                                                         {formatDate(msg.createdAt)}
@@ -311,12 +311,12 @@ const ConversationPage = ({ userType }) => {
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Type your message..."
-                                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!newMessage.trim() || isLoading}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+                                    className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:bg-teal-300"
                                 >
                                     Send
                                 </button>
@@ -344,7 +344,7 @@ const ConversationPage = ({ userType }) => {
                                 Select Appointment
                             </label>
                             <select
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 value={selectedAppointment?._id || ''}
                                 onChange={(e) => {
                                     const appointment = getAvailableAppointments().find(a => a._id === e.target.value);
@@ -367,7 +367,7 @@ const ConversationPage = ({ userType }) => {
                                 Initial Message
                             </label>
                             <textarea
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 rows={4}
                                 value={initialMessage}
                                 onChange={(e) => setInitialMessage(e.target.value)}
@@ -389,7 +389,7 @@ const ConversationPage = ({ userType }) => {
                             </button>
                             <button
                                 type="button"
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+                                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-teal-300"
                                 disabled={!selectedAppointment || !initialMessage.trim()}
                                 onClick={handleStartNewConversation}
                             >

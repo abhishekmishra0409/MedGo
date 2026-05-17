@@ -97,7 +97,7 @@ const TestsPage = () => {
                         setSelectedTest(null);
                         setIsModalOpen(true);
                     }}
-                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    className="flex items-center bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Test
@@ -112,7 +112,7 @@ const TestsPage = () => {
                 <input
                     type="text"
                     placeholder="Search tests by name, code or category..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -121,7 +121,7 @@ const TestsPage = () => {
             {/* Tests List */}
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -132,14 +132,14 @@ const TestsPage = () => {
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start space-x-4">
                                             <div className="flex-shrink-0">
-                                                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                                                    <FlaskConical className="h-6 w-6 text-purple-600" />
+                                                <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                                    <FlaskConical className="h-6 w-6 text-slate-600" />
                                                 </div>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center space-x-2">
                                                     <h2 className="text-lg font-bold text-gray-900">{test.name}</h2>
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
                                                         {test.code}
                                                     </span>
                                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -173,7 +173,7 @@ const TestsPage = () => {
                                         <div className="flex items-center space-x-2">
                                             <button
                                                 onClick={() => toggleExpand(test._id)}
-                                                className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50"
+                                                className="text-teal-600 hover:text-teal-800 p-1 rounded-md hover:bg-teal-50"
                                             >
                                                 {expandedTest === test._id ? (
                                                     <ChevronUp className="h-5 w-5" />
@@ -186,7 +186,7 @@ const TestsPage = () => {
                                                     setSelectedTest(test);
                                                     setIsModalOpen(true);
                                                 }}
-                                                className="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50"
+                                                className="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-50"
                                                 title="Edit"
                                             >
                                                 <Edit className="h-5 w-5" />

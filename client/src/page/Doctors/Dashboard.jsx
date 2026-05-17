@@ -76,14 +76,14 @@ const DoctorsMainLayout = () => {
                 <div className="flex flex-col h-full p-4">
                     {/* Logo/Brand */}
                     <div className="flex items-center justify-center h-16 mb-8">
-                        <h1 className="text-xl font-bold text-indigo-600">Dashboard</h1>
+                        <h1 className="text-xl font-bold text-teal-700">Dashboard</h1>
                     </div>
 
                     {/* User Profile Summary */}
                     {doctor && (
-                        <div className="flex items-center mb-8 p-4 rounded-lg bg-indigo-50">
-                            <div className="w-12 h-9 rounded-full bg-indigo-200 flex items-center justify-center">
-                                <span className="text-indigo-600 font-semibold">
+                        <div className="flex items-center mb-8 p-4 rounded-lg bg-teal-50">
+                            <div className="w-12 h-9 rounded-full bg-teal-100 flex items-center justify-center">
+                                <span className="text-teal-700 font-semibold">
                                     {doctor.name ? doctor.name.charAt(0).toUpperCase() : 'U'}
                                 </span>
                             </div>
@@ -103,7 +103,7 @@ const DoctorsMainLayout = () => {
                                         onClick={() => handleNavigation(item.path)}
                                         className={`w-full flex items-center p-3 rounded-lg transition-colors
                                             ${isActive(item.path)
-                                            ? 'bg-indigo-100 text-indigo-700 font-medium'
+                                            ? 'bg-teal-100 text-teal-700 font-medium'
                                             : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >

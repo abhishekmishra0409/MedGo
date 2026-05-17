@@ -32,7 +32,7 @@ const LabCard = ({ test }) => {
             <p className="text-sm text-gray-600">Code: {test.code}</p>
             <p className="text-sm text-gray-600 mt-2">{test.description}</p>
 
-            <span className="mt-2 inline-block bg-teal-100 text-blue-700 text-xs px-2 py-1 rounded">
+            <span className="mt-2 inline-block bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded">
                 {test.category?.toUpperCase()}
             </span>
 

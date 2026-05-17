@@ -251,7 +251,7 @@ const CartPage = () => {
                                     placeholder="Enter coupon code"
                                     value={coupon}
                                     onChange={(e) => setCoupon(e.target.value)}
-                                    className="min-w-0 flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="min-w-0 flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                                 <button
                                     onClick={applyCoupon}

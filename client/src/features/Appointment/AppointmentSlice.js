@@ -119,7 +119,7 @@ const appointmentSlice = createSlice({
             .addCase(getMyAppointments.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.myAppointments = action.payload.data;
+                state.myAppointments = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getMyAppointments.rejected, (state, action) => {
                 state.isLoading = false;
@@ -134,7 +134,7 @@ const appointmentSlice = createSlice({
             .addCase(getDoctorAppointments.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.doctorAppointments = action.payload.data;
+                state.doctorAppointments = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getDoctorAppointments.rejected, (state, action) => {
                 state.isLoading = false;

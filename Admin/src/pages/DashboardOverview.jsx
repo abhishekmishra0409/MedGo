@@ -62,7 +62,7 @@ const getStatusClasses = (status = "") => {
             return "bg-green-100 text-green-800";
         case "processing":
         case "shipped":
-            return "bg-blue-100 text-blue-800";
+            return "bg-teal-100 text-teal-800";
         case "cancelled":
             return "bg-red-100 text-red-800";
         default:
@@ -221,7 +221,7 @@ const Dashboard = () => {
                     {recentActivities.length ? (
                         recentActivities.map((activity, index) => (
                             <div key={`${activity.action}-${index}`} className="flex items-start">
-                                <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                                <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-teal-500"></div>
                                 <div className="ml-3">
                                     <p className="text-sm">
                                         <span className="font-medium">{activity.action}</span> by {activity.user}

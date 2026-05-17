@@ -6,6 +6,95 @@ const { buildDoctorSearchQuery } = require('../Utils/doctorAccount');
 const mongoose = require('mongoose');
 
 class AppointmentService {
+    static parseTimeToMinutes(value) {
+        const match = String(value || '').trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+        if (!match) return null;
+
+        let hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        const period = match[3]?.toUpperCase();
+
+        if (minutes > 59 || hours > 23) return null;
+        if (period) {
+            if (hours < 1 || hours > 12) return null;
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+        }
+
+        return hours * 60 + minutes;
+    }
+
+    static getDayIndex(dayName) {
+        return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+            .indexOf(String(dayName || '').toLowerCase());
+    }
+
+    static workingDaysIncludeDate(daysLabel, date) {
+        const label = String(daysLabel || '').toLowerCase();
+        if (!label) return false;
+
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const targetIndex = date.getDay();
+        const targetDay = dayNames[targetIndex];
+
+        if (label.includes('weekday')) return targetIndex >= 1 && targetIndex <= 5;
+        if (label.includes('weekend')) return targetIndex === 0 || targetIndex === 6;
+        if (label.includes(targetDay)) return true;
+
+        const rangeMatch = label.match(/(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*(?:-|to)\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/);
+        if (!rangeMatch) return false;
+
+        const startIndex = this.getDayIndex(rangeMatch[1]);
+        const endIndex = this.getDayIndex(rangeMatch[2]);
+        if (startIndex === -1 || endIndex === -1) return false;
+
+        if (startIndex <= endIndex) {
+            return targetIndex >= startIndex && targetIndex <= endIndex;
+        }
+
+        return targetIndex >= startIndex || targetIndex <= endIndex;
+    }
+
+    static parseWorkingHourRange(hoursLabel) {
+        const parts = String(hoursLabel || '').split(/\s*(?:-|to)\s*/i);
+        if (parts.length < 2) return null;
+
+        const start = this.parseTimeToMinutes(parts[0]);
+        const end = this.parseTimeToMinutes(parts[1]);
+        if (start === null || end === null || end <= start) return null;
+
+        return { start, end };
+    }
+
+    static isTimeSlotInsideWorkingHours(doctor, date, timeSlot) {
+        const workingHours = Array.isArray(doctor?.doctorProfile?.workingHours)
+            ? doctor.doctorProfile.workingHours
+            : [];
+
+        const validRows = workingHours
+            .map((row) => ({
+                days: row?.days,
+                range: this.parseWorkingHourRange(row?.hours),
+            }))
+            .filter((row) => row.days && row.range);
+
+        if (!validRows.length) {
+            return true;
+        }
+
+        const requestedStart = this.parseTimeToMinutes(timeSlot?.start);
+        const requestedEnd = this.parseTimeToMinutes(timeSlot?.end);
+        if (requestedStart === null || requestedEnd === null || requestedEnd <= requestedStart) {
+            return false;
+        }
+
+        return validRows.some((row) => (
+            this.workingDaysIncludeDate(row.days, date)
+            && requestedStart >= row.range.start
+            && requestedEnd <= row.range.end
+        ));
+    }
+
     static getDateRange(dateInput) {
         if (!dateInput) {
             throw new Error('Appointment date is required');
@@ -89,7 +178,11 @@ class AppointmentService {
         }
 
         // For in-person appointments, verify clinic
-        if (appointmentData.type === 'in-person' && appointmentData.clinic) {
+        if (appointmentData.type === 'in-person') {
+            if (!appointmentData.clinic) {
+                throw new Error('Clinic is required for in-person appointments');
+            }
+
             const clinic = await Clinic.findById(appointmentData.clinic);
             if (!clinic || !clinic.doctors.some((doctorId) => String(doctorId) === String(canonicalDoctorId))) {
                 throw new Error('Doctor is not available at this clinic');
@@ -124,6 +217,10 @@ class AppointmentService {
         }
 
         const { startOfDay, endOfDay } = this.getDateRange(date);
+
+        if (!this.isTimeSlotInsideWorkingHours(doctor, startOfDay, timeSlot)) {
+            return false;
+        }
 
         const conflictingAppointments = await Appointment.find({
             doctor: doctor._id,

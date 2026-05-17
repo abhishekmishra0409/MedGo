@@ -43,7 +43,7 @@ const DoctorsAppointments = () => {
     const getStatusBadge = (status) => {
         const statusClasses = {
             pending: "bg-yellow-100 text-yellow-800",
-            confirmed: "bg-blue-100 text-blue-800",
+            confirmed: "bg-teal-100 text-teal-800",
             completed: "bg-green-100 text-green-800",
             cancelled: "bg-red-100 text-red-800",
         };
@@ -60,7 +60,7 @@ const DoctorsAppointments = () => {
             pending: "bg-yellow-100 text-yellow-800",
             paid: "bg-green-100 text-green-800",
             failed: "bg-red-100 text-red-800",
-            refunded: "bg-purple-100 text-purple-800",
+            refunded: "bg-slate-100 text-slate-800",
         };
 
         return (
@@ -185,7 +185,7 @@ const DoctorsAppointments = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <button
                                             onClick={() => handlePatientClick(appointment.patient)}
-                                            className="text-indigo-600 hover:text-indigo-900 hover:underline"
+                                            className="text-teal-700 hover:text-teal-900 hover:underline"
                                         >
                                             {appointment.patient?.username || "N/A"}
                                         </button>
@@ -211,7 +211,7 @@ const DoctorsAppointments = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <button
                                             onClick={() => handleEditClick(appointment)}
-                                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                            className="text-teal-700 hover:text-teal-900 mr-3 font-medium"
                                         >
                                             Update
                                         </button>
@@ -256,7 +256,7 @@ const DoctorsAppointments = () => {
                             <div className="pt-4">
                                 <button
                                     onClick={closePatientModal}
-                                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    className="w-full px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
                                 >
                                     Close
                                 </button>
@@ -314,7 +314,7 @@ const DoctorsAppointments = () => {
                                     <select
                                         value={status}
                                         onChange={handleStatusChange}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="confirmed">Confirmed</option>
@@ -329,7 +329,7 @@ const DoctorsAppointments = () => {
                                     <select
                                         value={paymentStatus}
                                         onChange={handlePaymentStatusChange}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="paid">Paid</option>
@@ -347,7 +347,7 @@ const DoctorsAppointments = () => {
                                     rows={4}
                                     value={notes}
                                     onChange={handleNotesChange}
-                                    className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                                    className="shadow-sm focus:ring-teal-500 focus:border-teal-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
                                     placeholder="Add your notes here..."
                                 />
                             </div>
@@ -361,7 +361,7 @@ const DoctorsAppointments = () => {
                                 </button>
                                 <button
                                     onClick={handleStatusUpdate}
-                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                                 >
                                     Save Changes
                                 </button>

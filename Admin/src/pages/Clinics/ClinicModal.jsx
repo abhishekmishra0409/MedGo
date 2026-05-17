@@ -221,7 +221,7 @@ const ClinicModal = ({
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -240,7 +240,7 @@ const ClinicModal = ({
                                             name="address.street"
                                             value={formData.address.street}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -255,7 +255,7 @@ const ClinicModal = ({
                                         name="address.city"
                                         value={formData.address.city}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -269,7 +269,7 @@ const ClinicModal = ({
                                         name="address.state"
                                         value={formData.address.state}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -283,7 +283,7 @@ const ClinicModal = ({
                                         name="address.postalCode"
                                         value={formData.address.postalCode}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -297,7 +297,7 @@ const ClinicModal = ({
                                         name="address.country"
                                         value={formData.address.country}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
                                     />
                                 </div>
@@ -318,7 +318,7 @@ const ClinicModal = ({
                                             name="contact.phone"
                                             value={formData.contact.phone}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -337,7 +337,7 @@ const ClinicModal = ({
                                             name="contact.email"
                                             value={formData.contact.email}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             required
                                         />
                                     </div>
@@ -356,7 +356,7 @@ const ClinicModal = ({
                                                 name="operatingHours.weekdays.open"
                                                 value={formData.operatingHours.weekdays.open}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                                 required
                                             />
                                         </div>
@@ -367,7 +367,7 @@ const ClinicModal = ({
                                                 name="operatingHours.weekdays.close"
                                                 value={formData.operatingHours.weekdays.close}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                                 required
                                             />
                                         </div>
@@ -387,7 +387,7 @@ const ClinicModal = ({
                                                 name="operatingHours.weekends.open"
                                                 value={formData.operatingHours.weekends.open}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             />
                                         </div>
                                         <div>
@@ -397,7 +397,7 @@ const ClinicModal = ({
                                                 name="operatingHours.weekends.close"
                                                 value={formData.operatingHours.weekends.close}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             />
                                         </div>
                                     </div>
@@ -414,7 +414,7 @@ const ClinicModal = ({
                                                 name="appointmentSettings.slotDuration"
                                                 value={formData.appointmentSettings.slotDuration}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             >
                                                 <option value="15">15</option>
                                                 <option value="30">30</option>
@@ -430,7 +430,7 @@ const ClinicModal = ({
                                                 name="appointmentSettings.maxDailyAppointments"
                                                 value={formData.appointmentSettings.maxDailyAppointments}
                                                 onChange={handleChange}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                             />
                                         </div>
                                     </div>
@@ -451,12 +451,12 @@ const ClinicModal = ({
                                     placeholder="Add facility (e.g., Pharmacy, X-Ray)"
                                     value={newFacility}
                                     onChange={(e) => setNewFacility(e.target.value)}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleAddFacility}
-                                    className="ml-2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                                    className="ml-2 px-3 py-1 bg-teal-600 text-white rounded-md text-sm hover:bg-teal-700"
                                 >
                                     Add
                                 </button>
@@ -481,14 +481,14 @@ const ClinicModal = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                                 disabled={isLoading}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Processing...' : clinic ? 'Update Clinic' : 'Add Clinic'}

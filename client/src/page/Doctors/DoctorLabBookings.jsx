@@ -42,13 +42,16 @@ const DoctorLabBookings = () => {
         }
     }, [dispatch, doctorId]);
 
+    const clinicList = Array.isArray(doctorClinics) ? doctorClinics : doctorClinics ? [doctorClinics] : [];
+    const currentClinic = clinicList[0] || null;
+
     // Fetch clinic bookings when doctorClinics changes
     useEffect(() => {
-        const clinicId = doctorClinics._id;
+        const clinicId = currentClinic?._id;
         if (clinicId) {
             dispatch(fetchClinicBookings(clinicId));
         }
-    }, [doctorClinics, dispatch]);
+    }, [currentClinic?._id, dispatch]);
 
     const handleStatusUpdate = (bookingId) => {
         if (!statusUpdate) {
@@ -61,8 +64,8 @@ const DoctorLabBookings = () => {
             .then(() => {
                 setSelectedBooking(null);
                 setStatusUpdate('');
-                if (doctorClinics && doctorClinics.length > 0) {
-                    dispatch(fetchClinicBookings(doctorClinics[0]._id));
+                if (currentClinic?._id) {
+                    dispatch(fetchClinicBookings(currentClinic._id));
                 }
             })
             .catch(() => {});
@@ -76,8 +79,8 @@ const DoctorLabBookings = () => {
                 dispatch(uploadLabTestReport({ bookingId, file }))
                     .unwrap()
                     .then(() => {
-                        if (doctorClinics && doctorClinics.length > 0) {
-                            dispatch(fetchClinicBookings(doctorClinics[0]._id));
+                        if (currentClinic?._id) {
+                            dispatch(fetchClinicBookings(currentClinic._id));
                         }
                     })
                     .catch(() => {})
@@ -98,8 +101,8 @@ const DoctorLabBookings = () => {
 
     const getStatusBadge = (status) => {
         const statusClasses = {
-            booked: 'bg-blue-100 text-blue-800',
-            'sample-collected': 'bg-purple-100 text-purple-800',
+            booked: 'bg-teal-100 text-teal-800',
+            'sample-collected': 'bg-slate-100 text-slate-800',
             processing: 'bg-yellow-100 text-yellow-800',
             completed: 'bg-green-100 text-green-800',
             cancelled: 'bg-red-100 text-red-800',
@@ -131,8 +134,6 @@ const DoctorLabBookings = () => {
             </div>
         );
     }
-
-    const currentClinic = doctorClinics;
 
     return (
         <div className="w-full p-4 sm:p-6">

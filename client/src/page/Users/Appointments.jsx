@@ -38,7 +38,7 @@ const Appointments = () => {
     const getStatusBadge = (status) => {
         const statusClasses = {
             pending: "bg-yellow-100 text-yellow-800",
-            confirmed: "bg-blue-100 text-blue-800",
+            confirmed: "bg-teal-100 text-teal-800",
             completed: "bg-green-100 text-green-800",
             cancelled: "bg-red-100 text-red-800",
         };
@@ -165,7 +165,7 @@ const Appointments = () => {
                                             </div>
                                         </td>
                                         <td
-                                            className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                            className="px-6 py-4 whitespace-nowrap text-sm text-teal-700 hover:text-teal-900 hover:underline"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 openClinicDetails(appointment.clinic);
@@ -263,7 +263,7 @@ const Appointments = () => {
                                                 e.stopPropagation();
                                                 openClinicDetails(selectedAppointment.clinic);
                                             }}
-                                            className="text-indigo-600 hover:text-indigo-800 text-sm"
+                                            className="text-teal-700 hover:text-teal-900 text-sm font-medium"
                                         >
                                             View Full Details
                                         </button>
@@ -279,7 +279,7 @@ const Appointments = () => {
                             {selectedAppointment.notes?.doctorNotes && (
                                 <div className="border-t pt-4">
                                     <h3 className="font-medium text-gray-700 mb-2">Doctor's Notes</h3>
-                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                    <div className="bg-teal-50 p-4 rounded-lg">
                                         <p className="text-gray-900">{selectedAppointment.notes.doctorNotes}</p>
                                     </div>
                                 </div>

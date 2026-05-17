@@ -26,13 +26,13 @@ const OrderConfirmation = () => {
                 </svg>
                 <h1 className="text-2xl font-bold mb-4">Order Confirmed!</h1>
                 <p className="text-gray-600 mb-6">Thank you for your purchase. Your order has been received and is being processed.</p>
-                <p className="mb-6 break-words font-medium">Order ID: <span className="text-blue-600">{orderId}</span></p>
+                <p className="mb-6 break-words font-medium">Order ID: <span className="text-teal-700">{orderId}</span></p>
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
                     <p className="text-sm text-gray-600">We've sent a confirmation email with your order details.</p>
                 </div>
                 <button
                     onClick={() => window.location.href = '/orders'}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded transition"
+                    className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-6 rounded transition"
                 >
                     View Your Orders
                 </button>

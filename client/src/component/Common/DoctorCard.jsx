@@ -21,7 +21,7 @@ const DoctorCard = ({ id, name, position, specialty, qualification, hospital, im
             onClick={handleCardClick}
         >
             <img src={image} alt={name} className="w-24 h-24 mx-auto rounded-full border-2 border-gray-300"/>
-            <h3 className="text-lg font-bold text-blue-900 mt-4">{name}</h3>
+            <h3 className="text-lg font-bold text-teal-950 mt-4">{name}</h3>
             <p className="text-gray-600 text-sm">{position}</p>
 
             <div className="mt-4 text-left">
