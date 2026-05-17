@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
 import { toast } from "react-toastify";
@@ -22,9 +22,11 @@ const createInitialState = () => ({
         biographyText: "",
         specializationsText: "",
         weekdayDays: "Monday - Friday",
-        weekdayHours: "09:00 - 17:00",
+        weekdayOpen: "",
+        weekdayClose: "",
         weekendDays: "Saturday",
-        weekendHours: "",
+        weekendOpen: "",
+        weekendClose: "",
         registrationMode: "join-clinic",
         requestedClinicAccessCode: "",
     },
@@ -65,6 +67,24 @@ const splitCommaValues = (value) =>
         .map((item) => item.trim())
         .filter(Boolean);
 
+const timeToMinutes = (value = "") => {
+    const [hours, minutes] = value.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return null;
+    }
+
+    return hours * 60 + minutes;
+};
+
+const isValidTimeRange = (open, close) => {
+    const openMinutes = timeToMinutes(open);
+    const closeMinutes = timeToMinutes(close);
+
+    return openMinutes !== null && closeMinutes !== null && closeMinutes > openMinutes;
+};
+
+const formatTimeRange = (open, close) => `${open} - ${close}`;
+
 const SignupUnified = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const role = normalizeAuthRole(searchParams.get("role"));
@@ -73,11 +93,8 @@ const SignupUnified = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [doctorSuccess, setDoctorSuccess] = useState(null);
-    const [isImageUploading, setIsImageUploading] = useState(false);
-    const [isImageDragActive, setIsImageDragActive] = useState(false);
-    const imageInputRef = useRef(null);
 
-    const doctorStepLabels = useMemo(() => ["Account", "Clinical profile", "Clinic access"], []);
+    const doctorStepLabels = useMemo(() => ["Account", "Clinical profile", "Availability", "Clinic access"], []);
 
     const handleRoleChange = (nextRole) => {
         const nextParams = new URLSearchParams(searchParams);
@@ -105,56 +122,6 @@ const SignupUnified = () => {
         }));
     };
 
-    const uploadDoctorImage = async (file) => {
-        if (!file) return;
-
-        if (!file.type?.startsWith("image/")) {
-            toast.error("Please select a valid image file");
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("Image size must be 5MB or less");
-            return;
-        }
-
-        setIsImageUploading(true);
-        try {
-            const response = await authService.uploadDoctorProfileImage(file);
-            const imageUrl = response?.data?.url;
-
-            if (!imageUrl) {
-                throw new Error("Image upload did not return a valid URL");
-            }
-
-            setFormData((current) => ({
-                ...current,
-                doctorProfile: {
-                    ...current.doctorProfile,
-                    image: imageUrl,
-                },
-            }));
-            toast.success("Profile image uploaded");
-        } catch (error) {
-            toast.error(error?.message || "Failed to upload image");
-        } finally {
-            setIsImageUploading(false);
-        }
-    };
-
-    const handleImageInputChange = async (event) => {
-        const file = event.target.files?.[0];
-        await uploadDoctorImage(file);
-        event.target.value = "";
-    };
-
-    const handleImageDrop = async (event) => {
-        event.preventDefault();
-        setIsImageDragActive(false);
-        const file = event.dataTransfer.files?.[0];
-        await uploadDoctorImage(file);
-    };
-
     const updateClinic = (updater) => {
         setFormData((current) => ({
             ...current,
@@ -168,8 +135,22 @@ const SignupUnified = () => {
             return false;
         }
 
-        if (doctorStep === 2 && (!formData.doctorProfile.specialty || !formData.doctorProfile.qualification || !formData.doctorProfile.address)) {
-            toast.warning("Add your clinical details before continuing");
+        if (doctorStep === 2 && (!formData.doctorProfile.specialty || !formData.doctorProfile.qualification)) {
+            toast.warning("Add your specialty and qualification before continuing");
+            return false;
+        }
+
+        if (doctorStep === 3 && !isValidTimeRange(formData.doctorProfile.weekdayOpen, formData.doctorProfile.weekdayClose)) {
+            toast.warning("Weekday close time must be after open time");
+            return false;
+        }
+
+        if (
+            doctorStep === 3 &&
+            (formData.doctorProfile.weekendOpen || formData.doctorProfile.weekendClose) &&
+            !isValidTimeRange(formData.doctorProfile.weekendOpen, formData.doctorProfile.weekendClose)
+        ) {
+            toast.warning("Weekend close time must be after open time");
             return false;
         }
 
@@ -196,6 +177,14 @@ const SignupUnified = () => {
 
         if (registrationMode === "join-clinic" && !profile.requestedClinicAccessCode.trim()) {
             throw new Error("Clinic access code is required to join an existing clinic");
+        }
+
+        if (!isValidTimeRange(profile.weekdayOpen, profile.weekdayClose)) {
+            throw new Error("Weekday close time must be after open time");
+        }
+
+        if ((profile.weekendOpen || profile.weekendClose) && !isValidTimeRange(profile.weekendOpen, profile.weekendClose)) {
+            throw new Error("Weekend close time must be after open time");
         }
 
         if (
@@ -230,8 +219,10 @@ const SignupUnified = () => {
                 biography: splitLines(profile.biographyText),
                 specializations: splitCommaValues(profile.specializationsText),
                 workingHours: [
-                    { days: profile.weekdayDays, hours: profile.weekdayHours },
-                    ...(profile.weekendHours ? [{ days: profile.weekendDays || "Weekend", hours: profile.weekendHours }] : []),
+                    { days: profile.weekdayDays, hours: formatTimeRange(profile.weekdayOpen, profile.weekdayClose) },
+                    ...(profile.weekendOpen && profile.weekendClose
+                        ? [{ days: profile.weekendDays || "Weekend", hours: formatTimeRange(profile.weekendOpen, profile.weekendClose) }]
+                        : []),
                 ],
             },
             clinic:
@@ -315,7 +306,7 @@ const SignupUnified = () => {
     );
 
     const doctorProgress = (
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {doctorStepLabels.map((label, index) => {
                 const stepNumber = index + 1;
                 const active = doctorStep === stepNumber;
@@ -395,101 +386,79 @@ const SignupUnified = () => {
 
     const doctorStepTwo = (
         <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-                <label className="auth-field">
-                    <span>Specialty</span>
-                    <input type="text" name="specialty" value={formData.doctorProfile.specialty} onChange={updateDoctorField} className="auth-input" required />
-                </label>
-                <label className="auth-field">
-                    <span>Qualification</span>
-                    <input type="text" name="qualification" value={formData.doctorProfile.qualification} onChange={updateDoctorField} className="auth-input" required />
-                </label>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <div className="auth-field">
-                    <span>Profile image</span>
-                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageInputChange} />
-                    <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => !isImageUploading && imageInputRef.current?.click()}
-                        onKeyDown={(event) => {
-                            if ((event.key === "Enter" || event.key === " ") && !isImageUploading) {
-                                event.preventDefault();
-                                imageInputRef.current?.click();
-                            }
-                        }}
-                        onDragEnter={(event) => {
-                            event.preventDefault();
-                            setIsImageDragActive(true);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                            setIsImageDragActive(true);
-                        }}
-                        onDragLeave={(event) => {
-                            event.preventDefault();
-                            setIsImageDragActive(false);
-                        }}
-                        onDrop={handleImageDrop}
-                        className={`cursor-pointer rounded-[18px] border-2 border-dashed p-4 transition ${isImageDragActive ? "border-teal-400 bg-teal-50" : "border-slate-300 bg-slate-50"
-                            }`}
-                    >
-                        {formData.doctorProfile.image ? (
-                            <div className="space-y-3">
-                                <img src={formData.doctorProfile.image} alt="Doctor profile preview" className="h-28 w-28 rounded-xl object-cover" />
-                                <p className="text-xs text-slate-500">Click or drop another image to replace</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <p className="text-sm font-semibold text-slate-700">Drag and drop profile image here</p>
-                                <p className="text-xs text-slate-500">or click to select image (JPG, PNG, WEBP up to 5MB)</p>
-                            </div>
-                        )}
-                    </div>
-                    {isImageUploading ? <p className="mt-2 text-xs text-teal-700">Uploading image...</p> : null}
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                <p className="text-sm font-semibold text-slate-900">Approval basics</p>
+                <p className="mt-1 text-sm leading-6 text-slate-500">Keep this short now. You can complete the full professional profile after login.</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label className="auth-field">
+                        <span>Specialty</span>
+                        <input type="text" name="specialty" value={formData.doctorProfile.specialty} onChange={updateDoctorField} className="auth-input" required />
+                    </label>
+                    <label className="auth-field">
+                        <span>Qualification</span>
+                        <input type="text" name="qualification" value={formData.doctorProfile.qualification} onChange={updateDoctorField} className="auth-input" required />
+                    </label>
                 </div>
-                <label className="auth-field">
-                    <span>Practice email</span>
-                    <input type="email" name="contactEmail" value={formData.doctorProfile.contactEmail} onChange={updateDoctorField} className="auth-input" placeholder="Optional if same as login email" />
-                </label>
             </div>
-            <label className="auth-field">
-                <span>Practice address</span>
-                <input type="text" name="address" value={formData.doctorProfile.address} onChange={updateDoctorField} className="auth-input" required />
-            </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <label className="auth-field">
-                    <span>Weekday label</span>
-                    <input type="text" name="weekdayDays" value={formData.doctorProfile.weekdayDays} onChange={updateDoctorField} className="auth-input" />
-                </label>
-                <label className="auth-field">
-                    <span>Weekday hours</span>
-                    <input type="text" name="weekdayHours" value={formData.doctorProfile.weekdayHours} onChange={updateDoctorField} className="auth-input" placeholder="09:00 - 17:00" />
-                </label>
+
+            <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+                <p className="text-sm font-semibold text-slate-900">Optional practice contact</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label className="auth-field">
+                        <span>Practice email</span>
+                        <input type="email" name="contactEmail" value={formData.doctorProfile.contactEmail} onChange={updateDoctorField} className="auth-input" placeholder="Optional if same as login email" />
+                    </label>
+                    <label className="auth-field">
+                        <span>Practice address</span>
+                        <input type="text" name="address" value={formData.doctorProfile.address} onChange={updateDoctorField} className="auth-input" placeholder="Can be completed later" />
+                    </label>
+                </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <label className="auth-field">
-                    <span>Weekend label</span>
-                    <input type="text" name="weekendDays" value={formData.doctorProfile.weekendDays} onChange={updateDoctorField} className="auth-input" />
-                </label>
-                <label className="auth-field">
-                    <span>Weekend hours</span>
-                    <input type="text" name="weekendHours" value={formData.doctorProfile.weekendHours} onChange={updateDoctorField} className="auth-input" placeholder="Optional" />
-                </label>
+        </div>
+    );
+
+    const doctorStepAvailability = (
+        <div className="space-y-5">
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                <p className="text-sm font-semibold text-slate-900">Regular weekday availability</p>
+                <p className="mt-1 text-sm leading-6 text-slate-500">Enter availability times in 24-hour format. The fields stay blank until you choose a value.</p>
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr]">
+                    <label className="auth-field">
+                        <span>Weekday label</span>
+                        <input type="text" name="weekdayDays" value={formData.doctorProfile.weekdayDays} onChange={updateDoctorField} className="auth-input" />
+                    </label>
+                    <label className="auth-field">
+                        <span>Weekday open</span>
+                        <input type="time" name="weekdayOpen" value={formData.doctorProfile.weekdayOpen} onChange={updateDoctorField} className="auth-input" required />
+                    </label>
+                    <label className="auth-field">
+                        <span>Weekday close</span>
+                        <input type="time" name="weekdayClose" value={formData.doctorProfile.weekdayClose} onChange={updateDoctorField} className="auth-input" required />
+                    </label>
+                </div>
             </div>
-            <label className="auth-field">
-                <span>Education</span>
-                <textarea name="educationText" value={formData.doctorProfile.educationText} onChange={updateDoctorField} className="auth-input min-h-28" placeholder="One item per line" />
-            </label>
-            <label className="auth-field">
-                <span>Biography highlights</span>
-                <textarea name="biographyText" value={formData.doctorProfile.biographyText} onChange={updateDoctorField} className="auth-input min-h-28" placeholder="One item per line" />
-            </label>
-            <label className="auth-field">
-                <span>Specializations</span>
-                <input type="text" name="specializationsText" value={formData.doctorProfile.specializationsText} onChange={updateDoctorField} className="auth-input" placeholder="Comma separated specialties" />
-            </label>
+
+            <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+                <p className="text-sm font-semibold text-slate-900">Optional weekend availability</p>
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr]">
+                    <label className="auth-field">
+                        <span>Weekend label</span>
+                        <input type="text" name="weekendDays" value={formData.doctorProfile.weekendDays} onChange={updateDoctorField} className="auth-input" />
+                    </label>
+                    <label className="auth-field">
+                        <span>Weekend open</span>
+                        <input type="time" name="weekendOpen" value={formData.doctorProfile.weekendOpen} onChange={updateDoctorField} className="auth-input" />
+                    </label>
+                    <label className="auth-field">
+                        <span>Weekend close</span>
+                        <input type="time" name="weekendClose" value={formData.doctorProfile.weekendClose} onChange={updateDoctorField} className="auth-input" />
+                    </label>
+                </div>
+            </div>
+
+            <div className="rounded-[20px] border border-teal-100 bg-teal-50/70 px-4 py-3 text-sm leading-6 text-teal-900">
+                These hours will be saved as your initial doctor availability. You can edit or add more rows later from the doctor dashboard.
+            </div>
         </div>
     );
 
@@ -633,15 +602,16 @@ const SignupUnified = () => {
                         {doctorProgress}
                         {doctorStep === 1 ? doctorStepOne : null}
                         {doctorStep === 2 ? doctorStepTwo : null}
-                        {doctorStep === 3 ? doctorStepThree : null}
+                        {doctorStep === 3 ? doctorStepAvailability : null}
+                        {doctorStep === 4 ? doctorStepThree : null}
                         {errorMessage ? <div className="auth-alert auth-alert--error">{errorMessage}</div> : null}
                         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                             <button type="button" className="auth-secondary-button" onClick={() => setDoctorStep((current) => Math.max(current - 1, 1))} disabled={doctorStep === 1 || isLoading}>
                                 <ChevronLeft className="h-4 w-4" />
                                 Back
                             </button>
-                            {doctorStep < 3 ? (
-                                <button type="button" className="btn-primary auth-submit sm:w-auto sm:px-6" onClick={() => validateDoctorStep() && setDoctorStep((current) => Math.min(current + 1, 3))}>
+                            {doctorStep < doctorStepLabels.length ? (
+                                <button type="button" className="btn-primary auth-submit sm:w-auto sm:px-6" onClick={() => validateDoctorStep() && setDoctorStep((current) => Math.min(current + 1, doctorStepLabels.length))}>
                                     Continue
                                     <ChevronRight className="h-4 w-4" />
                                 </button>

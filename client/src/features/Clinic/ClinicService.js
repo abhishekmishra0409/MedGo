@@ -1,5 +1,6 @@
 import axios from "axios";
 import { buildApiUrl, getErrorMessage } from "../../utils/api.js";
+import doctorConfig from "../../utils/doctorConfig.js";
 
 const API_URL = buildApiUrl("clinics");
 
@@ -27,11 +28,31 @@ const getClinicByDoctor = async (doctorId) => {
     return response.data;
 };
 
+const getMyClinic = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/me/workspace`, doctorConfig());
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to fetch your clinic");
+    }
+};
+
+const updateMyClinic = async (clinicData) => {
+    try {
+        const response = await axios.put(`${API_URL}/me/workspace`, clinicData, doctorConfig());
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to update clinic");
+    }
+};
+
 const clinicService = {
     getClinics,
     getClinic,
     getAvailableSlots,
     getClinicByDoctor,
+    getMyClinic,
+    updateMyClinic,
 };
 
 export default clinicService;

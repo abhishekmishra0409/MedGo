@@ -252,7 +252,7 @@ textarea:disabled,
 .auth-grid {
     display: grid;
     gap: 1.5rem;
-    align-items: stretch;
+    align-items: start;
 }
 
 .auth-hero,
@@ -268,6 +268,9 @@ textarea:disabled,
     display: grid;
     gap: 1.5rem;
     padding: 1.5rem;
+    align-content: start;
+    align-self: start;
+    height: fit-content;
 }
 
 .auth-card {
@@ -275,6 +278,7 @@ textarea:disabled,
     gap: 1.5rem;
     padding: 1.5rem;
     align-content: start;
+    align-self: start;
     grid-auto-rows: max-content;
 }
 
@@ -546,5 +550,10 @@ textarea:disabled,
     .auth-hero,
     .auth-card {
         padding: 2rem;
+    }
+
+    .auth-hero {
+        position: sticky;
+        top: 6.5rem;
     }
 }

@@ -38,6 +38,63 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        bio: {
+            type: String,
+            trim: true,
+        },
+        dateOfBirth: {
+            type: Date,
+        },
+        gender: {
+            type: String,
+            enum: ['male', 'female', 'other', 'prefer-not-to-say', ''],
+            default: '',
+        },
+        bloodGroup: {
+            type: String,
+            trim: true,
+            uppercase: true,
+        },
+        address: {
+            line1: {
+                type: String,
+                trim: true,
+            },
+            line2: {
+                type: String,
+                trim: true,
+            },
+            city: {
+                type: String,
+                trim: true,
+            },
+            state: {
+                type: String,
+                trim: true,
+            },
+            postalCode: {
+                type: String,
+                trim: true,
+            },
+            country: {
+                type: String,
+                trim: true,
+            },
+        },
+        emergencyContact: {
+            name: {
+                type: String,
+                trim: true,
+            },
+            relationship: {
+                type: String,
+                trim: true,
+            },
+            phone: {
+                type: String,
+                trim: true,
+            },
+        },
         legacyDoctorId: {
             type: String,
             trim: true,

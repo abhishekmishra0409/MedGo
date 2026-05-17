@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FiUser, FiBook, FiCalendar, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiUser, FiBook, FiBriefcase, FiCalendar, FiClock, FiHome, FiLogOut, FiMenu, FiX } from "react-icons/fi";
 import { PiFlask } from "react-icons/pi";
 import { MdOutlineMessage } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,8 +8,11 @@ import { logoutDoctor } from "../../features/Doctor/DoctorSlice.js";
 
 const menuItems = [
     { icon: <FiUser className="text-lg" />, label: "Profile", path: "" },
+    { icon: <FiBriefcase className="text-lg" />, label: "Professional Details", path: "professional-details" },
+    { icon: <FiHome className="text-lg" />, label: "Clinic", path: "clinic" },
     { icon: <FiBook className="text-lg" />, label: "Blogs", path: "blogs" },
     { icon: <FiCalendar className="text-lg" />, label: "Appointments", path: "appointments" },
+    { icon: <FiClock className="text-lg" />, label: "Availability", path: "availability" },
     { icon: <PiFlask className="text-lg" />, label: "LabTest", path: "labtest" },
     { icon: <MdOutlineMessage className="text-lg" />, label: "Messages", path: "messages" },
     { icon: <FiLogOut className="text-lg" />, label: "Logout", path: "/logout" },
@@ -113,7 +116,7 @@ const DashboardModern = () => {
             </aside>
 
             <main className="min-w-0 flex-1 overflow-auto pt-16 md:pt-0">
-                <div className="p-4 md:p-8">
+                <div className="min-h-full w-full p-4 md:p-6 xl:p-8">
                     <Outlet />
                 </div>
             </main>

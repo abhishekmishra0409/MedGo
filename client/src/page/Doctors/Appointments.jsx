@@ -146,7 +146,7 @@ const DoctorsAppointments = () => {
 
     if (isLoading) {
         return (
-            <div className="max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
+            <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
                 <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
@@ -156,7 +156,7 @@ const DoctorsAppointments = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
+        <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
 
             {doctorAppointments.length === 0 ? (

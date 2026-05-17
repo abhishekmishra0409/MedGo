@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 const initialState = {
     clinics: [],
     selectedClinic: null,
+    myClinic: null,
     availableSlots: [],
     doctorClinics: [],
     isLoading: false,
@@ -59,6 +60,22 @@ export const fetchClinicsByDoctor = createAsyncThunk(
         }
     }
 );
+
+export const fetchMyClinic = createAsyncThunk("clinic/fetchMyClinic", async (_, thunkAPI) => {
+    try {
+        return await clinicService.getMyClinic();
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error || "Failed to fetch your clinic");
+    }
+});
+
+export const updateMyClinic = createAsyncThunk("clinic/updateMyClinic", async (clinicData, thunkAPI) => {
+    try {
+        return await clinicService.updateMyClinic(clinicData);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error || "Failed to update clinic");
+    }
+});
 
 // Clinic Slice
 const clinicSlice = createSlice({
@@ -136,6 +153,43 @@ const clinicSlice = createSlice({
                 state.doctorClinics = action.payload.data;
             })
             .addCase(fetchClinicsByDoctor.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+                toast.error(state.message);
+            })
+
+            // Fetch logged-in doctor's clinic
+            .addCase(fetchMyClinic.pending, (state) => {
+                state.isLoading = true;
+                state.isError = false;
+                state.message = "";
+            })
+            .addCase(fetchMyClinic.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.myClinic = action.payload.data;
+            })
+            .addCase(fetchMyClinic.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.myClinic = null;
+                state.message = action.payload;
+            })
+
+            // Update logged-in doctor's clinic
+            .addCase(updateMyClinic.pending, (state) => {
+                state.isLoading = true;
+                state.isError = false;
+                state.message = "";
+            })
+            .addCase(updateMyClinic.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.myClinic = action.payload.data;
+                toast.success("Clinic details updated");
+            })
+            .addCase(updateMyClinic.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;

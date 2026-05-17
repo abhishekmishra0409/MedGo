@@ -6,6 +6,8 @@ const adminMiddleware = require('../Middlewares/adminMiddleware');
 
 // ─── Public Routes ──────────────────────────────────────────────────────────────
 router.get('/', ClinicController.getClinics);
+router.get('/me/workspace', authMiddleware, ClinicController.getMyClinic);
+router.put('/me/workspace', authMiddleware, ClinicController.updateMyClinic);
 router.get('/doctor/:doctorId', ClinicController.getClinicByDoctor);
 router.get('/all-by-doctor/:doctorId', ClinicController.getClinicsByDoctor);
 router.get('/:clinicId/slots', ClinicController.getAvailableSlots);

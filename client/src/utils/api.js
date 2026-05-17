@@ -1,4 +1,4 @@
-const FALLBACK_API_BASE_URL = "https://medgo-fa8d.onrender.com/api/";
+const FALLBACK_API_BASE_URL = "http://localhost:8000/api/";
 
 const normalizeBaseUrl = (value) => {
     const rawValue = value || FALLBACK_API_BASE_URL;

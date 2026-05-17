@@ -120,7 +120,7 @@ const DashboardModern = () => {
             </aside>
 
             <main className="min-w-0 flex-1 overflow-auto pt-16 md:pt-0">
-                <div className="p-4 md:p-8">
+                <div className="min-h-full w-full p-4 md:p-6 xl:p-8">
                     <Outlet />
                 </div>
             </main>

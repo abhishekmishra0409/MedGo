@@ -68,6 +68,36 @@ class ClinicController {
         }
     }
 
+    static async getMyClinic(req, res) {
+        try {
+            const clinic = await ClinicService.getMyClinic(req.user);
+            res.status(200).json({
+                success: true,
+                data: clinic,
+            });
+        } catch (error) {
+            res.status(404).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
+    static async updateMyClinic(req, res) {
+        try {
+            const clinic = await ClinicService.updateMyClinic(req.user, req.body);
+            res.status(200).json({
+                success: true,
+                data: clinic,
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
     static async addDoctor(req, res) {
         try {
             const clinic = await ClinicService.addDoctorToClinic(

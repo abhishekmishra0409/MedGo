@@ -128,7 +128,7 @@ const DoctorBlogs = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="w-full px-4 py-6 sm:py-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
                 <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">My Blogs</h1>
                 <button

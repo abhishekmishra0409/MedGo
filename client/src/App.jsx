@@ -34,6 +34,9 @@ import LabBookings from "./page/Users/LabBookings.jsx";
 import DoctorsMainLayout from "./page/Doctors/DashboardModern.jsx";
 import DoctorsProfile from "./page/Doctors/Profile.jsx";
 import DoctorsAppointments from "./page/Doctors/Appointments.jsx";
+import DoctorAvailability from "./page/Doctors/Availability.jsx";
+import DoctorProfessionalDetails from "./page/Doctors/ProfessionalDetails.jsx";
+import DoctorClinicWorkspace from "./page/Doctors/ClinicWorkspace.jsx";
 import DoctorsBlogs from "./page/Doctors/Blogs.jsx"
 import DoctorLabBookings from "./page/Doctors/DoctorLabBookings.jsx";
 import ConversationPage from "./page/Conversation.jsx";
@@ -182,6 +185,9 @@ function App() {
         >
           <Route index element={<DoctorsProfile />} />
           <Route path="appointments" element={<DoctorsAppointments />} />
+          <Route path="availability" element={<DoctorAvailability />} />
+          <Route path="professional-details" element={<DoctorProfessionalDetails />} />
+          <Route path="clinic" element={<DoctorClinicWorkspace />} />
           <Route path="blogs" element={<DoctorsBlogs />} />
           <Route path="labtest" element={<DoctorLabBookings />} />
           <Route path="messages" element={<ConversationPage userType="doctor" />} />

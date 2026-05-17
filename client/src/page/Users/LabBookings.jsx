@@ -88,7 +88,7 @@ const LabBookings = () => {
 
     if (isLoading) {
         return (
-            <div className="max-w-6xl mx-auto p-4 sm:p-6">
+            <div className="w-full p-4 sm:p-6">
                 <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
                 </div>
@@ -97,7 +97,7 @@ const LabBookings = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <div className="w-full p-4 sm:p-6">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">My Lab Test Bookings</h1>
 
             {/* Status Tabs */}

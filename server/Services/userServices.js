@@ -21,6 +21,34 @@ const sanitizeWorkingHours = (value) =>
               .filter((slot) => slot.days || slot.hours)
         : [];
 
+const sanitizeAddress = (address = {}, existingAddress = {}) => ({
+    line1: address.line1?.trim() ?? existingAddress?.line1 ?? '',
+    line2: address.line2?.trim() ?? existingAddress?.line2 ?? '',
+    city: address.city?.trim() ?? existingAddress?.city ?? '',
+    state: address.state?.trim() ?? existingAddress?.state ?? '',
+    postalCode: address.postalCode?.trim() ?? existingAddress?.postalCode ?? '',
+    country: address.country?.trim() ?? existingAddress?.country ?? '',
+});
+
+const sanitizeEmergencyContact = (contact = {}, existingContact = {}) => ({
+    name: contact.name?.trim() ?? existingContact?.name ?? '',
+    relationship: contact.relationship?.trim() ?? existingContact?.relationship ?? '',
+    phone: contact.phone?.trim() ?? existingContact?.phone ?? '',
+});
+
+const normalizeDate = (value, fallback) => {
+    if (value === '' || value === null) {
+        return undefined;
+    }
+
+    if (!value) {
+        return fallback;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? fallback : parsed;
+};
+
 const buildClinicPayload = (clinic = {}, ownerId, isActive = true) => ({
     name: clinic.name?.trim(),
     owner: ownerId,
@@ -312,6 +340,33 @@ class UserService {
 
             if (updateData.avatar) {
                 user.avatar = updateData.avatar.trim();
+            }
+
+            if (updateData.bio !== undefined) {
+                user.bio = updateData.bio.trim();
+            }
+
+            if (updateData.dateOfBirth !== undefined) {
+                user.dateOfBirth = normalizeDate(updateData.dateOfBirth, user.dateOfBirth);
+            }
+
+            if (updateData.gender !== undefined) {
+                user.gender = updateData.gender;
+            }
+
+            if (updateData.bloodGroup !== undefined) {
+                user.bloodGroup = updateData.bloodGroup.trim().toUpperCase();
+            }
+
+            if (updateData.address) {
+                user.address = sanitizeAddress(updateData.address, user.address?.toObject?.() || user.address || {});
+            }
+
+            if (updateData.emergencyContact) {
+                user.emergencyContact = sanitizeEmergencyContact(
+                    updateData.emergencyContact,
+                    user.emergencyContact?.toObject?.() || user.emergencyContact || {}
+                );
             }
 
             if (updateData.doctorProfile) {

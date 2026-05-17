@@ -169,7 +169,7 @@ const EditProductPage = () => {
     }
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="w-full p-4 sm:p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Edit Product</h1>
                 <button

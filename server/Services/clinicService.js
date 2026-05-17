@@ -210,6 +210,61 @@ class ClinicService {
             .then(serializeClinic);
     }
 
+    static async getMyClinic(user) {
+        if (!user || user.role !== 'doctor') {
+            throw new Error('Only doctors can access clinic workspace');
+        }
+
+        const primaryClinicId = user.doctorProfile?.primaryClinic;
+        const query = primaryClinicId
+            ? { _id: primaryClinicId, isActive: true }
+            : { doctors: user._id, isActive: true };
+
+        const clinic = await Clinic.findOne(query)
+            .select('+accessCode')
+            .populate('doctors', doctorSelect)
+            .populate('owner', 'name username email')
+            .lean();
+
+        if (!clinic) {
+            throw new Error('Clinic not found for this doctor');
+        }
+
+        const serialized = serializeClinic(clinic);
+        const isOwner = String(clinic.owner?._id || clinic.owner) === String(user._id);
+        const clinicRole = user.doctorProfile?.clinicRole || (isOwner ? 'owner' : 'member');
+
+        return {
+            ...serialized,
+            viewerClinicRole: clinicRole,
+            canManage: isOwner || clinicRole === 'owner',
+        };
+    }
+
+    static async updateMyClinic(user, updateData) {
+        const currentClinic = await this.getMyClinic(user);
+
+        if (!currentClinic.canManage) {
+            throw new Error('Only clinic owners can update clinic details');
+        }
+
+        const updatedClinic = await this.updateClinic(currentClinic._id, {
+            name: updateData.name,
+            address: updateData.address,
+            contact: updateData.contact,
+            facilities: updateData.facilities,
+            operatingHours: updateData.operatingHours,
+            appointmentSettings: updateData.appointmentSettings,
+            isActive: updateData.isActive,
+        });
+
+        return {
+            ...updatedClinic,
+            viewerClinicRole: currentClinic.viewerClinicRole,
+            canManage: true,
+        };
+    }
+
 
     static async getClinicById(clinicId) {
         const clinic = await Clinic.findOne({ _id: clinicId, isActive: true })

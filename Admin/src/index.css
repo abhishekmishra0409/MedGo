@@ -13,6 +13,9 @@ body {
 
 /* Active route styling */
 .admin-shell {
-    width: min(1240px, calc(100% - 2rem));
-    margin-inline: auto;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: clamp(1rem, 2vw, 2rem);
 }
