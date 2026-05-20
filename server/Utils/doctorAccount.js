@@ -1,4 +1,8 @@
 const buildDoctorAccount = (user = {}) => {
+    if (!user) {
+        return null;
+    }
+
     const profile = user.doctorProfile || {};
 
     return {

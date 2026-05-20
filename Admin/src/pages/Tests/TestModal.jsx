@@ -1,19 +1,13 @@
-import { useState, useEffect } from 'react';
-import {
-    FlaskConical,
-    DollarSign,
-    Clock,
-    Activity,
-    X
-} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Activity, Clock, FlaskConical, IndianRupee, X } from 'lucide-react';
 
-const TestModal = ({
-                       isOpen,
-                       onClose,
-                       test,
-                       onSubmit,
-                       isLoading
-                   }) => {
+const fieldClass =
+    'block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-100';
+
+const iconFieldClass =
+    'block w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-sm outline-none transition focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-100';
+
+const TestModal = ({ isOpen, onClose, test, onSubmit, isLoading }) => {
     const [formData, setFormData] = useState({
         name: '',
         code: '',
@@ -37,23 +31,24 @@ const TestModal = ({
                 reportTime: test.reportTime || '',
                 isActive: test.isActive !== undefined ? test.isActive : true
             });
-        } else {
-            setFormData({
-                name: '',
-                code: '',
-                description: '',
-                category: '',
-                price: '',
-                preparationInstructions: '',
-                reportTime: '',
-                isActive: true
-            });
+            return;
         }
+
+        setFormData({
+            name: '',
+            code: '',
+            description: '',
+            category: '',
+            price: '',
+            preparationInstructions: '',
+            reportTime: '',
+            isActive: true
+        });
     }, [test]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             [name]: value
         }));
@@ -70,169 +65,148 @@ const TestModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold">
-                            {test ? 'Edit Lab Test' : 'Add New Lab Test'}
-                        </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4">
+            <div className="admin-scroll max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+                <div className="border-b border-slate-200 px-6 py-5">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Lab catalog</p>
+                            <h2 className="mt-1 text-2xl font-bold text-slate-950">
+                                {test ? 'Edit lab test' : 'Add lab test'}
+                            </h2>
+                        </div>
                         <button
+                            type="button"
                             onClick={onClose}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="rounded-full border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                         >
                             <X className="h-5 w-5" />
                         </button>
                     </div>
+                </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            {/* Basic Info */}
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Test Name
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <FlaskConical className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Test Code
-                                    </label>
+                <form onSubmit={handleSubmit} className="space-y-5 p-6">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Test name</label>
+                                <div className="relative">
+                                    <FlaskConical className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
                                     <input
                                         type="text"
-                                        name="code"
-                                        value={formData.code}
+                                        name="name"
+                                        value={formData.name}
                                         onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
+                                        className={iconFieldClass}
                                         required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        name="description"
-                                        value={formData.description}
-                                        onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                        rows="2"
                                     />
                                 </div>
                             </div>
 
-                            {/* Test Details */}
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Category
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Price (₹)
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <DollarSign className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            name="price"
-                                            value={formData.price}
-                                            onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Report Time (hours)
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Clock className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            name="reportTime"
-                                            value={formData.reportTime}
-                                            onChange={handleChange}
-                                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Preparation Instructions */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Preparation Instructions
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Activity className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <textarea
-                                    name="preparationInstructions"
-                                    value={formData.preparationInstructions}
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Test code</label>
+                                <input
+                                    type="text"
+                                    name="code"
+                                    value={formData.code}
                                     onChange={handleChange}
-                                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
-                                    rows="3"
-                                    placeholder="Any special preparation required for this test"
+                                    className={fieldClass}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    className={fieldClass}
+                                    rows="2"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end space-x-3 pt-4 border-t">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                                disabled={isLoading}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? 'Processing...' : test ? 'Update Test' : 'Add Test'}
-                            </button>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+                                <input
+                                    type="text"
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                    className={fieldClass}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Price</label>
+                                <div className="relative">
+                                    <IndianRupee className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        name="price"
+                                        value={formData.price}
+                                        onChange={handleChange}
+                                        className={iconFieldClass}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">Report time (hours)</label>
+                                <div className="relative">
+                                    <Clock className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        name="reportTime"
+                                        value={formData.reportTime}
+                                        onChange={handleChange}
+                                        className={iconFieldClass}
+                                        required
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">Preparation instructions</label>
+                        <div className="relative">
+                            <Activity className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                            <textarea
+                                name="preparationInstructions"
+                                value={formData.preparationInstructions}
+                                onChange={handleChange}
+                                className={iconFieldClass}
+                                rows="3"
+                                placeholder="Any special preparation required for this test"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            disabled={isLoading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Processing...' : test ? 'Update test' : 'Add test'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

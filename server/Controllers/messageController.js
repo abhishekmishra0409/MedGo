@@ -46,8 +46,8 @@ exports.getMessages = async (req, res) => {
         const messages = await MessageService.getConversationMessages(
             req.user.id,
             req.params.conversationId,
-            parseInt(req.query.page),
-            parseInt(req.query.limit)
+            Number(req.query.page),
+            Number(req.query.limit)
         );
 
         res.json({

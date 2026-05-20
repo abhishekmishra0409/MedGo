@@ -248,7 +248,7 @@ class AppointmentService {
 
         return appointments.map((appointment) => {
             const item = appointment.toObject();
-            item.doctor = buildDoctorAccount(item.doctor);
+            item.doctor = item.doctor ? buildDoctorAccount(item.doctor) : null;
             return item;
         });
     }

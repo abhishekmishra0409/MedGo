@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FiUser, FiBook, FiBriefcase, FiCalendar, FiClock, FiHome, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiBook, FiBriefcase, FiCalendar, FiClock, FiHome, FiLogOut, FiMenu, FiUser, FiX } from "react-icons/fi";
 import { PiFlask } from "react-icons/pi";
 import { MdOutlineMessage } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
@@ -44,58 +44,61 @@ const DashboardModern = () => {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full overflow-x-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
-            <button onClick={() => setIsSidebarOpen((value) => !value)} className="md:hidden fixed left-4 top-4 z-50 rounded-full border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="relative flex h-dvh w-full overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
+            <button
+                onClick={() => setIsSidebarOpen((value) => !value)}
+                className="fixed left-4 top-4 z-50 rounded-full border border-slate-200 bg-white p-3 shadow-sm md:hidden"
+                type="button"
+                aria-label="Toggle sidebar"
+            >
                 {isSidebarOpen ? <FiX /> : <FiMenu />}
             </button>
 
-            {isSidebarOpen && (
+            {isSidebarOpen ? (
                 <button
                     type="button"
                     aria-label="Close sidebar"
                     className="fixed inset-0 z-30 bg-slate-950/30 md:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
-            )}
+            ) : null}
 
             <aside
-                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(18rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
+                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(17rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
             >
-                <div className="flex h-full flex-col p-5">
-                    <div className="mb-8 flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] text-white shadow-[0_18px_40px_rgba(13,148,136,0.22)]">
+                <div className="flex h-full flex-col overflow-hidden px-4 py-4">
+                    <div className="mb-5 flex items-center gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] text-white shadow-[0_18px_40px_rgba(13,148,136,0.18)]">
                             <FiBook className="text-lg" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">Doctor workspace</p>
-                            <p className="text-sm text-slate-500">Appointments, blogs, and patient communication</p>
+                            <p className="truncate text-sm text-slate-500">Care work and communication</p>
                         </div>
                     </div>
 
-                    {profile && (
-                        <div className="mb-8 rounded-[28px] border border-slate-200 bg-slate-50 p-4">
-                            <div className="flex items-center">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 text-teal-800">
+                    {profile ? (
+                        <div className="mb-5 rounded-3xl border border-slate-200 bg-slate-50 p-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-800">
                                     <span className="font-semibold">{profile.name ? profile.name.charAt(0).toUpperCase() : "D"}</span>
                                 </div>
-                                <div className="ml-3">
-                                    <p className="font-medium text-slate-800">{profile.name || "Doctor"}</p>
-                                    <p className="text-sm text-slate-500">{profile.email || ""}</p>
+                                <div className="min-w-0">
+                                    <p className="truncate font-medium text-slate-800">{profile.name || "Doctor"}</p>
+                                    <p className="truncate text-sm text-slate-500">{profile.email || ""}</p>
                                 </div>
                             </div>
-                            <div className="mt-4 rounded-2xl bg-white p-3 text-xs text-slate-500">
-                                Surface the most important work first: today’s appointments, pending lab reports, and communication updates.
-                            </div>
                         </div>
-                    )}
+                    ) : null}
 
                     <nav className="flex-1">
-                        <ul className="space-y-2">
+                        <ul className="space-y-1.5">
                             {menuItems.map((item) => (
                                 <li key={item.label}>
                                     <button
+                                        type="button"
                                         onClick={() => handleNavigation(item.path)}
-                                        className={`w-full rounded-2xl p-3 text-left transition ${
+                                        className={`w-full rounded-2xl px-3 py-2.5 text-left transition ${
                                             isActive(item.path) ? "bg-teal-50 text-teal-800" : "text-slate-700 hover:bg-slate-50"
                                         }`}
                                     >
@@ -108,15 +111,11 @@ const DashboardModern = () => {
                             ))}
                         </ul>
                     </nav>
-
-                    <div className="mt-auto rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-                        A simpler doctor dashboard reduces page-hopping and keeps operational work in view.
-                    </div>
                 </div>
             </aside>
 
-            <main className="min-w-0 flex-1 overflow-auto pt-16 md:pt-0">
-                <div className="min-h-full w-full p-4 md:p-6 xl:p-8">
+            <main className="modal-scroll h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-16 md:pt-0">
+                <div className="w-full p-4 md:p-6 xl:p-8">
                     <Outlet />
                 </div>
             </main>

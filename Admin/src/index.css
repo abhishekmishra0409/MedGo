@@ -19,3 +19,22 @@ body {
     margin-inline: 0;
     padding-inline: clamp(1rem, 2vw, 2rem);
 }
+
+.admin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 118, 105, 0.34) transparent;
+}
+
+.admin-scroll::-webkit-scrollbar {
+    width: 0.45rem;
+    height: 0.45rem;
+}
+
+.admin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(15, 118, 105, 0.32);
+}

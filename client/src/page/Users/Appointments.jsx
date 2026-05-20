@@ -1,361 +1,447 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, isAfter, isBefore } from "date-fns";
+import {
+    AlertCircle,
+    Building2,
+    CalendarDays,
+    ChevronRight,
+    Clock3,
+    FileText,
+    MapPin,
+    Stethoscope,
+    Video,
+    X,
+} from "lucide-react";
+import { getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
+
+const statusStyles = {
+    pending: "border-amber-200 bg-amber-50 text-amber-800",
+    confirmed: "border-teal-200 bg-teal-50 text-teal-800",
+    completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    cancelled: "border-rose-200 bg-rose-50 text-rose-800",
+    "no-show": "border-slate-200 bg-slate-100 text-slate-700",
+};
+
+const paymentStyles = {
+    pending: "bg-amber-50 text-amber-800",
+    paid: "bg-emerald-50 text-emerald-800",
+    refunded: "bg-slate-100 text-slate-700",
+    failed: "bg-rose-50 text-rose-800",
+};
+
+const safeFormatDate = (dateString, pattern = "MMM dd, yyyy") => {
+    if (!dateString) return "Not scheduled";
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return "Not scheduled";
+    return format(parsed, pattern);
+};
+
+const safeFormatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    const parsed = new Date(`1970-01-01T${timeString}`);
+    if (Number.isNaN(parsed.getTime())) return timeString;
+    return format(parsed, "h:mm a");
+};
+
+const buildAppointmentDateTime = (appointment) => {
+    if (!appointment?.date) return null;
+    const day = format(new Date(appointment.date), "yyyy-MM-dd");
+    const start = appointment.timeSlot?.start || "00:00";
+    const date = new Date(`${day}T${start}`);
+    return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatAddress = (clinic) => {
+    if (!clinic?.address) return "Clinic address not available";
+    const { street, city, state, postalCode, country } = clinic.address;
+    return [street, city, state, postalCode, country].filter(Boolean).join(", ") || "Clinic address not available";
+};
+
+const StatusBadge = ({ status }) => (
+    <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-semibold capitalize ${statusStyles[status] || "border-slate-200 bg-slate-100 text-slate-700"}`}>
+        {status || "unknown"}
+    </span>
+);
+
+const InfoPill = ({ icon, children }) => (
+    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+        {icon}
+        {children}
+    </span>
+);
+
+const EmptyState = ({ activeTab }) => (
+    <div className="rounded-3xl border border-dashed border-teal-200 bg-teal-50/50 px-6 py-12 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+            <CalendarDays className="h-7 w-7" />
+        </div>
+        <h3 className="mt-5 text-xl font-bold text-slate-950">
+            {activeTab === "upcoming" ? "No upcoming appointments" : "No past appointments"}
+        </h3>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-600">
+            {activeTab === "upcoming"
+                ? "When you book a consultation, the appointment card will appear here with doctor, clinic, time, and visit details."
+                : "Completed, cancelled, and older appointments will appear here for quick reference."}
+        </p>
+        {activeTab === "upcoming" ? (
+            <Link
+                to="/doctorlists"
+                className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
+            >
+                Find a doctor
+                <ChevronRight className="h-4 w-4" />
+            </Link>
+        ) : null}
+    </div>
+);
+
+const AppointmentCard = ({ appointment, onViewDetails, onViewClinic }) => {
+    const doctorName = appointment.doctor?.name || appointment.doctor?.username || "Doctor unavailable";
+    const doctorInitial = doctorName.charAt(0).toUpperCase();
+    const clinicName = appointment.clinic?.name || "Clinic not assigned";
+    const isVirtual = appointment.type === "teleconsultation";
+    const dateLabel = safeFormatDate(appointment.date, "EEEE, MMM dd");
+    const timeLabel = `${safeFormatTime(appointment.timeSlot?.start)} - ${safeFormatTime(appointment.timeSlot?.end)}`;
+
+    return (
+        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-teal-100 text-lg font-bold text-teal-800">
+                        {appointment.doctor?.image ? (
+                            <img src={appointment.doctor.image} alt={doctorName} className="h-full w-full object-cover" />
+                        ) : (
+                            doctorInitial
+                        )}
+                    </div>
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-950">{doctorName}</h3>
+                            <StatusBadge status={appointment.status} />
+                        </div>
+                        <p className="mt-1 text-sm text-slate-600">
+                            {appointment.doctor?.specialty || appointment.doctor?.qualification || "Care team details unavailable"}
+                        </p>
+                        {!appointment.doctor ? (
+                            <p className="mt-2 inline-flex items-center gap-2 rounded-2xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                                <AlertCircle className="h-4 w-4" />
+                                This older appointment is missing doctor details.
+                            </p>
+                        ) : null}
+                    </div>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[24rem]">
+                    <InfoPill icon={<CalendarDays className="h-3.5 w-3.5 text-teal-700" />}>{dateLabel}</InfoPill>
+                    <InfoPill icon={<Clock3 className="h-3.5 w-3.5 text-teal-700" />}>{timeLabel}</InfoPill>
+                    <InfoPill icon={isVirtual ? <Video className="h-3.5 w-3.5 text-teal-700" /> : <Building2 className="h-3.5 w-3.5 text-teal-700" />}>{isVirtual ? "Teleconsultation" : "In-person"}</InfoPill>
+                    <InfoPill icon={<MapPin className="h-3.5 w-3.5 text-teal-700" />}>{clinicName}</InfoPill>
+                </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 border-t border-slate-100 pt-4 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Reason</p>
+                    <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-700">
+                        {appointment.reason || "No reason added."}
+                    </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    {appointment.clinic ? (
+                        <button
+                            type="button"
+                            onClick={() => onViewClinic(appointment.clinic)}
+                            className="inline-flex items-center justify-center rounded-2xl border border-teal-200 px-4 py-2.5 text-sm font-semibold text-teal-700 transition hover:bg-teal-50"
+                        >
+                            Clinic
+                        </button>
+                    ) : null}
+                    <button
+                        type="button"
+                        onClick={() => onViewDetails(appointment)}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700"
+                    >
+                        View details
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+            </div>
+        </article>
+    );
+};
+
+const DetailItem = ({ label, value }) => (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+        <div className="mt-2 text-sm font-semibold text-slate-950">{value}</div>
+    </div>
+);
+
+const ModalShell = ({ title, children, onClose }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 bg-white px-5 py-4">
+                <h2 className="text-xl font-bold text-slate-950">{title}</h2>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
+                    aria-label="Close modal"
+                >
+                    <X className="h-5 w-5" />
+                </button>
+            </div>
+            <div className="modal-scroll min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
+        </div>
+    </div>
+);
 
 const Appointments = () => {
     const dispatch = useDispatch();
-    const { myAppointments, isLoading, isError, message } = useSelector(
-        (state) => state.appointment
-    );
+    const { myAppointments, isLoading, isError, message } = useSelector((state) => state.appointment);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [activeTab, setActiveTab] = useState("upcoming");
-
-    // console.log(myAppointments)
 
     useEffect(() => {
         dispatch(getMyAppointments());
     }, [dispatch]);
 
     useEffect(() => {
-        if (isError) {
+        if (isError && message) {
             toast.error(message);
         }
     }, [isError, message]);
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        return format(new Date(dateString), "MMMM dd, yyyy");
-    };
+    const { upcomingAppointments, pastAppointments, stats } = useMemo(() => {
+        const now = new Date();
+        const safeAppointments = Array.isArray(myAppointments) ? myAppointments : [];
 
-    const formatTime = (timeString) => {
-        if (!timeString) return "N/A";
-        return format(new Date(`1970-01-01T${timeString}`), "h:mm a");
-    };
+        const normalized = safeAppointments
+            .filter((appointment) => appointment?.date && appointment?.timeSlot?.start && appointment?.timeSlot?.end)
+            .map((appointment) => ({
+                ...appointment,
+                appointmentDateTime: buildAppointmentDateTime(appointment),
+            }))
+            .filter((appointment) => appointment.appointmentDateTime);
 
-    const getStatusBadge = (status) => {
-        const statusClasses = {
-            pending: "bg-yellow-100 text-yellow-800",
-            confirmed: "bg-teal-100 text-teal-800",
-            completed: "bg-green-100 text-green-800",
-            cancelled: "bg-red-100 text-red-800",
+        const upcoming = normalized
+            .filter((appointment) => isAfter(appointment.appointmentDateTime, now) && appointment.status !== "cancelled")
+            .sort((a, b) => a.appointmentDateTime - b.appointmentDateTime);
+
+        const past = normalized
+            .filter((appointment) => isBefore(appointment.appointmentDateTime, now) || appointment.status === "cancelled")
+            .sort((a, b) => b.appointmentDateTime - a.appointmentDateTime);
+
+        return {
+            upcomingAppointments: upcoming,
+            pastAppointments: past,
+            stats: {
+                total: normalized.length,
+                upcoming: upcoming.length,
+                completed: normalized.filter((appointment) => appointment.status === "completed").length,
+                cancelled: normalized.filter((appointment) => appointment.status === "cancelled").length,
+            },
         };
+    }, [myAppointments]);
 
-        return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status] || "bg-gray-100 text-gray-800"}`}>
-                {status}
-            </span>
-        );
-    };
-
-    const openAppointmentDetails = (appointment) => {
-        setSelectedAppointment(appointment);
-    };
-
-    const openClinicDetails = (clinic) => {
-        setSelectedClinic(clinic);
-    };
-
-    const closeModal = () => {
-        setSelectedAppointment(null);
-        setSelectedClinic(null);
-    };
-
-    // Filter appointments based on active tab
-    const safeAppointments = Array.isArray(myAppointments)
-        ? myAppointments.filter((appointment) => appointment?.date && appointment?.timeSlot?.start && appointment?.timeSlot?.end)
-        : [];
-
-    const filteredAppointments = [...safeAppointments]
-        .sort((a, b) => {
-            return new Date(b.date) - new Date(a.date);
-        }).filter((appointment) => {
-            const now = new Date();
-            const appointmentDate = new Date(appointment.date);
-
-            if (activeTab === "upcoming") {
-                return isAfter(appointmentDate, now) || isToday(appointmentDate);
-            } else {
-                return isBefore(appointmentDate, now) && !isToday(appointmentDate);
-            }
-        });
-
-    function isToday(date) {
-        return format(new Date(date), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-    }
+    const visibleAppointments = activeTab === "upcoming" ? upcomingAppointments : pastAppointments;
+    const nextAppointment = upcomingAppointments[0];
 
     if (isLoading) {
         return (
-            <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
-                <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
+            <div className="w-full space-y-6 p-4 sm:p-6">
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="h-8 w-56 animate-pulse rounded-full bg-slate-100" />
+                    <div className="mt-6 grid gap-4 md:grid-cols-4">
+                        {[1, 2, 3, 4].map((item) => (
+                            <div key={item} className="h-24 animate-pulse rounded-3xl bg-slate-100" />
+                        ))}
+                    </div>
                 </div>
+                <div className="h-44 animate-pulse rounded-3xl bg-white shadow-sm" />
             </div>
         );
     }
 
     return (
-        <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
-
-            {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 mb-4">
-                <button
-                    className={`py-2 px-4 font-medium text-sm ${activeTab === "upcoming" ? "text-teal-600 border-b-2 border-teal-600" : "text-gray-500"}`}
-                    onClick={() => setActiveTab("upcoming")}
-                >
-                    Upcoming
-                </button>
-                <button
-                    className={`py-2 px-4 font-medium text-sm ${activeTab === "past" ? "text-teal-600 border-b-2 border-teal-600" : "text-gray-500"}`}
-                    onClick={() => setActiveTab("past")}
-                >
-                    Past
-                </button>
-            </div>
-
-            {filteredAppointments.length === 0 ? (
-                <div className="text-center py-8">
-                    <p className="text-gray-500">
-                        {activeTab === "upcoming"
-                            ? "You don't have any upcoming appointments."
-                            : "You don't have any past appointments."}
-                    </p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-[52rem] divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clinic</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredAppointments.map((appointment) => (
-                                    <tr
-                                        key={appointment._id}
-                                        className="hover:bg-gray-50 cursor-pointer"
-                                        onClick={() => openAppointmentDetails(appointment)}
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {formatDate(appointment.date)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {formatTime(appointment.timeSlot.start)} - {formatTime(appointment.timeSlot.end)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <div className="flex items-center">
-                                                {appointment.doctor?.image && (
-                                                    <img
-                                                        src={appointment.doctor.image}
-                                                        alt={appointment.doctor.name}
-                                                        className="w-8 h-8 rounded-full mr-2"
-                                                    />
-                                                )}
-                                                {appointment.doctor?.name || "N/A"}
-                                            </div>
-                                        </td>
-                                        <td
-                                            className="px-6 py-4 whitespace-nowrap text-sm text-teal-700 hover:text-teal-900 hover:underline"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openClinicDetails(appointment.clinic);
-                                            }}
-                                        >
-                                            {appointment.clinic?.name || "N/A"}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {appointment.type === 'in-person' ? 'In-Person' : 'Teleconsultation'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            {getStatusBadge(appointment.status)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+        <div className="w-full space-y-6 p-4 sm:p-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Appointments</p>
+                        <h1 className="mt-2 text-3xl font-bold text-slate-950">Your appointments</h1>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                            Track upcoming visits, review past consultations, and keep clinic details close before every appointment.
+                        </p>
                     </div>
+                    <Link
+                        to="/doctorlists"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
+                    >
+                        Book appointment
+                        <ChevronRight className="h-4 w-4" />
+                    </Link>
                 </div>
-            )}
 
-            {/* Appointment Details Modal */}
-            {selectedAppointment && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(61,61,61,0.8)' }}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center border-b p-4">
-                            <h2 className="text-xl font-bold text-gray-800">Appointment Details</h2>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <DetailItem label="Total visits" value={stats.total} />
+                    <DetailItem label="Upcoming" value={stats.upcoming} />
+                    <DetailItem label="Completed" value={stats.completed} />
+                    <DetailItem label="Cancelled" value={stats.cancelled} />
+                </div>
+
+                {nextAppointment ? (
+                    <div className="mt-6 rounded-3xl border border-teal-100 bg-teal-50/70 p-4 sm:p-5">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+                                    <CalendarDays className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Next visit</p>
+                                    <p className="mt-1 text-base font-bold text-slate-950">
+                                        {safeFormatDate(nextAppointment.date, "EEEE, MMM dd")} at {safeFormatTime(nextAppointment.timeSlot?.start)}
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-600">
+                                        {nextAppointment.doctor?.name || "Doctor unavailable"} at {nextAppointment.clinic?.name || "clinic not assigned"}
+                                    </p>
+                                </div>
+                            </div>
                             <button
-                                onClick={closeModal}
-                                className="text-gray-500 hover:text-gray-700"
+                                type="button"
+                                onClick={() => setSelectedAppointment(nextAppointment)}
+                                className="inline-flex items-center justify-center rounded-2xl border border-teal-200 bg-white px-4 py-2.5 text-sm font-semibold text-teal-700 transition hover:bg-teal-50"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
+                                Review details
                             </button>
                         </div>
-                        <div className="space-y-4 p-4 sm:p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Date</p>
-                                    <p className="text-gray-900">{formatDate(selectedAppointment?.date)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Time Slot</p>
-                                    <p className="text-gray-900">
-                                        {formatTime(selectedAppointment?.timeSlot?.start)} - {formatTime(selectedAppointment?.timeSlot?.end)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Status</p>
-                                    <p className="text-gray-900">{getStatusBadge(selectedAppointment.status)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Appointment Type</p>
-                                    <p className="text-gray-900">
-                                        {selectedAppointment.type === 'in-person' ? 'In-Person' : 'Teleconsultation'}
-                                    </p>
-                                </div>
+                    </div>
+                ) : null}
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 md:flex-row md:items-center md:justify-between">
+                    <div className="inline-flex w-fit rounded-2xl bg-slate-100 p-1">
+                        {[
+                            { id: "upcoming", label: "Upcoming", count: upcomingAppointments.length },
+                            { id: "past", label: "Past", count: pastAppointments.length },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeTab === tab.id ? "bg-white text-teal-800 shadow-sm" : "text-slate-600 hover:text-slate-950"}`}
+                            >
+                                {tab.label}
+                                <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700">{tab.count}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-sm text-slate-500">
+                        {visibleAppointments.length} {visibleAppointments.length === 1 ? "appointment" : "appointments"} shown
+                    </p>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                    {visibleAppointments.length ? (
+                        visibleAppointments.map((appointment) => (
+                            <AppointmentCard
+                                key={appointment._id}
+                                appointment={appointment}
+                                onViewDetails={setSelectedAppointment}
+                                onViewClinic={setSelectedClinic}
+                            />
+                        ))
+                    ) : (
+                        <EmptyState activeTab={activeTab} />
+                    )}
+                </div>
+            </section>
+
+            {selectedAppointment ? (
+                <ModalShell title="Appointment details" onClose={() => setSelectedAppointment(null)}>
+                    <div className="space-y-5">
+                        <div className="flex flex-col gap-4 rounded-3xl bg-slate-50 p-5 sm:flex-row sm:items-start">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-teal-100 text-teal-800">
+                                <Stethoscope className="h-7 w-7" />
                             </div>
-
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium text-gray-700 mb-2">Doctor Information</h3>
-                                <div className="flex items-center gap-4">
-                                    {selectedAppointment.doctor?.image && (
-                                        <img
-                                            src={selectedAppointment.doctor.image}
-                                            alt={selectedAppointment.doctor.name}
-                                            className="w-16 h-16 rounded-full"
-                                        />
-                                    )}
-                                    <div>
-                                        <p className="font-medium">{selectedAppointment.doctor?.name}</p>
-                                        <p className="text-gray-600">{selectedAppointment.doctor?.specialty}</p>
-                                    </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <h3 className="text-xl font-bold text-slate-950">
+                                        {selectedAppointment.doctor?.name || "Doctor unavailable"}
+                                    </h3>
+                                    <StatusBadge status={selectedAppointment.status} />
                                 </div>
-                            </div>
-
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium text-gray-700 mb-2">Clinic Information</h3>
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                    <div>
-                                        <p className="font-medium">{selectedAppointment.clinic?.name || "N/A"}</p>
-                                        <p className="text-gray-600">
-                                            {selectedAppointment.clinic?.address?.street || ""}{selectedAppointment.clinic?.address?.street ? ", " : ""}{selectedAppointment.clinic?.address?.city || ""}<br />
-                                            {selectedAppointment.clinic?.address?.state || ""}{selectedAppointment.clinic?.address?.state ? ", " : ""}{selectedAppointment.clinic?.address?.postalCode || ""}<br />
-                                            {selectedAppointment.clinic?.address?.country || ""}
-                                        </p>
-                                        <p className="text-gray-600 mt-2">
-                                            <span className="font-medium">Contact:</span> {selectedAppointment.clinic?.contact?.phone || "N/A"} | {selectedAppointment.clinic?.contact?.email || "N/A"}
-                                        </p>
-                                    </div>
-                                    {selectedAppointment.clinic ? (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openClinicDetails(selectedAppointment.clinic);
-                                            }}
-                                            className="text-teal-700 hover:text-teal-900 text-sm font-medium"
-                                        >
-                                            View Full Details
-                                        </button>
-                                    ) : null}
-                                </div>
-                            </div>
-
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium text-gray-700 mb-2">Reason for Visit</h3>
-                                <p className="text-gray-900">{selectedAppointment.reason}</p>
-                            </div>
-
-                            {selectedAppointment.notes?.doctorNotes && (
-                                <div className="border-t pt-4">
-                                    <h3 className="font-medium text-gray-700 mb-2">Doctor's Notes</h3>
-                                    <div className="bg-teal-50 p-4 rounded-lg">
-                                        <p className="text-gray-900">{selectedAppointment.notes.doctorNotes}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium text-gray-700 mb-2">Payment Status</h3>
-                                <p className="text-gray-900 capitalize">
-                                    {selectedAppointment.payment?.status || 'Not specified'}
+                                <p className="mt-1 text-sm text-slate-600">
+                                    {selectedAppointment.doctor?.specialty || selectedAppointment.doctor?.qualification || "Care team details unavailable"}
                                 </p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Clinic Details Modal */}
-            {selectedClinic && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(61,61,61,0.8)' }}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center border-b p-4">
-                            <h2 className="text-xl font-bold text-gray-800">Clinic Details</h2>
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <DetailItem label="Date" value={safeFormatDate(selectedAppointment.date, "MMMM dd, yyyy")} />
+                            <DetailItem label="Time" value={`${safeFormatTime(selectedAppointment.timeSlot?.start)} - ${safeFormatTime(selectedAppointment.timeSlot?.end)}`} />
+                            <DetailItem label="Visit type" value={selectedAppointment.type === "in-person" ? "In-person" : "Teleconsultation"} />
+                            <DetailItem label="Payment" value={<span className={`rounded-full px-3 py-1 text-xs capitalize ${paymentStyles[selectedAppointment.payment?.status] || "bg-slate-100 text-slate-700"}`}>{selectedAppointment.payment?.status || "Not specified"}</span>} />
                         </div>
-                        <div className="space-y-4 p-4 sm:p-6">
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-gray-800">{selectedClinic?.name || "Clinic"}</h3>
-                                    <div className="mt-2 space-y-2">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Address</p>
-                                            <p className="text-gray-900">
-                                                {selectedClinic?.address?.street || ""}{selectedClinic?.address?.street ? ", " : ""}{selectedClinic?.address?.city || ""}<br />
-                                                {selectedClinic?.address?.state || ""}{selectedClinic?.address?.state ? ", " : ""}{selectedClinic?.address?.postalCode || ""}<br />
-                                                {selectedClinic?.address?.country || ""}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Contact</p>
-                                            <p className="text-gray-900">
-                                                Phone: {selectedClinic?.contact?.phone || "N/A"}<br />
-                                                Email: {selectedClinic?.contact?.email || "N/A"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium text-gray-700 mb-2">Operating Hours</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">Weekdays</p>
-                                        <p className="text-gray-900">
-                                            {formatTime(selectedClinic?.operatingHours?.weekdays?.open)} - {formatTime(selectedClinic?.operatingHours?.weekdays?.close)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">Weekends</p>
-                                        <p className="text-gray-900">
-                                            {formatTime(selectedClinic?.operatingHours?.weekends?.open)} - {formatTime(selectedClinic?.operatingHours?.weekends?.close)}
-                                        </p>
-                                    </div>
+                        <div className="rounded-3xl border border-slate-200 p-5">
+                            <p className="flex items-center gap-2 text-sm font-bold text-slate-950">
+                                <Building2 className="h-4 w-4 text-teal-700" />
+                                Clinic
+                            </p>
+                            <p className="mt-3 font-semibold text-slate-900">{selectedAppointment.clinic?.name || "Clinic not assigned"}</p>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">{formatAddress(selectedAppointment.clinic)}</p>
+                            {selectedAppointment.clinic ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedClinic(selectedAppointment.clinic)}
+                                    className="mt-4 inline-flex items-center rounded-2xl border border-teal-200 px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+                                >
+                                    View clinic details
+                                </button>
+                            ) : null}
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200 p-5">
+                            <p className="flex items-center gap-2 text-sm font-bold text-slate-950">
+                                <FileText className="h-4 w-4 text-teal-700" />
+                                Reason and notes
+                            </p>
+                            <p className="mt-3 text-sm leading-6 text-slate-700">{selectedAppointment.reason || "No reason added."}</p>
+                            {selectedAppointment.notes?.doctorNotes ? (
+                                <div className="mt-4 rounded-2xl bg-teal-50 p-4 text-sm leading-6 text-slate-700">
+                                    <span className="font-semibold text-slate-950">Doctor note: </span>
+                                    {selectedAppointment.notes.doctorNotes}
                                 </div>
-                            </div>
+                            ) : null}
                         </div>
                     </div>
-                </div>
-            )}
+                </ModalShell>
+            ) : null}
+
+            {selectedClinic ? (
+                <ModalShell title="Clinic details" onClose={() => setSelectedClinic(null)}>
+                    <div className="space-y-5">
+                        <div className="rounded-3xl bg-teal-50 p-5">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Clinic</p>
+                            <h3 className="mt-2 text-2xl font-bold text-slate-950">{selectedClinic.name || "Clinic"}</h3>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">{formatAddress(selectedClinic)}</p>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <DetailItem label="Phone" value={selectedClinic.contact?.phone || "N/A"} />
+                            <DetailItem label="Email" value={selectedClinic.contact?.email || "N/A"} />
+                            <DetailItem label="Weekdays" value={`${safeFormatTime(selectedClinic.operatingHours?.weekdays?.open)} - ${safeFormatTime(selectedClinic.operatingHours?.weekdays?.close)}`} />
+                            <DetailItem label="Weekends" value={`${safeFormatTime(selectedClinic.operatingHours?.weekends?.open)} - ${safeFormatTime(selectedClinic.operatingHours?.weekends?.close)}`} />
+                        </div>
+                    </div>
+                </ModalShell>
+            ) : null}
         </div>
     );
 };

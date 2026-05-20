@@ -1,53 +1,123 @@
-import { useEffect, useState, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-    getUserConversations,
-    getUserMessages,
-    markUserMessagesRead,
-    sendUserMessage,
+    AlertCircle,
+    CalendarDays,
+    CheckCircle2,
+    ChevronDown,
+    ChevronRight,
+    MessageSquareText,
+    Plus,
+    Send,
+    Stethoscope,
+    UserRound,
+    X,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import {
+    clearMessages,
     getDoctorConversations,
     getDoctorMessages,
+    getUserConversations,
+    getUserMessages,
     markDoctorMessagesRead,
-    sendDoctorMessage,
+    markUserMessagesRead,
     resetMessageState,
-} from '../features/Messages/MessageSlice.js';
-import { getMyAppointments, getDoctorAppointments } from '../features/Appointment/AppointmentSlice.js';
-import { toast } from 'react-toastify';
+    sendDoctorMessage,
+    sendUserMessage,
+} from "../features/Messages/MessageSlice.js";
+import { getDoctorAppointments, getMyAppointments } from "../features/Appointment/AppointmentSlice.js";
+
+const formatDate = (dateString, options = {}) => {
+    if (!dateString) return "No date";
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return "No date";
+
+    return parsed.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        ...options,
+    });
+};
+
+const getInitial = (value) => String(value || "M").trim().charAt(0).toUpperCase();
+
+const getOtherParticipant = (conversation, userType) => {
+    if (!conversation) return null;
+    return userType === "user" ? conversation.doctor : conversation.patient;
+};
+
+const getParticipantName = (conversation, userType) => {
+    const participant = getOtherParticipant(conversation, userType);
+    return participant?.name || participant?.username || (userType === "user" ? "Doctor unavailable" : "Patient unavailable");
+};
+
+const getParticipantEmail = (conversation, userType) => {
+    const participant = getOtherParticipant(conversation, userType);
+    return participant?.email || "Contact details unavailable";
+};
+
+const isConversationAvailable = (conversation, userType) => {
+    const participant = getOtherParticipant(conversation, userType);
+    return Boolean(conversation?.isAvailable !== false && participant?._id);
+};
+
+const isOwnMessage = (message, userType) => {
+    const role = message.sender?.role || message.senderRole || message.senderModel?.toLowerCase();
+    return role === userType;
+};
+
+const getAppointmentLabel = (appointment, userType) => {
+    const person = userType === "user"
+        ? appointment.doctor?.name || appointment.doctor?.username || "Doctor unavailable"
+        : appointment.patient?.username || appointment.patient?.name || "Patient unavailable";
+
+    return `${formatDate(appointment.date, { year: "numeric" })} - ${person}`;
+};
+
+const EmptyPanel = ({ title, description, action }) => (
+    <div className="flex h-full min-h-[24rem] items-center justify-center p-6 text-center">
+        <div className="max-w-md">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-teal-50 text-teal-700">
+                <MessageSquareText className="h-8 w-8" />
+            </div>
+            <h3 className="mt-5 text-2xl font-bold text-slate-950">{title}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+            {action}
+        </div>
+    </div>
+);
 
 const ConversationPage = ({ userType }) => {
     const dispatch = useDispatch();
     const messagesEndRef = useRef(null);
-    const messagesContainerRef = useRef(null);
-
-    const {
-        conversations,
-        messages,
-        isLoading,
-    } = useSelector((state) => state.messages);
-
+    const { conversations, messages, isLoading } = useSelector((state) => state.messages);
     const { myAppointments, doctorAppointments } = useSelector((state) => state.appointment);
 
     const [activeConversation, setActiveConversation] = useState(null);
-    const [newMessage, setNewMessage] = useState('');
+    const [newMessage, setNewMessage] = useState("");
     const [showNewConversationModal, setShowNewConversationModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
-    const [initialMessage, setInitialMessage] = useState('');
+    const [isAppointmentPickerOpen, setIsAppointmentPickerOpen] = useState(false);
+    const [initialMessage, setInitialMessage] = useState("");
 
-    // Scroll to bottom when messages change
+    const conversationList = Array.isArray(conversations) ? conversations : [];
+    const currentConversation = conversationList.find((item) => item._id === activeConversation) || null;
+    const currentAvailable = isConversationAvailable(currentConversation, userType);
+    const availableAppointments = useMemo(() => {
+        const appointments = userType === "user" ? myAppointments : doctorAppointments;
+        return Array.isArray(appointments)
+            ? appointments.filter((appointment) => (userType === "user" ? appointment?.doctor?._id : appointment?.patient?._id))
+            : [];
+    }, [doctorAppointments, myAppointments, userType]);
+
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    // Load conversations and appointments based on user type
-    useEffect(() => {
-        if (userType === 'user') {
+        if (userType === "user") {
             dispatch(getUserConversations());
             dispatch(getMyAppointments());
-        } else if (userType === 'doctor') {
+        } else if (userType === "doctor") {
             dispatch(getDoctorConversations());
             dispatch(getDoctorAppointments());
         }
@@ -57,348 +127,404 @@ const ConversationPage = ({ userType }) => {
         };
     }, [dispatch, userType]);
 
-    // Handle conversation click
-    const handleConversationClick = (conversationId) => {
-        setActiveConversation(conversationId);
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
-        if (userType === 'user') {
-            dispatch(getUserMessages(conversationId));
-            dispatch(markUserMessagesRead(conversationId));
-        } else if (userType === 'doctor') {
-            dispatch(getDoctorMessages(conversationId));
-            dispatch(markDoctorMessagesRead(conversationId));
-        }
-    };
+    const reloadConversations = () => (
+        userType === "user" ? dispatch(getUserConversations()) : dispatch(getDoctorConversations())
+    );
 
-    // Handle send message
-    const handleSendMessage = (e) => {
-        e.preventDefault();
+    const handleConversationClick = (conversation) => {
+        setActiveConversation(conversation._id);
 
-        if (!newMessage.trim()) return;
-
-        // For existing conversation
-        if (activeConversation) {
-            const currentConversation = conversations.find(c => c._id === activeConversation);
-            if (!currentConversation) return;
-
-            const messageData = {
-                recipientId: userType === 'user'
-                    ? currentConversation.doctor._id
-                    : currentConversation.patient._id,
-                content: newMessage,
-                attachments: [],
-                appointmentId: currentConversation.lastMessage?.metadata?.appointment || null
-            };
-
-            if (userType === 'user') {
-                dispatch(sendUserMessage(messageData));
-            } else if (userType === 'doctor') {
-                dispatch(sendDoctorMessage(messageData));
-            }
-        }
-
-        setNewMessage('');
-    };
-
-    // Handle start new conversation
-    const handleStartNewConversation = async () => {
-        if (!selectedAppointment || !initialMessage.trim()) {
-            toast.warning('Please select an appointment and enter a message');
+        if (!isConversationAvailable(conversation, userType)) {
+            dispatch(clearMessages());
             return;
         }
 
-        const messageData = {
-            recipientId: userType === 'user'
-                ? selectedAppointment.doctor._id
-                : selectedAppointment.patient._id,
-            content: initialMessage,
+        if (userType === "user") {
+            dispatch(getUserMessages(conversation._id));
+            dispatch(markUserMessagesRead(conversation._id));
+        } else {
+            dispatch(getDoctorMessages(conversation._id));
+            dispatch(markDoctorMessagesRead(conversation._id));
+        }
+    };
+
+    const handleSendMessage = async (event) => {
+        event.preventDefault();
+        const content = newMessage.trim();
+
+        if (!content || !currentConversation || !currentAvailable) return;
+
+        const recipient = getOtherParticipant(currentConversation, userType);
+        if (!recipient?._id) {
+            toast.error("This contact is no longer available.");
+            return;
+        }
+
+        setNewMessage("");
+
+        const payload = {
+            recipientId: recipient._id,
+            content,
             attachments: [],
-            appointmentId: selectedAppointment._id
+            appointmentId: currentConversation.lastMessage?.metadata?.appointment || null,
         };
 
-        try {
-            // Send the initial message which will create the conversation
-            const resultAction = userType === 'user'
-                ? await dispatch(sendUserMessage(messageData))
-                : await dispatch(sendDoctorMessage(messageData));
+        const action = userType === "user" ? sendUserMessage(payload) : sendDoctorMessage(payload);
+        const result = await dispatch(action);
 
-            if (resultAction.payload) {
-                // Reload conversations to include the new one
-                userType === 'user'
-                    ? await dispatch(getUserConversations())
-                    : await dispatch(getDoctorConversations());
+        if (!result.error) {
+            reloadConversations();
+        }
+    };
 
-                // Find and activate the new conversation
-                const newConversation = conversations.find(
-                    conv => conv.lastMessage?._id === resultAction.payload._id
-                );
-
-                if (newConversation) {
-                    setActiveConversation(newConversation._id);
-                    setShowNewConversationModal(false);
-                    setSelectedAppointment(null);
-                    setInitialMessage('');
-
-                    // Load messages for the new conversation
-                    userType === 'user'
-                        ? dispatch(getUserMessages(newConversation._id))
-                        : dispatch(getDoctorMessages(newConversation._id));
-                }
-            }
-        } catch {
+    const handleStartNewConversation = async () => {
+        if (!selectedAppointment || !initialMessage.trim()) {
+            toast.warning("Please select an appointment and enter a message.");
             return;
         }
-    };
 
-    // Format date
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+        const recipientId = userType === "user"
+            ? selectedAppointment.doctor?._id
+            : selectedAppointment.patient?._id;
 
-    // Get the other participant's name
-    const getParticipantName = (conversation) => {
-        if (userType === 'user') {
-            return `${conversation.doctor?.name || 'Unknown'}`;
-        } else {
-            return conversation.patient?.username || 'Unknown User';
+        if (!recipientId) {
+            toast.error("This appointment is missing contact details.");
+            return;
+        }
+
+        const payload = {
+            recipientId,
+            content: initialMessage.trim(),
+            attachments: [],
+            appointmentId: selectedAppointment._id,
+        };
+
+        const result = await dispatch(userType === "user" ? sendUserMessage(payload) : sendDoctorMessage(payload));
+
+        if (result.error) return;
+
+        const refreshed = await reloadConversations();
+        const refreshedList = Array.isArray(refreshed.payload?.data) ? refreshed.payload.data : [];
+        const recipientConversation = refreshedList.find((conversation) => {
+            const other = getOtherParticipant(conversation, userType);
+            return String(other?._id) === String(recipientId);
+        });
+
+        setShowNewConversationModal(false);
+        setSelectedAppointment(null);
+        setIsAppointmentPickerOpen(false);
+        setInitialMessage("");
+
+        if (recipientConversation) {
+            handleConversationClick(recipientConversation);
         }
     };
 
-    // Get appointments for new conversation
-    const getAvailableAppointments = () => {
-        return userType === 'user' ? myAppointments : doctorAppointments;
-    };
-
-    const isOwnMessage = (message) => {
-        const role = message.sender?.role || message.senderRole || message.senderModel?.toLowerCase();
-        return role === userType;
+    const closeNewConversationModal = () => {
+        setShowNewConversationModal(false);
+        setSelectedAppointment(null);
+        setIsAppointmentPickerOpen(false);
+        setInitialMessage("");
     };
 
     return (
-        <div className="flex min-h-[calc(100dvh-5rem)] flex-col overflow-hidden rounded-3xl bg-gray-100 md:h-[calc(100dvh-4rem)] md:flex-row">
-            {/* Sidebar with conversations */}
-            <div className="max-h-72 w-full border-b border-gray-300 bg-white md:max-h-none md:w-1/3 md:border-b-0 md:border-r">
-                <div className="p-4 border-b border-gray-300 flex justify-between items-center gap-3">
-                    <h2 className="text-lg font-semibold md:text-xl">
-                        {userType === 'user' ? 'Your Conversations' : 'Patient Conversations'}
-                    </h2>
-                    <button
-                        onClick={() => setShowNewConversationModal(true)}
-                        className="bg-teal-600 text-white px-3 py-1 rounded-lg hover:bg-teal-700 text-sm"
-                    >
-                        New
-                    </button>
-                </div>
-
-                <div className="overflow-y-auto h-[calc(100%-60px)]">
-                    {isLoading && conversations.length === 0 ? (
-                        <div className="flex justify-center items-center h-full">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
-                        </div>
-                    ) : conversations.length === 0 ? (
-                        <div className="flex justify-center items-center h-full text-gray-500">
-                            No conversations found
-                        </div>
-                    ) : (
-                        conversations.map((conversation) => (
-                            <div
-                                key={conversation._id}
-                                className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
-                                    activeConversation === conversation._id ? 'bg-teal-50' : ''
-                                }`}
-                                onClick={() => handleConversationClick(conversation._id)}
-                            >
-                                <div className="flex justify-between items-center">
-                                    <h3 className="font-medium">
-                                        {getParticipantName(conversation)}
-                                    </h3>
-                                    {conversation.unreadCount > 0 && (
-                                        <span className="h-5 w-5 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center">
-                                            {conversation.unreadCount}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-sm text-gray-500 truncate">
-                                    {conversation.lastMessage?.content || 'No messages yet'}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                    {conversation.lastMessage?.createdAt
-                                        ? formatDate(conversation.lastMessage.createdAt)
-                                        : 'No date'}
-                                </p>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-
-            {/* Main chat area */}
-            <div className="flex min-h-[26rem] w-full flex-1 flex-col md:w-2/3">
-                {activeConversation ? (
-                    <>
-                        {/* Chat header */}
-                        <div className="p-4 border-b border-gray-300 bg-white">
-                            <h2 className="text-lg font-semibold md:text-xl">
-                                {userType === 'user'
-                                    ? `Conversation with ${
-                                        conversations.find(c => c._id === activeConversation)?.doctor?.name || 'Unknown'
-                                    }`
-                                    : `Conversation with ${
-                                        conversations.find(c => c._id === activeConversation)?.patient?.username || 'Unknown User'
-                                    }`}
-                            </h2>
-                        </div>
-
-                        {/* Messages container with reverse flex column */}
-                        <div
-                            ref={messagesContainerRef}
-                            className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col-reverse"
-                            style={{
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none',
-                            }}
-                        >
+        <div className="w-full p-4 sm:p-6">
+            <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="grid min-h-[calc(100dvh-8rem)] lg:grid-cols-[24rem_1fr]">
+                    <aside className="border-b border-slate-200 bg-slate-50/70 lg:border-b-0 lg:border-r">
+                        <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white p-5">
                             <div>
-                                {isLoading && messages.length === 0 ? (
-                                    <div className="flex justify-center items-center h-full">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
-                                    </div>
-                                ) : messages.length === 0 ? (
-                                    <div className="flex justify-center items-center h-full text-gray-500">
-                                        No messages in this conversation
-                                    </div>
-                                ) : (
-                                    <>
-                                        {/* Messages will render here*/}
-                                        {messages.map((msg) => (
-                                            <div
-                                                key={msg._id}
-                                                className={`mb-4 flex ${
-                                                    isOwnMessage(msg) ? 'justify-end' : 'justify-start'
-                                                }`}
-                                            >
-                                                <div
-                                                    className={`max-w-[82vw] px-4 py-2 rounded-lg md:max-w-xs lg:max-w-md ${
-                                                        isOwnMessage(msg)
-                                                            ? 'bg-teal-600 text-white'
-                                                            : 'bg-white border border-gray-300'
-                                                    }`}
-                                                >
-                                                    <p>{msg.content}</p>
-                                                    <p
-                                                        className={`text-xs mt-1 ${
-                                                            isOwnMessage(msg) ? 'text-teal-100' : 'text-gray-500'
-                                                        }`}
-                                                    >
-                                                        {formatDate(msg.createdAt)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {/* This empty div should be at the bottom for auto-scrolling */}
-                                        <div ref={messagesEndRef} />
-                                    </>
-                                )}
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Messages</p>
+                                <h2 className="mt-1 text-xl font-bold text-slate-950">
+                                    {userType === "user" ? "Care conversations" : "Patient conversations"}
+                                </h2>
                             </div>
-                        </div>
-
-                        {/* Message input */}
-                        <div className="p-4 border-t border-gray-300 bg-white">
-                            <form onSubmit={handleSendMessage} className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Type your message..."
-                                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!newMessage.trim() || isLoading}
-                                    className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:bg-teal-300"
-                                >
-                                    Send
-                                </button>
-                            </form>
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex justify-center items-center h-full text-gray-500">
-                        {userType === 'user'
-                            ? 'Select a conversation or create a new one to view messages'
-                            : 'Select a conversation to view messages'}
-                    </div>
-                )}
-            </div>
-
-            {/* New Conversation Modal */}
-            {showNewConversationModal && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-50"
-                     style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-semibold mb-4">Start New Conversation</h3>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Select Appointment
-                            </label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                value={selectedAppointment?._id || ''}
-                                onChange={(e) => {
-                                    const appointment = getAvailableAppointments().find(a => a._id === e.target.value);
-                                    setSelectedAppointment(appointment || null);
-                                }}
-                            >
-                                <option value="">Select an appointment</option>
-                                {getAvailableAppointments().map((appointment) => (
-                                    <option key={appointment._id} value={appointment._id}>
-                                        {formatDate(appointment.date)} - {userType === 'user'
-                                        ? `${appointment.doctor?.name}`
-                                        : appointment.patient?.username}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Initial Message
-                            </label>
-                            <textarea
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                rows={4}
-                                value={initialMessage}
-                                onChange={(e) => setInitialMessage(e.target.value)}
-                                placeholder={`Type your initial message to the ${userType === 'user' ? 'doctor' : 'patient'}...`}
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2">
                             <button
                                 type="button"
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                                onClick={() => {
-                                    setShowNewConversationModal(false);
-                                    setSelectedAppointment(null);
-                                    setInitialMessage('');
-                                }}
+                                onClick={() => setShowNewConversationModal(true)}
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-sm transition hover:bg-teal-700"
+                                aria-label="Start new conversation"
+                            >
+                                <Plus className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="max-h-[28rem] overflow-y-auto lg:max-h-[calc(100dvh-14rem)]">
+                            {isLoading && !conversationList.length ? (
+                                <div className="space-y-3 p-4">
+                                    {[1, 2, 3].map((item) => (
+                                        <div key={item} className="h-24 animate-pulse rounded-3xl bg-white" />
+                                    ))}
+                                </div>
+                            ) : conversationList.length ? (
+                                conversationList.map((conversation) => {
+                                    const name = getParticipantName(conversation, userType);
+                                    const available = isConversationAvailable(conversation, userType);
+                                    const active = activeConversation === conversation._id;
+
+                                    return (
+                                        <button
+                                            key={conversation._id}
+                                            type="button"
+                                            onClick={() => handleConversationClick(conversation)}
+                                            className={`flex w-full gap-3 border-b border-slate-200 p-4 text-left transition ${active ? "bg-teal-50" : "bg-white hover:bg-slate-50"}`}
+                                        >
+                                            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${available ? "bg-teal-100 text-teal-800" : "bg-amber-100 text-amber-800"}`}>
+                                                {available ? getInitial(name) : <AlertCircle className="h-5 w-5" />}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="truncate font-semibold text-slate-950">{name}</p>
+                                                    {conversation.unreadCount > 0 ? (
+                                                        <span className="rounded-full bg-teal-600 px-2 py-0.5 text-xs font-semibold text-white">
+                                                            {conversation.unreadCount}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                                <p className="mt-1 truncate text-sm text-slate-500">
+                                                    {available ? conversation.lastMessage?.content || "No messages yet" : "Contact no longer available"}
+                                                </p>
+                                                <p className="mt-2 text-xs text-slate-400">
+                                                    {conversation.lastMessage?.createdAt ? formatDate(conversation.lastMessage.createdAt) : "No activity yet"}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    );
+                                })
+                            ) : (
+                                <EmptyPanel
+                                    title="No conversations yet"
+                                    description="Start with an appointment so your doctor and care notes stay connected."
+                                    action={(
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewConversationModal(true)}
+                                            className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            New conversation
+                                        </button>
+                                    )}
+                                />
+                            )}
+                        </div>
+                    </aside>
+
+                    <main className="flex min-h-[36rem] flex-col bg-white">
+                        {currentConversation ? (
+                            <>
+                                <header className="flex items-center justify-between gap-4 border-b border-slate-200 p-5">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${currentAvailable ? "bg-teal-100 text-teal-800" : "bg-amber-100 text-amber-800"}`}>
+                                            {currentAvailable ? (
+                                                userType === "user" ? <Stethoscope className="h-6 w-6" /> : <UserRound className="h-6 w-6" />
+                                            ) : (
+                                                <AlertCircle className="h-6 w-6" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h2 className="truncate text-xl font-bold text-slate-950">
+                                                {getParticipantName(currentConversation, userType)}
+                                            </h2>
+                                            <p className="truncate text-sm text-slate-500">{getParticipantEmail(currentConversation, userType)}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`hidden rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex ${currentAvailable ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>
+                                        {currentAvailable ? "Active" : "Unavailable"}
+                                    </span>
+                                </header>
+
+                                {!currentAvailable ? (
+                                    <EmptyPanel
+                                        title="This conversation is unavailable"
+                                        description="The linked contact no longer exists in the system, so this thread is kept for history only."
+                                    />
+                                ) : (
+                                    <>
+                                        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-slate-50 to-white p-4 sm:p-6">
+                                            {isLoading && !messages.length ? (
+                                                <div className="flex h-full items-center justify-center">
+                                                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+                                                </div>
+                                            ) : messages.length ? (
+                                                <div className="space-y-4">
+                                                    {messages.map((message) => {
+                                                        const own = isOwnMessage(message, userType);
+                                                        return (
+                                                            <div key={message._id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
+                                                                <div className={`max-w-[85%] rounded-3xl px-4 py-3 shadow-sm sm:max-w-[70%] ${own ? "rounded-br-lg bg-teal-600 text-white" : "rounded-bl-lg border border-slate-200 bg-white text-slate-800"}`}>
+                                                                    <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
+                                                                    <p className={`mt-2 text-[11px] ${own ? "text-teal-100" : "text-slate-400"}`}>
+                                                                        {formatDate(message.createdAt)}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    <div ref={messagesEndRef} />
+                                                </div>
+                                            ) : (
+                                                <EmptyPanel
+                                                    title="No messages yet"
+                                                    description="Send the first message to keep this care conversation in one place."
+                                                />
+                                            )}
+                                        </div>
+
+                                        <form onSubmit={handleSendMessage} className="border-t border-slate-200 bg-white p-4">
+                                            <div className="flex items-end gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-2 focus-within:border-teal-300 focus-within:ring-4 focus-within:ring-teal-50">
+                                                <textarea
+                                                    value={newMessage}
+                                                    onChange={(event) => setNewMessage(event.target.value)}
+                                                    placeholder="Write a message..."
+                                                    rows={1}
+                                                    className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={!newMessage.trim() || isLoading}
+                                                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-600 text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                                                    aria-label="Send message"
+                                                >
+                                                    <Send className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <EmptyPanel
+                                title="Select a conversation"
+                                description={userType === "user"
+                                    ? "Choose a care conversation or start a new one from an appointment."
+                                    : "Choose a patient thread to review messages and follow-up notes."}
+                            />
+                        )}
+                    </main>
+                </div>
+            </section>
+
+            {showNewConversationModal ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+                    <div className="w-full max-w-xl rounded-3xl bg-white p-5 shadow-2xl sm:p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">New message</p>
+                                <h3 className="mt-2 text-2xl font-bold text-slate-950">Start conversation</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeNewConversationModal}
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="mt-6 space-y-4">
+                            <div className="relative">
+                                <span className="text-sm font-semibold text-slate-700">Appointment</span>
+                                <button
+                                    type="button"
+                                    className={`mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 text-left text-sm outline-none transition ${isAppointmentPickerOpen ? "border-teal-400 ring-4 ring-teal-50" : "border-slate-200 hover:border-teal-200"}`}
+                                    onClick={() => {
+                                        if (availableAppointments.length) {
+                                            setIsAppointmentPickerOpen((value) => !value);
+                                        }
+                                    }}
+                                    aria-expanded={isAppointmentPickerOpen}
+                                    aria-haspopup="listbox"
+                                    disabled={!availableAppointments.length}
+                                >
+                                    <span className={selectedAppointment ? "text-slate-950" : "text-slate-400"}>
+                                        {selectedAppointment ? getAppointmentLabel(selectedAppointment, userType) : "Select an appointment"}
+                                    </span>
+                                    <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition ${isAppointmentPickerOpen ? "rotate-180" : ""}`} />
+                                </button>
+
+                                {isAppointmentPickerOpen ? (
+                                    <div className="modal-scroll absolute left-0 right-0 top-full z-20 mt-2 max-h-64 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl" role="listbox">
+                                        {availableAppointments.map((appointment) => {
+                                            const active = selectedAppointment?._id === appointment._id;
+                                            const person = userType === "user"
+                                                ? appointment.doctor?.name || appointment.doctor?.username || "Doctor unavailable"
+                                                : appointment.patient?.username || appointment.patient?.name || "Patient unavailable";
+
+                                            return (
+                                                <button
+                                                    key={appointment._id}
+                                                    type="button"
+                                                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${active ? "bg-teal-50 text-teal-900" : "hover:bg-slate-50"}`}
+                                                    onClick={() => {
+                                                        setSelectedAppointment(appointment);
+                                                        setIsAppointmentPickerOpen(false);
+                                                    }}
+                                                    role="option"
+                                                    aria-selected={active}
+                                                >
+                                                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${active ? "bg-teal-600 text-white" : "bg-teal-50 text-teal-700"}`}>
+                                                        <CalendarDays className="h-5 w-5" />
+                                                    </span>
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className="block truncate text-sm font-semibold">{person}</span>
+                                                        <span className="mt-0.5 block truncate text-xs text-slate-500">
+                                                            {formatDate(appointment.date, { year: "numeric" })}
+                                                        </span>
+                                                    </span>
+                                                    {active ? <CheckCircle2 className="h-4 w-4 text-teal-700" /> : null}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : null}
+                            </div>
+
+                            {!availableAppointments.length ? (
+                                <div className="flex gap-3 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+                                    <CalendarDays className="mt-0.5 h-5 w-5 shrink-0" />
+                                    Conversations start from valid appointments. No message-ready appointments were found.
+                                </div>
+                            ) : null}
+
+                            <label className="block">
+                                <span className="text-sm font-semibold text-slate-700">Message</span>
+                                <textarea
+                                    className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                                    rows={5}
+                                    value={initialMessage}
+                                    onChange={(event) => setInitialMessage(event.target.value)}
+                                    placeholder="Write your first message..."
+                                />
+                            </label>
+                        </div>
+
+                        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                onClick={closeNewConversationModal}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="button"
-                                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-teal-300"
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                                 disabled={!selectedAppointment || !initialMessage.trim()}
                                 onClick={handleStartNewConversation}
                             >
-                                Start Conversation
+                                <CheckCircle2 className="h-4 w-4" />
+                                Start conversation
                             </button>
                         </div>
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 };

@@ -192,20 +192,24 @@ const DoctorModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+            <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+                <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Doctor profile</p>
+                        <h2 className="mt-1 text-2xl font-bold text-slate-950">
                             {doctor ? 'Edit Doctor' : 'Add New Doctor'}
                         </h2>
+                    </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
                         >
                             <X className="h-5 w-5" />
                         </button>
-                    </div>
+                </div>
+
+                <div className="admin-scroll flex-1 overflow-y-auto p-5">
 
                     <form onSubmit={handleSubmit}>
                         {/* Image Upload */}
@@ -222,13 +226,13 @@ const DoctorModal = ({
                                             className="h-20 w-20 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <ImageIcon className="h-10 w-10 text-gray-400" />
+                                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-teal-50">
+                                            <ImageIcon className="h-10 w-10 text-teal-500" />
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <label className="flex flex-col items-center px-4 py-2 bg-white rounded-md border border-gray-300 shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                    <label className="flex cursor-pointer flex-col items-center rounded-2xl border border-teal-200 bg-white px-4 py-3 text-sm font-medium text-teal-700 shadow-sm hover:bg-teal-50">
                                         <div className="flex items-center">
                                             <Upload className="h-5 w-5 mr-2 text-gray-500" />
                                             <span>{imagePreview ? 'Change Image' : 'Upload Image'}</span>
@@ -542,18 +546,18 @@ const DoctorModal = ({
                             ))}
                         </div>
 
-                        <div className="flex justify-end space-x-3">
+                        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                                 disabled={isLoading}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                                className="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Processing...' : doctor ? 'Update Doctor' : 'Add Doctor'}

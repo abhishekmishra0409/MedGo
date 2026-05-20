@@ -80,6 +80,9 @@ class MessageService {
     }
 
     static async getConversationMessages(userId, conversationId, page = 1, limit = 20) {
+        const safePage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1;
+        const safeLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Math.min(Number(limit), 100) : 20;
+
         const conversation = await Conversation.findOne({
             _id: conversationId,
             $or: [{ doctor: userId }, { patient: userId }]
@@ -89,12 +92,31 @@ class MessageService {
             throw new Error('Conversation not found or access denied');
         }
 
-        return await Message.find({ conversation: conversationId })
+        const messages = await Message.find({ conversation: conversationId })
             .sort({ createdAt: 1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .populate('sender', 'username name email role')
-            .populate('recipient', 'username name email role');
+            .skip((safePage - 1) * safeLimit)
+            .limit(safeLimit)
+            .lean();
+
+        const participantIds = [
+            ...new Set(
+                messages
+                    .flatMap((message) => [message.sender, message.recipient])
+                    .filter(Boolean)
+                    .map((id) => String(id))
+            ),
+        ];
+
+        const participants = await User.find({ _id: { $in: participantIds } })
+            .select('_id username name email role')
+            .lean();
+        const participantById = new Map(participants.map((participant) => [String(participant._id), participant]));
+
+        return messages.map((message) => ({
+            ...message,
+            sender: participantById.get(String(message.sender)) || null,
+            recipient: participantById.get(String(message.recipient)) || null,
+        }));
     }
 
     static async getUserConversations(userId, userType) {
@@ -117,6 +139,7 @@ class MessageService {
         return conversations.map((conversation) => {
             const item = conversation.toObject();
             item.doctor = item.doctor ? buildDoctorAccount(item.doctor) : null;
+            item.isAvailable = Boolean(item.doctor && item.patient);
             return item;
         });
     }
@@ -139,6 +162,10 @@ class MessageService {
 
         // WebSocket notification
         const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+            return;
+        }
+
         const otherUserId = conversation.doctor.equals(userId)
             ? conversation.patient
             : conversation.doctor;

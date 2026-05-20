@@ -340,15 +340,25 @@ const ClinicWorkspace = () => {
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                     <p className="text-sm font-semibold text-slate-900">Appointment settings</p>
                                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                                        <label className="block">
+                                        <div>
                                             <span className="mb-1 block text-sm font-semibold text-slate-700">Slot duration</span>
-                                            <select value={formData.appointmentSettings.slotDuration} onChange={(event) => updateSettings("slotDuration", event.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100">
-                                                <option value={15}>15 minutes</option>
-                                                <option value={30}>30 minutes</option>
-                                                <option value={45}>45 minutes</option>
-                                                <option value={60}>60 minutes</option>
-                                            </select>
-                                        </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {[15, 30, 45, 60].map((duration) => (
+                                                    <button
+                                                        key={duration}
+                                                        type="button"
+                                                        onClick={() => updateSettings("slotDuration", duration)}
+                                                        className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+                                                            Number(formData.appointmentSettings.slotDuration) === duration
+                                                                ? "border-teal-200 bg-teal-50 text-teal-800"
+                                                                : "border-slate-200 bg-white text-slate-600 hover:border-teal-200"
+                                                        }`}
+                                                    >
+                                                        {duration} min
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                         <label className="block">
                                             <span className="mb-1 block text-sm font-semibold text-slate-700">Max daily appointments</span>
                                             <input type="number" min="1" value={formData.appointmentSettings.maxDailyAppointments} onChange={(event) => updateSettings("maxDailyAppointments", event.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />

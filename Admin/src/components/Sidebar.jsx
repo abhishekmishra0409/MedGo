@@ -34,23 +34,23 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="flex h-full w-72 flex-col rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-6 rounded-[24px] bg-[linear-gradient(135deg,#0f9c8c,#0b7669)] p-4 text-white">
+        <div className="flex h-full w-64 flex-col rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-5 rounded-3xl bg-[linear-gradient(135deg,#0f9c8c,#0b7669)] p-4 text-white">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100">Admin Hub</p>
-                <h2 className="mt-2 text-xl font-semibold">Operational view for MedGo</h2>
-                <p className="mt-2 text-sm text-teal-50">Manage products, doctors, orders, clinics, and diagnostics from one calmer dashboard.</p>
+                <h2 className="mt-2 text-lg font-semibold">MedGo operations</h2>
+                <p className="mt-2 text-xs leading-5 text-teal-50">Products, doctors, clinics, diagnostics, and orders.</p>
             </div>
-            <div className="flex-1 overflow-y-auto">
-                <div className="space-y-2">
+            <div className="min-h-0 flex-1">
+                <div className="space-y-1.5">
                     {sidebarItems.map((item) => (
                         <NavItem key={item.path} item={item} />
                     ))}
                 </div>
             </div>
-            <div className="pt-2 mt-auto border-t border-gray-200">
+            <div className="mt-3 border-t border-slate-200 pt-2">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center w-full gap-2 rounded-2xl p-3 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
+                    className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-slate-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
                 >
                     <LogOut className="w-5 h-5" />
                     <span>Logout</span>

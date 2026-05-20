@@ -1,97 +1,128 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { format } from "date-fns";
+import { toast } from "react-toastify";
 import {
+    AlertCircle,
+    CalendarDays,
+    CheckCircle2,
+    Clock,
+    CreditCard,
+    MapPin,
+    Stethoscope,
+    UserRound,
+    X,
+} from "lucide-react";
+import {
+    cancelAppointment,
+    completeAppointment,
     getDoctorAppointments,
     updateAppointmentStatus,
-    cancelAppointment,
-    completeAppointment
 } from "../../features/Appointment/AppointmentSlice.js";
-import { toast } from "react-toastify";
-import { format } from "date-fns";
+
+const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
+const paymentStatuses = ["pending", "paid", "failed", "refunded"];
+
+const statusStyles = {
+    pending: "border-amber-100 bg-amber-50 text-amber-800",
+    confirmed: "border-teal-100 bg-teal-50 text-teal-800",
+    completed: "border-emerald-100 bg-emerald-50 text-emerald-800",
+    cancelled: "border-rose-100 bg-rose-50 text-rose-700",
+    paid: "border-emerald-100 bg-emerald-50 text-emerald-800",
+    failed: "border-rose-100 bg-rose-50 text-rose-700",
+    refunded: "border-slate-100 bg-slate-100 text-slate-700",
+};
+
+const safeFormatDate = (dateString) => {
+    if (!dateString) return "Date unavailable";
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return "Date unavailable";
+    return format(parsed, "MMMM dd, yyyy");
+};
+
+const safeFormatTime = (timeString) => {
+    if (!timeString) return "Time unavailable";
+    const parsed = new Date(`1970-01-01T${timeString}`);
+    if (Number.isNaN(parsed.getTime())) return timeString || "Time unavailable";
+    return format(parsed, "h:mm a");
+};
+
+const normalize = (value) => String(value || "pending").toLowerCase();
+
+const StatusBadge = ({ value, label }) => {
+    const status = normalize(value);
+    return (
+        <span className={`inline-flex w-fit rounded-full border px-3 py-1.5 text-xs font-semibold capitalize ${statusStyles[status] || "border-slate-100 bg-slate-100 text-slate-700"}`}>
+            {label || status.replace(/-/g, " ")}
+        </span>
+    );
+};
+
+const StatCard = ({ label, value, icon }) => (
+    <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
+        <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+            {icon}
+        </div>
+        <p className="mt-3 text-2xl font-bold text-slate-950">{value}</p>
+    </div>
+);
+
+const InfoTile = ({ label, value, icon }) => (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            {icon}
+            {label}
+        </p>
+        <div className="mt-2 text-sm font-bold capitalize text-slate-950">{value}</div>
+    </div>
+);
 
 const DoctorsAppointments = () => {
     const dispatch = useDispatch();
-    const { doctorAppointments, isLoading, isError, message } = useSelector(
-        (state) => state.appointment
-    );
+    const { doctorAppointments, isLoading, isError, message } = useSelector((state) => state.appointment);
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [status, setStatus] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
     const [notes, setNotes] = useState("");
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [showPatientModal, setShowPatientModal] = useState(false);
-    const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+    const appointments = useMemo(
+        () => (Array.isArray(doctorAppointments) ? doctorAppointments : []),
+        [doctorAppointments]
+    );
 
     useEffect(() => {
         dispatch(getDoctorAppointments());
     }, [dispatch]);
 
     useEffect(() => {
-        if (isError) {
-            toast.error(message);
-        }
+        if (isError) toast.error(message);
     }, [isError, message]);
 
-    const formatDate = (dateString) => {
-        return format(new Date(dateString), "MMMM dd, yyyy");
-    };
+    const stats = useMemo(() => ({
+        total: appointments.length,
+        upcoming: appointments.filter((item) => ["pending", "confirmed"].includes(normalize(item.status))).length,
+        completed: appointments.filter((item) => normalize(item.status) === "completed").length,
+        cancelled: appointments.filter((item) => normalize(item.status) === "cancelled").length,
+    }), [appointments]);
 
-    const formatTime = (timeString) => {
-        return format(new Date(`1970-01-01T${timeString}`), "h:mm a");
-    };
-
-    const getStatusBadge = (status) => {
-        const statusClasses = {
-            pending: "bg-yellow-100 text-yellow-800",
-            confirmed: "bg-teal-100 text-teal-800",
-            completed: "bg-green-100 text-green-800",
-            cancelled: "bg-red-100 text-red-800",
-        };
-
-        return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status] || "bg-gray-100 text-gray-800"}`}>
-                {status}
-            </span>
-        );
-    };
-
-    const getPaymentStatusBadge = (status) => {
-        const statusClasses = {
-            pending: "bg-yellow-100 text-yellow-800",
-            paid: "bg-green-100 text-green-800",
-            failed: "bg-red-100 text-red-800",
-            refunded: "bg-slate-100 text-slate-800",
-        };
-
-        return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status] || "bg-gray-100 text-gray-800"}`}>
-                {status}
-            </span>
-        );
-    };
-
-    const handleEditClick = (appointment) => {
+    const openUpdateModal = (appointment) => {
         setEditingAppointment(appointment);
-        setStatus(appointment.status);
-        setPaymentStatus(appointment.payment?.status || 'pending');
+        setStatus(normalize(appointment.status));
+        setPaymentStatus(normalize(appointment.payment?.status));
         setNotes(appointment.notes?.doctorNotes || "");
-        setShowUpdateModal(true);
     };
 
-    const handleStatusChange = (e) => {
-        setStatus(e.target.value);
-    };
-
-    const handlePaymentStatusChange = (e) => {
-        setPaymentStatus(e.target.value);
-    };
-
-    const handleNotesChange = (e) => {
-        setNotes(e.target.value);
+    const closeUpdateModal = () => {
+        setEditingAppointment(null);
+        setStatus("");
+        setPaymentStatus("");
+        setNotes("");
     };
 
     const handleStatusUpdate = () => {
-        if (!status) {
+        if (!editingAppointment || !status) {
             toast.error("Please select a status");
             return;
         }
@@ -100,278 +131,238 @@ const DoctorsAppointments = () => {
             appointmentId: editingAppointment._id,
             status,
             notes,
-            paymentStatus
+            paymentStatus,
         };
 
-        let action;
-        if (status === 'cancelled') {
-            action = cancelAppointment({ appointmentId: editingAppointment._id, notes });
-        } else if (status === 'completed') {
-            action = completeAppointment({
-                appointmentId: editingAppointment._id,
-                notes,
-                paymentStatus
-            });
-        } else {
-            action = updateAppointmentStatus(updateData);
-        }
+        const action = status === "cancelled"
+            ? cancelAppointment({ appointmentId: editingAppointment._id, notes })
+            : status === "completed"
+                ? completeAppointment({ appointmentId: editingAppointment._id, notes, paymentStatus })
+                : updateAppointmentStatus(updateData);
 
         dispatch(action)
             .unwrap()
             .then(() => {
-                // toast.success("Appointment updated successfully");
-                setShowUpdateModal(false);
-                setEditingAppointment(null);
+                closeUpdateModal();
                 dispatch(getDoctorAppointments());
             })
-            .catch(() => {
-                // toast.error(error.message || "Failed to update appointment");
-            });
+            .catch((error) => toast.error(error?.message || error || "Failed to update appointment"));
     };
-
-    const handlePatientClick = (patient) => {
-        setSelectedPatient(patient);
-        setShowPatientModal(true);
-    };
-
-    const closePatientModal = () => {
-        setShowPatientModal(false);
-        setSelectedPatient(null);
-    };
-
-    const closeUpdateModal = () => {
-        setShowUpdateModal(false);
-        setEditingAppointment(null);
-    };
-
-    if (isLoading) {
-        return (
-            <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
-                <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
-                </div>
-            </div>
-        );
-    }
 
     return (
-        <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Appointments</h2>
-
-            {doctorAppointments.length === 0 ? (
-                <div className="text-center py-8">
-                    <p className="text-gray-500">You don't have any appointments yet.</p>
+        <div className="w-full space-y-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Appointments</p>
+                    <h1 className="mt-2 text-3xl font-bold text-slate-950">Doctor appointments</h1>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                        Review patient visits, clinic details, payment state, and consultation notes.
+                    </p>
                 </div>
-            ) : (
-                <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-[60rem] divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clinic</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                            {doctorAppointments.map((appointment) => (
-                                <tr key={appointment._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard label="Total visits" value={stats.total} icon={<CalendarDays className="h-5 w-5 text-teal-700" />} />
+                    <StatCard label="Upcoming" value={stats.upcoming} icon={<Clock className="h-5 w-5 text-teal-700" />} />
+                    <StatCard label="Completed" value={stats.completed} icon={<CheckCircle2 className="h-5 w-5 text-teal-700" />} />
+                    <StatCard label="Cancelled" value={stats.cancelled} icon={<AlertCircle className="h-5 w-5 text-teal-700" />} />
+                </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                {isLoading && !appointments.length ? (
+                    <div className="grid gap-4">
+                        {[1, 2, 3].map((item) => (
+                            <div key={item} className="h-36 animate-pulse rounded-3xl bg-slate-100" />
+                        ))}
+                    </div>
+                ) : appointments.length ? (
+                    <div className="grid gap-4">
+                        {appointments.map((appointment) => {
+                            const patientName = appointment.patient?.username || appointment.patient?.name || "Patient unavailable";
+                            const appointmentStatus = normalize(appointment.status);
+                            const payment = normalize(appointment.payment?.status);
+
+                            return (
+                                <article key={appointment._id} className="rounded-3xl border border-slate-200 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm">
+                                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+                                        <div className="flex min-w-0 gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedPatient(appointment.patient)}
+                                                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-teal-100 text-lg font-bold text-teal-800"
+                                                aria-label="View patient details"
+                                            >
+                                                {patientName.slice(0, 1).toUpperCase()}
+                                            </button>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h3 className="text-lg font-bold text-slate-950">{patientName}</h3>
+                                                    <StatusBadge value={appointmentStatus} />
+                                                    <StatusBadge value={payment} label={`Payment: ${payment}`} />
+                                                </div>
+                                                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                                                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                                                        <CalendarDays className="h-4 w-4 text-teal-700" />
+                                                        {safeFormatDate(appointment.date)}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                                                        <Clock className="h-4 w-4 text-teal-700" />
+                                                        {safeFormatTime(appointment.timeSlot?.start)} - {safeFormatTime(appointment.timeSlot?.end)}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                                                        <MapPin className="h-4 w-4 text-teal-700" />
+                                                        {appointment.clinic?.name || "Clinic unavailable"}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                                                        <Stethoscope className="h-4 w-4 text-teal-700" />
+                                                        {appointment.type === "in-person" ? "In-person" : "Teleconsultation"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <button
-                                            onClick={() => handlePatientClick(appointment.patient)}
-                                            className="text-teal-700 hover:text-teal-900 hover:underline"
+                                            type="button"
+                                            onClick={() => openUpdateModal(appointment)}
+                                            className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
                                         >
-                                            {appointment.patient?.username || "N/A"}
+                                            Update appointment
                                         </button>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {formatDate(appointment.date)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {formatTime(appointment.timeSlot.start)} - {formatTime(appointment.timeSlot.end)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {appointment.clinic?.name || "N/A"}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {appointment.type === 'in-person' ? 'In-Person' : 'Teleconsultation'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        {getStatusBadge(appointment.status)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        {getPaymentStatusBadge(appointment.payment?.status || 'pending')}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <button
-                                            onClick={() => handleEditClick(appointment)}
-                                            className="text-teal-700 hover:text-teal-900 mr-3 font-medium"
-                                        >
-                                            Update
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                    </div>
+                                </article>
+                            );
+                        })}
                     </div>
-                </div>
-            )}
-
-            {/* Patient Details Modal */}
-            {showPatientModal && selectedPatient && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-                     style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center border-b p-4">
-                            <h3 className="text-xl font-bold text-gray-800">Patient Details</h3>
-                            <button
-                                onClick={closePatientModal}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+                ) : (
+                    <div className="rounded-3xl border border-dashed border-teal-200 bg-white p-10 text-center">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                            <CalendarDays className="h-7 w-7" />
                         </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Full Name</p>
-                                <p className="text-gray-900">{selectedPatient.username}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Email</p>
-                                <p className="text-gray-900">{selectedPatient.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Phone</p>
-                                <p className="text-gray-900">{selectedPatient.phone}</p>
-                            </div>
-                            <div className="pt-4">
-                                <button
-                                    onClick={closePatientModal}
-                                    className="w-full px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
+                        <h3 className="mt-5 text-xl font-bold text-slate-950">No appointments yet</h3>
+                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+                            Booked patient visits will appear here with status controls and clinic details.
+                        </p>
                     </div>
-                </div>
-            )}
+                )}
+            </section>
 
-            {/* Update Appointment Modal */}
-            {showUpdateModal && editingAppointment && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-                     style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center border-b p-4">
-                            <h2 className="text-xl font-bold text-gray-800">Update Appointment</h2>
-                            <button
-                                onClick={closeUpdateModal}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Patient</p>
-                                    <p className="text-gray-900">{editingAppointment.patient?.username || "N/A"}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Date & Time</p>
-                                    <p className="text-gray-900">
-                                        {formatDate(editingAppointment.date)} at {formatTime(editingAppointment.timeSlot.start)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Clinic</p>
-                                    <p className="text-gray-900">{editingAppointment.clinic?.name || "N/A"}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Type</p>
-                                    <p className="text-gray-900">
-                                        {editingAppointment.type === 'in-person' ? 'In-Person' : 'Teleconsultation'}
-                                    </p>
-                                </div>
-                            </div>
+            {selectedPatient ? (
+                <PatientModal patient={selectedPatient} onClose={() => setSelectedPatient(null)} />
+            ) : null}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Appointment Status
-                                    </label>
-                                    <select
-                                        value={status}
-                                        onChange={handleStatusChange}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                                    >
-                                        <option value="pending">Pending</option>
-                                        <option value="confirmed">Confirmed</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Payment Status
-                                    </label>
-                                    <select
-                                        value={paymentStatus}
-                                        onChange={handlePaymentStatusChange}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                                    >
-                                        <option value="pending">Pending</option>
-                                        <option value="paid">Paid</option>
-                                        <option value="failed">Failed</option>
-                                        <option value="refunded">Refunded</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Doctor Notes
-                                </label>
-                                <textarea
-                                    rows={4}
-                                    value={notes}
-                                    onChange={handleNotesChange}
-                                    className="shadow-sm focus:ring-teal-500 focus:border-teal-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
-                                    placeholder="Add your notes here..."
-                                />
-                            </div>
-
-                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end sm:space-x-3 sm:gap-0">
-                                <button
-                                    onClick={closeUpdateModal}
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleStatusUpdate}
-                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {editingAppointment ? (
+                <UpdateAppointmentModal
+                    appointment={editingAppointment}
+                    notes={notes}
+                    paymentStatus={paymentStatus}
+                    status={status}
+                    onClose={closeUpdateModal}
+                    onNotesChange={setNotes}
+                    onPaymentStatusChange={setPaymentStatus}
+                    onStatusChange={setStatus}
+                    onSubmit={handleStatusUpdate}
+                />
+            ) : null}
         </div>
     );
 };
+
+const PatientModal = ({ patient, onClose }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <section className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Patient</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-950">Patient details</h2>
+                </div>
+                <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Close">
+                    <X className="h-5 w-5" />
+                </button>
+            </header>
+            <div className="space-y-3 p-5">
+                <InfoTile label="Name" value={patient.username || patient.name || "Not available"} icon={<UserRound className="h-4 w-4 text-teal-700" />} />
+                <InfoTile label="Email" value={patient.email || "Not available"} icon={<CreditCard className="h-4 w-4 text-teal-700" />} />
+                <InfoTile label="Phone" value={patient.phone || "Not available"} icon={<CreditCard className="h-4 w-4 text-teal-700" />} />
+            </div>
+        </section>
+    </div>
+);
+
+const ChoiceGroup = ({ label, options, value, onChange }) => (
+    <div>
+        <p className="text-sm font-semibold text-slate-700">{label}</p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {options.map((option) => (
+                <button
+                    key={option}
+                    type="button"
+                    onClick={() => onChange(option)}
+                    className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold capitalize transition ${
+                        value === option
+                            ? "border-teal-200 bg-teal-50 text-teal-800"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-teal-200"
+                    }`}
+                >
+                    {option.replace(/-/g, " ")}
+                </button>
+            ))}
+        </div>
+    </div>
+);
+
+const UpdateAppointmentModal = ({
+    appointment,
+    notes,
+    paymentStatus,
+    status,
+    onClose,
+    onNotesChange,
+    onPaymentStatusChange,
+    onStatusChange,
+    onSubmit,
+}) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <section className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Update visit</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-950">Appointment status</h2>
+                </div>
+                <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Close">
+                    <X className="h-5 w-5" />
+                </button>
+            </header>
+            <div className="modal-scroll flex-1 space-y-5 overflow-y-auto p-5">
+                <div className="grid gap-3 md:grid-cols-2">
+                    <InfoTile label="Patient" value={appointment.patient?.username || appointment.patient?.name || "N/A"} icon={<UserRound className="h-4 w-4 text-teal-700" />} />
+                    <InfoTile label="Date and time" value={`${safeFormatDate(appointment.date)} at ${safeFormatTime(appointment.timeSlot?.start)}`} icon={<CalendarDays className="h-4 w-4 text-teal-700" />} />
+                    <InfoTile label="Clinic" value={appointment.clinic?.name || "N/A"} icon={<MapPin className="h-4 w-4 text-teal-700" />} />
+                    <InfoTile label="Type" value={appointment.type === "in-person" ? "In-person" : "Teleconsultation"} icon={<Stethoscope className="h-4 w-4 text-teal-700" />} />
+                </div>
+
+                <ChoiceGroup label="Appointment status" options={appointmentStatuses} value={status} onChange={onStatusChange} />
+                <ChoiceGroup label="Payment status" options={paymentStatuses} value={paymentStatus} onChange={onPaymentStatusChange} />
+
+                <label className="block">
+                    <span className="text-sm font-semibold text-slate-700">Doctor notes</span>
+                    <textarea
+                        rows={4}
+                        value={notes}
+                        onChange={(event) => onNotesChange(event.target.value)}
+                        className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                        placeholder="Add consultation notes..."
+                    />
+                </label>
+            </div>
+            <footer className="flex flex-col-reverse gap-3 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
+                <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Cancel
+                </button>
+                <button type="button" onClick={onSubmit} className="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700">
+                    Save changes
+                </button>
+            </footer>
+        </section>
+    </div>
+);
 
 export default DoctorsAppointments;

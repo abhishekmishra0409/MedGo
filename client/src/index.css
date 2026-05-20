@@ -91,6 +91,29 @@ textarea:disabled,
     background-clip: padding-box;
 }
 
+.modal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 118, 105, 0.36) transparent;
+}
+
+.modal-scroll::-webkit-scrollbar {
+    width: 0.45rem;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+    border: 0;
+    border-radius: 999px;
+    background: rgba(15, 118, 105, 0.32);
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 118, 105, 0.52);
+}
+
 .Toastify__toast-container {
     width: min(360px, calc(100vw - 1.25rem));
     padding: 0.75rem;

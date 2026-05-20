@@ -1,495 +1,287 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getProductById, updateProduct } from '../../features/Products/ProductSlice.js';
-import { UploadCloud, X, Plus, Trash2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { ImagePlus, PackageCheck, Plus, Trash2, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { PageHeader } from "../../components/AdminUI.jsx";
+import { getProductById, updateProduct } from "../../features/Products/ProductSlice.js";
 
 const EditProductPage = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { product, isLoading } = useSelector((state) => state.product);
-
-    // Form state
     const [formData, setFormData] = useState({
-        name: '',
-        price: '',
-        originalPrice: '',
-        category: '',
-        description: '',
-        benefits: [''],
-        dosage: '',
+        name: "",
+        price: "",
+        originalPrice: "",
+        category: "",
+        description: "",
+        benefits: [""],
+        dosage: "",
         isHot: false,
         isNew: false,
-        stock: '',
+        stock: "",
     });
-
-    // Image states
     const [mainImage, setMainImage] = useState(null);
-    const [mainImagePreview, setMainImagePreview] = useState('');
+    const [mainImagePreview, setMainImagePreview] = useState("");
     const [additionalImages, setAdditionalImages] = useState([]);
     const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
 
-    // Fetch product data when component mounts or ID changes
     useEffect(() => {
         dispatch(getProductById(id));
     }, [id, dispatch]);
 
-    // Populate form when product data is loaded
     useEffect(() => {
-        if (product) {
-            setFormData({
-                name: product.name || '',
-                price: product.price || '',
-                originalPrice: product.originalPrice || '',
-                category: product.category || '',
-                description: product.description || '',
-                benefits: product.benefits?.length ? product.benefits : [''],
-                dosage: product.dosage || '',
-                isHot: product.isHot || false,
-                isNew: product.isNew || false,
-                stock: product.stock || '',
-            });
+        if (!product) return;
 
-            setMainImagePreview(product.image || '');
-            setAdditionalImagePreviews(product.images || []);
-        }
+        setFormData({
+            name: product.name || "",
+            price: product.price || "",
+            originalPrice: product.originalPrice || "",
+            category: product.category || "",
+            description: product.description || "",
+            benefits: product.benefits?.length ? product.benefits : [""],
+            dosage: product.dosage || "",
+            isHot: Boolean(product.isHot),
+            isNew: Boolean(product.isNew),
+            stock: product.stock || "",
+        });
+        setMainImagePreview(product.image || "");
+        setAdditionalImagePreviews(product.images || []);
     }, [product]);
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value,
-        });
-    };
+    const updateField = (name, value) => setFormData((current) => ({ ...current, [name]: value }));
 
     const handleBenefitChange = (index, value) => {
-        const newBenefits = [...formData.benefits];
-        newBenefits[index] = value;
-        setFormData({ ...formData, benefits: newBenefits });
+        const benefits = [...formData.benefits];
+        benefits[index] = value;
+        updateField("benefits", benefits);
     };
 
-    const addBenefit = () => {
-        setFormData({ ...formData, benefits: [...formData.benefits, ''] });
-    };
-
-    const removeBenefit = (index) => {
-        const newBenefits = formData.benefits.filter((_, i) => i !== index);
-        setFormData({ ...formData, benefits: newBenefits });
-    };
-
-    const handleMainImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setMainImage(file);
-            setMainImagePreview(URL.createObjectURL(file));
-        }
-    };
-
-    const handleAdditionalImagesChange = (e) => {
-        const files = Array.from(e.target.files);
+    const handleAdditionalImagesChange = (event) => {
+        const files = Array.from(event.target.files);
         if (files.length + additionalImages.length > 3) {
-            toast.error('You can upload maximum 3 additional images');
+            toast.error("You can upload maximum 3 additional images");
             return;
         }
-
-        setAdditionalImages([...additionalImages, ...files]);
-
-        const newPreviews = files.map(file => URL.createObjectURL(file));
-        setAdditionalImagePreviews([...additionalImagePreviews, ...newPreviews]);
+        setAdditionalImages((current) => [...current, ...files]);
+        setAdditionalImagePreviews((current) => [...current, ...files.map((file) => URL.createObjectURL(file))]);
     };
 
     const removeAdditionalImage = (index) => {
-        // Check if we're removing an existing image or a newly uploaded one
-        if (index < additionalImagePreviews.length - additionalImages.length) {
-            // Existing image (from product.images)
-            const newPreviews = [...additionalImagePreviews];
-            newPreviews.splice(index, 1);
-            setAdditionalImagePreviews(newPreviews);
-        } else {
-            // Newly uploaded image
-            const newImages = [...additionalImages];
-            newImages.splice(index - (additionalImagePreviews.length - additionalImages.length), 1);
-            setAdditionalImages(newImages);
-
-            const newPreviews = [...additionalImagePreviews];
-            newPreviews.splice(index, 1);
-            setAdditionalImagePreviews(newPreviews);
+        const existingCount = additionalImagePreviews.length - additionalImages.length;
+        if (index < existingCount) {
+            setAdditionalImagePreviews((current) => current.filter((_, itemIndex) => itemIndex !== index));
+            return;
         }
+
+        setAdditionalImages((current) => current.filter((_, itemIndex) => itemIndex !== index - existingCount));
+        setAdditionalImagePreviews((current) => current.filter((_, itemIndex) => itemIndex !== index));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleSubmit = async (event) => {
+        event.preventDefault();
         if (!formData.name || !formData.price || !formData.category) {
-            toast.error('Please fill in all required fields');
+            toast.error("Please fill in all required fields");
             return;
         }
 
         const productData = new FormData();
-        productData.append('name', formData.name);
-        productData.append('price', formData.price);
-        productData.append('originalPrice', formData.originalPrice || formData.price);
-        productData.append('category', formData.category);
-        productData.append('description', formData.description);
-        productData.append('dosage', formData.dosage);
-        productData.append('isHot', formData.isHot);
-        productData.append('isNew', formData.isNew);
-        productData.append('stock', formData.stock);
-
-        if (mainImage) {
-            productData.append('image', mainImage);
-        }
-
-        formData.benefits.forEach(benefit => {
-            if (benefit.trim()) productData.append('benefits[]', benefit);
+        Object.entries(formData).forEach(([key, value]) => {
+            if (key !== "benefits") productData.append(key, value);
         });
-
-        additionalImages.forEach(image => {
-            productData.append('images', image);
+        if (mainImage) productData.append("image", mainImage);
+        formData.benefits.forEach((benefit) => {
+            if (benefit.trim()) productData.append("benefits[]", benefit);
         });
+        additionalImages.forEach((image) => productData.append("images", image));
 
         try {
             await dispatch(updateProduct({ id, updatedData: productData })).unwrap();
-            toast.success('Product updated successfully!');
-            navigate('/dashboard/products/all');
+            toast.success("Product updated successfully");
+            navigate("/dashboard/products/all");
         } catch (error) {
-            toast.error(error.message || 'Failed to update product');
+            toast.error(error.message || "Failed to update product");
         }
     };
 
     if (isLoading && !product) {
         return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+            <div className="flex h-64 items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
             </div>
         );
     }
 
     return (
-        <div className="w-full p-4 sm:p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Edit Product</h1>
-                <button
-                    onClick={() => navigate('/dashboard/products/all')}
-                    className="px-4 py-2 border rounded-md hover:bg-gray-50"
-                >
-                    Back to Products
-                </button>
-            </div>
+        <div className="space-y-6">
+            <PageHeader
+                eyebrow="Products"
+                title="Edit product"
+                description="Update product details, stock, badges, benefits, and images."
+                action={(
+                    <button type="button" onClick={() => navigate("/dashboard/products/all")} className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Back to catalog
+                    </button>
+                )}
+            />
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {/* Left Column */}
-                    <div className="space-y-6">
-                        {/* Product Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Product Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                required
-                            />
+            <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+                    <div className="space-y-5">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Field label="Name" name="name" value={formData.name} onChange={updateField} required />
+                            <Field label="Category" name="category" value={formData.category} onChange={updateField} required />
+                            <Field label="Price" type="number" name="price" value={formData.price} onChange={updateField} required />
+                            <Field label="Original price" type="number" name="originalPrice" value={formData.originalPrice} onChange={updateField} />
+                            <Field label="Stock" type="number" name="stock" value={formData.stock} onChange={updateField} required />
+                            <Field label="Dosage" name="dosage" value={formData.dosage} onChange={updateField} />
                         </div>
 
-                        {/* Pricing */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Price ($) <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    min="0"
-                                    step="0.01"
-                                    value={formData.price}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Original Price ($)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="originalPrice"
-                                    min="0"
-                                    step="0.01"
-                                    value={formData.originalPrice}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                />
+                        <label className="block">
+                            <span className="text-sm font-semibold text-slate-700">Description</span>
+                            <textarea
+                                name="description"
+                                rows={4}
+                                value={formData.description}
+                                onChange={(event) => updateField("description", event.target.value)}
+                                className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                            />
+                        </label>
+
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p className="text-sm font-bold text-slate-950">Storefront flags</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <ToggleButton active={formData.isHot} onClick={() => updateField("isHot", !formData.isHot)}>Hot product</ToggleButton>
+                                <ToggleButton active={formData.isNew} onClick={() => updateField("isNew", !formData.isNew)}>New arrival</ToggleButton>
                             </div>
                         </div>
 
-                        {/* Category */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Category <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="category"
-                                value={formData.category}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                required
-                            />
-                        </div>
-
-                        {/* Stock */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Stock Quantity <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                name="stock"
-                                min="0"
-                                value={formData.stock}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                required
-                            />
-                        </div>
-
-                        {/* Status Flags */}
-                        <div className="flex space-x-4">
-                            <label className="inline-flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="isHot"
-                                    checked={formData.isHot}
-                                    onChange={handleChange}
-                                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">Hot Product</span>
-                            </label>
-                            <label className="inline-flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="isNew"
-                                    checked={formData.isNew}
-                                    onChange={handleChange}
-                                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">New Arrival</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Image Uploads */}
-                    <div className="space-y-6">
-                        {/* Main Image Upload */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Main Image
-                            </label>
-                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div className="space-y-1 text-center">
-                                    {mainImagePreview ? (
-                                        <div className="relative">
-                                            <img
-                                                src={mainImagePreview}
-                                                alt="Main product preview"
-                                                className="mx-auto h-40 object-contain"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setMainImage(null);
-                                                    setMainImagePreview('');
-                                                }}
-                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                                            >
-                                                <X className="h-4 w-4" />
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-bold text-slate-950">Benefits</p>
+                                <button type="button" onClick={() => updateField("benefits", [...formData.benefits, ""])} className="inline-flex items-center gap-1 rounded-xl border border-teal-200 px-3 py-2 text-xs font-semibold text-teal-700 hover:bg-white">
+                                    <Plus className="h-4 w-4" />
+                                    Add
+                                </button>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                                {formData.benefits.map((benefit, index) => (
+                                    <div key={index} className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={benefit}
+                                            onChange={(event) => handleBenefitChange(index, event.target.value)}
+                                            className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                                            placeholder={`Benefit ${index + 1}`}
+                                        />
+                                        {formData.benefits.length > 1 ? (
+                                            <button type="button" onClick={() => updateField("benefits", formData.benefits.filter((_, itemIndex) => itemIndex !== index))} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-100 text-rose-600 hover:bg-rose-50" aria-label="Remove benefit">
+                                                <Trash2 className="h-4 w-4" />
                                             </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-center">
-                                                <UploadCloud className="h-12 w-12 text-gray-400" />
-                                            </div>
-                                            <div className="flex text-sm text-gray-600">
-                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none">
-                                                    <span>Upload a file</span>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleMainImageChange}
-                                                        className="sr-only"
-                                                    />
-                                                </label>
-                                                <p className="pl-1">or drag and drop</p>
-                                            </div>
-                                            <p className="text-xs text-gray-500">
-                                                PNG, JPG up to 5MB
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Additional Images */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Additional Images (max 3)
-                            </label>
-                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div className="space-y-1 text-center">
-                                    {additionalImagePreviews.length > 0 ? (
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {additionalImagePreviews.map((preview, index) => (
-                                                <div key={index} className="relative">
-                                                    <img
-                                                        src={preview}
-                                                        alt={`Additional preview ${index + 1}`}
-                                                        className="h-20 w-full object-cover"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeAdditionalImage(index)}
-                                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            {additionalImagePreviews.length < 3 && (
-                                                <div className="border border-gray-300 rounded-md flex items-center justify-center">
-                                                    <label className="cursor-pointer p-2">
-                                                        <Plus className="h-5 w-5 text-gray-400" />
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={handleAdditionalImagesChange}
-                                                            className="sr-only"
-                                                            multiple
-                                                        />
-                                                    </label>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-center">
-                                                <UploadCloud className="h-12 w-12 text-gray-400" />
-                                            </div>
-                                            <div className="flex text-sm text-gray-600">
-                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none">
-                                                    <span>Upload files</span>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleAdditionalImagesChange}
-                                                        className="sr-only"
-                                                        multiple
-                                                    />
-                                                </label>
-                                                <p className="pl-1">or drag and drop</p>
-                                            </div>
-                                            <p className="text-xs text-gray-500">
-                                                PNG, JPG up to 5MB each (max 3)
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
+                                        ) : null}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Description */}
-                <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                    </label>
-                    <textarea
-                        name="description"
-                        rows={3}
-                        value={formData.description}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                </div>
-
-                {/* Dosage */}
-                <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dosage Instructions
-                    </label>
-                    <input
-                        type="text"
-                        name="dosage"
-                        value={formData.dosage}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                </div>
-
-                {/* Benefits */}
-                <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Benefits
-                    </label>
-                    <div className="space-y-2">
-                        {formData.benefits.map((benefit, index) => (
-                            <div key={index} className="flex items-center">
-                                <input
-                                    type="text"
-                                    value={benefit}
-                                    onChange={(e) => handleBenefitChange(index, e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    placeholder={`Benefit ${index + 1}`}
-                                />
-                                {formData.benefits.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeBenefit(index)}
-                                        className="ml-2 p-2 text-red-500 hover:text-red-700"
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={addBenefit}
-                            className="flex items-center text-sm text-teal-600 hover:text-teal-800 mt-2"
-                        >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Another Benefit
-                        </button>
+                    <div className="space-y-5">
+                        <ImageDropzone
+                            label="Main image"
+                            preview={mainImagePreview}
+                            onChange={(event) => {
+                                const file = event.target.files[0];
+                                if (!file) return;
+                                setMainImage(file);
+                                setMainImagePreview(URL.createObjectURL(file));
+                            }}
+                            onRemove={() => {
+                                setMainImage(null);
+                                setMainImagePreview("");
+                            }}
+                        />
+                        <AdditionalImages previews={additionalImagePreviews} onChange={handleAdditionalImagesChange} onRemove={removeAdditionalImage} />
                     </div>
                 </div>
 
-                {/* Submit Button */}
-                <div className="flex justify-end">
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
-                            isLoading ? 'opacity-70 cursor-not-allowed' : ''
-                        }`}
-                    >
-                        {isLoading ? 'Updating...' : 'Update Product'}
+                <div className="mt-6 flex justify-end">
+                    <button type="submit" disabled={isLoading} className="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-70">
+                        <PackageCheck className="h-4 w-4" />
+                        {isLoading ? "Updating..." : "Update product"}
                     </button>
                 </div>
             </form>
         </div>
     );
 };
+
+const Field = ({ label, name, value, onChange, required, ...props }) => (
+    <label className="block">
+        <span className="text-sm font-semibold text-slate-700">{label}{required ? <span className="text-rose-500"> *</span> : null}</span>
+        <input
+            {...props}
+            name={name}
+            value={value}
+            onChange={(event) => onChange(name, event.target.value)}
+            className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+            required={required}
+        />
+    </label>
+);
+
+const ToggleButton = ({ active, onClick, children }) => (
+    <button type="button" onClick={onClick} className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${active ? "border-teal-200 bg-teal-50 text-teal-800" : "border-slate-200 bg-white text-slate-600 hover:border-teal-200"}`}>
+        {children}
+    </button>
+);
+
+const ImageDropzone = ({ label, preview, onChange, onRemove }) => (
+    <div>
+        <p className="text-sm font-semibold text-slate-700">{label}</p>
+        <div className="mt-2 rounded-3xl border-2 border-dashed border-teal-200 bg-teal-50/40 p-4 text-center">
+            {preview ? (
+                <div className="relative">
+                    <img src={preview} alt="Preview" className="mx-auto h-44 w-full rounded-2xl object-contain" />
+                    <button type="button" onClick={onRemove} className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-rose-600 text-white" aria-label="Remove image">
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            ) : (
+                <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center text-teal-800">
+                    <ImagePlus className="h-9 w-9" />
+                    <span className="mt-2 text-sm font-semibold">Choose image</span>
+                    <input type="file" className="hidden" onChange={onChange} accept="image/*" />
+                </label>
+            )}
+        </div>
+    </div>
+);
+
+const AdditionalImages = ({ previews, onChange, onRemove }) => (
+    <div>
+        <p className="text-sm font-semibold text-slate-700">Additional images</p>
+        <div className="mt-2 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+            {previews.length ? (
+                <div className="grid grid-cols-3 gap-2">
+                    {previews.map((preview, index) => (
+                        <div key={`${preview}-${index}`} className="relative">
+                            <img src={preview} alt={`Additional ${index + 1}`} className="h-24 w-full rounded-2xl object-cover" />
+                            <button type="button" onClick={() => onRemove(index)} className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600 text-white" aria-label="Remove image">
+                                <X className="h-3 w-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            ) : null}
+            <label className="mt-3 flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-slate-500 hover:border-teal-200">
+                <Plus className="h-6 w-6" />
+                <span className="mt-1 text-xs font-semibold">Choose additional images</span>
+                <input type="file" className="hidden" onChange={onChange} accept="image/*" multiple />
+            </label>
+        </div>
+    </div>
+);
 
 export default EditProductPage;

@@ -16,7 +16,7 @@ export const sendUserMessage = createAsyncThunk("messages/sendUserMessage", asyn
     try {
         return await messageService.sendUserMessage(messageData);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to send user message");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to send user message");
     }
 });
 
@@ -24,7 +24,7 @@ export const getUserConversations = createAsyncThunk("messages/getUserConversati
     try {
         return await messageService.getUserConversations();
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch user conversations");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch user conversations");
     }
 });
 
@@ -32,7 +32,7 @@ export const getUserMessages = createAsyncThunk("messages/getUserMessages", asyn
     try {
         return await messageService.getUserMessages(conversationId);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch user messages");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch user messages");
     }
 });
 
@@ -40,7 +40,7 @@ export const markUserMessagesRead = createAsyncThunk("messages/markUserMessagesR
     try {
         return await messageService.markUserMessagesRead(conversationId);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to mark messages as read");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to mark messages as read");
     }
 });
 
@@ -49,7 +49,7 @@ export const sendDoctorMessage = createAsyncThunk("messages/sendDoctorMessage", 
     try {
         return await messageService.sendDoctorMessage(messageData);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to send doctor message");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to send doctor message");
     }
 });
 
@@ -57,7 +57,7 @@ export const getDoctorConversations = createAsyncThunk("messages/getDoctorConver
     try {
         return await messageService.getDoctorConversations();
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch doctor conversations");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch doctor conversations");
     }
 });
 
@@ -65,7 +65,7 @@ export const getDoctorMessages = createAsyncThunk("messages/getDoctorMessages", 
     try {
         return await messageService.getDoctorMessages(conversationId);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch doctor messages");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch doctor messages");
     }
 });
 
@@ -73,7 +73,7 @@ export const markDoctorMessagesRead = createAsyncThunk("messages/markDoctorMessa
     try {
         return await messageService.markDoctorMessagesRead(conversationId);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to mark messages as read");
+        return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to mark messages as read");
     }
 });
 
@@ -88,6 +88,10 @@ const messageSlice = createSlice({
             state.isError = false;
             state.message = "";
             state.messages = [];
+        },
+        clearMessages: (state) => {
+            state.messages = [];
+            state.message = "";
         },
     },
     extraReducers: (builder) => {
@@ -131,7 +135,7 @@ const messageSlice = createSlice({
             .addCase(getUserConversations.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.conversations = action.payload.data;
+                state.conversations = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getUserConversations.rejected, (state, action) => {
                 state.isLoading = false;
@@ -146,7 +150,7 @@ const messageSlice = createSlice({
             .addCase(getDoctorConversations.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.conversations = action.payload.data;
+                state.conversations = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getDoctorConversations.rejected, (state, action) => {
                 state.isLoading = false;
@@ -157,11 +161,12 @@ const messageSlice = createSlice({
             // Get user messages
             .addCase(getUserMessages.pending, (state) => {
                 state.isLoading = true;
+                state.messages = [];
             })
             .addCase(getUserMessages.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.messages = action.payload.data;
+                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getUserMessages.rejected, (state, action) => {
                 state.isLoading = false;
@@ -172,11 +177,12 @@ const messageSlice = createSlice({
             // Get doctor messages
             .addCase(getDoctorMessages.pending, (state) => {
                 state.isLoading = true;
+                state.messages = [];
             })
             .addCase(getDoctorMessages.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.messages = action.payload.data;
+                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(getDoctorMessages.rejected, (state, action) => {
                 state.isLoading = false;
@@ -214,5 +220,5 @@ const messageSlice = createSlice({
     },
 });
 
-export const { resetMessageState } = messageSlice.actions;
+export const { resetMessageState, clearMessages } = messageSlice.actions;
 export default messageSlice.reducer;

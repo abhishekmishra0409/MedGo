@@ -1,28 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { Edit3, FileText, ImagePlus, Plus, Trash2, X } from "lucide-react";
 import {
-    fetchMyBlogs,
     createNewBlog,
-    updateBlog,
     deleteBlog,
-    resetBlogState
-} from '../../features/Blog/BlogSlice.js';
-import { toast } from 'react-toastify';
-import { FiEdit, FiTrash2, FiPlus, FiUpload } from 'react-icons/fi';
+    fetchMyBlogs,
+    resetBlogState,
+    updateBlog,
+} from "../../features/Blog/BlogSlice.js";
+
+const initialFormData = {
+    title: "",
+    description: "",
+    content: "",
+    category: "",
+    image: null,
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return "Date unavailable";
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return "Date unavailable";
+    return parsed.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+};
 
 const DoctorBlogs = () => {
     const dispatch = useDispatch();
     const { myBlogs, loading, error } = useSelector((state) => state.blogs);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentBlog, setCurrentBlog] = useState(null);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        content: '',
-        category: '',
-        image: null
-    });
+    const [formData, setFormData] = useState(initialFormData);
     const [imagePreview, setImagePreview] = useState(null);
+
+    const blogList = useMemo(() => (Array.isArray(myBlogs) ? myBlogs : []), [myBlogs]);
 
     useEffect(() => {
         dispatch(fetchMyBlogs());
@@ -32,45 +43,12 @@ const DoctorBlogs = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        if (error) {
-            toast.error(error);
-        }
+        if (error) toast.error(error);
     }, [error]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData({
-                ...formData,
-                image: file
-            });
-
-            // Create preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const openCreateModal = () => {
         setCurrentBlog(null);
-        setFormData({
-            title: '',
-            description: '',
-            content: '',
-            category: '',
-            image: null
-        });
+        setFormData(initialFormData);
         setImagePreview(null);
         setIsModalOpen(true);
     };
@@ -78,272 +56,254 @@ const DoctorBlogs = () => {
     const openEditModal = (blog) => {
         setCurrentBlog(blog);
         setFormData({
-            title: blog.title,
-            description: blog.description,
-            content: blog.content,
-            category: blog.category,
-            image: null
+            title: blog.title || "",
+            description: blog.description || "",
+            content: blog.content || "",
+            category: blog.category || "",
+            image: null,
         });
-        setImagePreview(blog.image);
+        setImagePreview(blog.image || null);
         setIsModalOpen(true);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setCurrentBlog(null);
+        setFormData(initialFormData);
+        setImagePreview(null);
+    };
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((current) => ({ ...current, [name]: value }));
+    };
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setFormData((current) => ({ ...current, image: file }));
+
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result);
+        reader.readAsDataURL(file);
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
 
         const blogData = new FormData();
-        blogData.append('title', formData.title);
-        blogData.append('description', formData.description);
-        blogData.append('content', formData.content);
-        blogData.append('category', formData.category);
-        if (formData.image) {
-            blogData.append('image', formData.image);
-        }
+        blogData.append("title", formData.title);
+        blogData.append("description", formData.description);
+        blogData.append("content", formData.content);
+        blogData.append("category", formData.category);
+        if (formData.image) blogData.append("image", formData.image);
 
-        if (currentBlog) {
-            dispatch(updateBlog({ id: currentBlog._id, blogData }))
-                .unwrap()
-                .then(() => {
-                    toast.success('Blog updated successfully');
-                    setIsModalOpen(false);
-                });
-        } else {
-            dispatch(createNewBlog(blogData))
-                .unwrap()
-                .then(() => {
-                    toast.success('Blog created successfully');
-                    setIsModalOpen(false);
-                });
-        }
+        const action = currentBlog
+            ? updateBlog({ id: currentBlog._id, blogData })
+            : createNewBlog(blogData);
+
+        dispatch(action)
+            .unwrap()
+            .then(() => {
+                toast.success(currentBlog ? "Blog updated successfully" : "Blog created successfully");
+                closeModal();
+                dispatch(fetchMyBlogs());
+            })
+            .catch((submitError) => toast.error(submitError?.message || submitError || "Failed to save blog"));
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this blog?')) {
-            dispatch(deleteBlog(id))
-                .unwrap()
-                .then(() => {
-                    toast.success('Blog deleted successfully');
-                });
-        }
+        if (!window.confirm("Are you sure you want to delete this blog?")) return;
+
+        dispatch(deleteBlog(id))
+            .unwrap()
+            .then(() => toast.success("Blog deleted successfully"))
+            .catch((deleteError) => toast.error(deleteError?.message || deleteError || "Failed to delete blog"));
     };
 
     return (
-        <div className="w-full px-4 py-6 sm:py-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-                <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">My Blogs</h1>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
-                >
-                    <FiPlus className="mr-2" />
-                    Create New Blog
-                </button>
-            </div>
-
-            {loading && !myBlogs.length ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-                </div>
-            ) : myBlogs.length === 0 ? (
-                <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">You haven't written any blogs yet.</p>
+        <div className="w-full space-y-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Blogs</p>
+                        <h1 className="mt-2 text-3xl font-bold text-slate-950">Doctor blogs</h1>
+                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                            Create and maintain patient-facing health content from your workspace.
+                        </p>
+                    </div>
                     <button
+                        type="button"
                         onClick={openCreateModal}
-                        className="mt-4 px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
                     >
-                        Write Your First Blog
+                        <Plus className="h-4 w-4" />
+                        New blog
                     </button>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myBlogs.map((blog) => (
-                        <div key={blog._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                            <div className="h-48 overflow-hidden">
-                                <img
-                                    src={blog.image}
-                                    alt={blog.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="p-6">
-                                <div className="flex justify-between items-start">
-                                    <h2 className="text-xl font-bold text-gray-800 mb-2">{blog.title}</h2>
-                                    <div className="flex space-x-2">
-                                        <button
-                                            onClick={() => openEditModal(blog)}
-                                            className="text-teal-700 hover:text-teal-900"
-                                            title="Edit"
-                                        >
-                                            <FiEdit />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(blog._id)}
-                                            className="text-red-600 hover:text-red-800"
-                                            title="Delete"
-                                        >
-                                            <FiTrash2 />
-                                        </button>
-                                    </div>
-                                </div>
-                                <span className="inline-block bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full mb-3">
-                                    {blog.category}
-                                </span>
-                                <p className="text-gray-600 mb-3 line-clamp-2">
-                                    {blog.description}
-                                </p>
-                                <p className="text-gray-500 text-sm">
-                                    {new Date(blog.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            </section>
 
-            {/* Blog Form Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0  flex items-center justify-center z-50 p-4" style={{backgroundColor: 'rgba(61,61,61,0.8)'}}>
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center border-b p-4">
-                            <h2 className="text-xl font-bold text-gray-800">
-                                {currentBlog ? 'Edit Blog' : 'Create New Blog'}
-                            </h2>
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit} className="p-4 sm:p-6">
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
-                                    Title*
-                                </label>
-                                <input
-                                    type="text"
-                                    id="title"
-                                    name="title"
-                                    value={formData.title}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    required
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                                    Short Description*
-                                </label>
-                                <input
-                                    type="text"
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    required
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
-                                    Category*
-                                </label>
-                                <input
-                                    type="text"
-                                    id="category"
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    required
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
-                                    Content*
-                                </label>
-                                <textarea
-                                    id="content"
-                                    name="content"
-                                    value={formData.content}
-                                    onChange={handleInputChange}
-                                    rows="8"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    required
-                                ></textarea>
-                            </div>
-
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Blog Image
-                                </label>
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                    <label className="flex flex-col items-center justify-center w-full max-w-xs px-4 py-6 bg-white text-teal-700 rounded-lg shadow-md tracking-wide border border-teal-200 cursor-pointer hover:bg-teal-50">
-                                        <FiUpload className="text-2xl text-gray-600 mb-2" />
-                                        <span className="text-sm text-gray-600">
-                                            {formData.image ? formData.image.name : 'Choose an image'}
-                                        </span>
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            onChange={handleFileChange}
-                                            accept="image/*"
-                                        />
-                                    </label>
-                                    {imagePreview && (
-                                        <div className="flex-shrink-0">
-                                            <img
-                                                src={imagePreview}
-                                                alt="Preview"
-                                                className="h-24 w-24 object-cover rounded-md border"
-                                            />
+            <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                {loading && !blogList.length ? (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {[1, 2, 3].map((item) => (
+                            <div key={item} className="h-72 animate-pulse rounded-3xl bg-slate-100" />
+                        ))}
+                    </div>
+                ) : blogList.length ? (
+                    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                        {blogList.map((blog) => (
+                            <article key={blog._id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white transition hover:border-teal-200 hover:shadow-sm">
+                                <div className="aspect-[16/9] bg-slate-100">
+                                    {blog.image ? (
+                                        <img src={blog.image} alt={blog.title || "Blog"} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <div className="flex h-full w-full items-center justify-center text-slate-400">
+                                            <FileText className="h-10 w-10" />
                                         </div>
                                     )}
                                 </div>
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Recommended size: 800x450px (16:9 aspect ratio)
-                                </p>
-                            </div>
-
-                            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:space-x-3 sm:gap-0">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
-                                >
-                                    {loading ? (
-                                        <span className="flex items-center">
-                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Processing...
-                                        </span>
-                                    ) : currentBlog ? 'Update Blog' : 'Create Blog'}
-                                </button>
-                            </div>
-                        </form>
+                                <div className="p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <span className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+                                                {blog.category || "General"}
+                                            </span>
+                                            <h2 className="mt-3 line-clamp-2 text-lg font-bold text-slate-950">{blog.title || "Untitled blog"}</h2>
+                                        </div>
+                                        <div className="flex shrink-0 gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => openEditModal(blog)}
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-teal-700 hover:bg-teal-50"
+                                                aria-label="Edit blog"
+                                            >
+                                                <Edit3 className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(blog._id)}
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 text-rose-600 hover:bg-rose-50"
+                                                aria-label="Delete blog"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{blog.description || "No description provided."}</p>
+                                    <p className="mt-4 text-xs font-semibold text-slate-400">{formatDate(blog.date || blog.createdAt)}</p>
+                                </div>
+                            </article>
+                        ))}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="rounded-3xl border border-dashed border-teal-200 bg-white p-10 text-center">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                            <FileText className="h-7 w-7" />
+                        </div>
+                        <h3 className="mt-5 text-xl font-bold text-slate-950">No blogs yet</h3>
+                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+                            Publish your first patient education post and it will appear here for future edits.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={openCreateModal}
+                            className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Write first blog
+                        </button>
+                    </div>
+                )}
+            </section>
+
+            {isModalOpen ? (
+                <BlogModal
+                    currentBlog={currentBlog}
+                    formData={formData}
+                    imagePreview={imagePreview}
+                    loading={loading}
+                    onChange={handleInputChange}
+                    onClose={closeModal}
+                    onFileChange={handleFileChange}
+                    onSubmit={handleSubmit}
+                />
+            ) : null}
         </div>
     );
 };
+
+const BlogModal = ({ currentBlog, formData, imagePreview, loading, onChange, onClose, onFileChange, onSubmit }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <section className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Blog editor</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-950">{currentBlog ? "Edit blog" : "Create blog"}</h2>
+                </div>
+                <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Close">
+                    <X className="h-5 w-5" />
+                </button>
+            </header>
+            <form onSubmit={onSubmit} className="modal-scroll flex-1 space-y-4 overflow-y-auto p-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Title" name="title" value={formData.title} onChange={onChange} required />
+                    <Field label="Category" name="category" value={formData.category} onChange={onChange} required />
+                </div>
+                <Field label="Short description" name="description" value={formData.description} onChange={onChange} required />
+                <label className="block">
+                    <span className="text-sm font-semibold text-slate-700">Content</span>
+                    <textarea
+                        name="content"
+                        value={formData.content}
+                        onChange={onChange}
+                        rows={8}
+                        className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                        required
+                    />
+                </label>
+                <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center">
+                    <label className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-teal-200 bg-teal-50/50 p-4 text-center text-teal-800 transition hover:bg-teal-50">
+                        <ImagePlus className="h-7 w-7" />
+                        <span className="mt-2 text-sm font-semibold">{formData.image ? formData.image.name : "Choose blog image"}</span>
+                        <span className="mt-1 text-xs text-teal-700">Recommended 16:9 image</span>
+                        <input type="file" className="hidden" onChange={onFileChange} accept="image/*" />
+                    </label>
+                    {imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="h-36 w-full rounded-2xl object-cover" />
+                    ) : (
+                        <div className="flex h-36 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                            <FileText className="h-8 w-8" />
+                        </div>
+                    )}
+                </div>
+            </form>
+            <footer className="flex flex-col-reverse gap-3 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
+                <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    onClick={onSubmit}
+                    className="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-70"
+                >
+                    {loading ? "Saving..." : currentBlog ? "Update blog" : "Create blog"}
+                </button>
+            </footer>
+        </section>
+    </div>
+);
+
+const Field = ({ label, ...props }) => (
+    <label className="block">
+        <span className="text-sm font-semibold text-slate-700">{label}</span>
+        <input
+            {...props}
+            className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+        />
+    </label>
+);
 
 export default DoctorBlogs;

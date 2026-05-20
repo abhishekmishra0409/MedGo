@@ -42,7 +42,7 @@ const DashboardModern = () => {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full overflow-x-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#eef8f6_100%)]">
+        <div className="relative flex h-dvh w-full overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#eef8f6_100%)]">
             <button onClick={() => setIsSidebarOpen((value) => !value)} className="md:hidden fixed left-4 top-4 z-50 rounded-full border border-slate-200 bg-white p-3 shadow-sm">
                 {isSidebarOpen ? <FiX /> : <FiMenu />}
             </button>
@@ -57,50 +57,40 @@ const DashboardModern = () => {
             )}
 
             <aside
-                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(18rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
+                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(17rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
             >
-                <div className="flex h-full flex-col p-5">
-                    <div className="mb-8 flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] text-white shadow-[0_18px_40px_rgba(13,148,136,0.22)]">
+                <div className="flex h-full flex-col overflow-hidden px-4 py-4">
+                    <div className="mb-5 flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] text-white shadow-[0_18px_40px_rgba(13,148,136,0.18)]">
                             <FiUser className="text-lg" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">Patient hub</p>
-                            <p className="text-sm text-slate-500">Your care history and next steps</p>
+                            <p className="truncate text-sm text-slate-500">Care history and next steps</p>
                         </div>
                     </div>
 
                     {profile && (
-                        <div className="mb-8 rounded-[28px] border border-slate-200 bg-slate-50 p-4">
-                            <div className="flex items-center">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 text-teal-800">
+                        <div className="mb-5 rounded-3xl border border-slate-200 bg-slate-50 p-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-800">
                                     <span className="font-semibold">{profile.username ? profile.username.charAt(0).toUpperCase() : "U"}</span>
                                 </div>
-                                <div className="ml-3">
-                                    <p className="font-medium text-slate-800">{profile.username || "User"}</p>
-                                    <p className="text-sm text-slate-500">{profile.email || ""}</p>
-                                </div>
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
-                                <div className="rounded-2xl bg-white p-3">
-                                    <p className="font-semibold text-slate-900">Appointments</p>
-                                    <p className="mt-1">Track visits and follow-up plans</p>
-                                </div>
-                                <div className="rounded-2xl bg-white p-3">
-                                    <p className="font-semibold text-slate-900">Orders</p>
-                                    <p className="mt-1">Check pharmacy and delivery status</p>
+                                <div className="min-w-0">
+                                    <p className="truncate font-medium text-slate-800">{profile.username || "User"}</p>
+                                    <p className="truncate text-sm text-slate-500">{profile.email || ""}</p>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     <nav className="flex-1">
-                        <ul className="space-y-2">
+                        <ul className="space-y-1.5">
                             {menuItems.map((item) => (
                                 <li key={item.label}>
                                     <button
                                         onClick={() => handleNavigation(item.path)}
-                                        className={`w-full rounded-2xl p-3 text-left transition ${isActive(item.path) ? "bg-teal-50 text-teal-800" : "text-slate-700 hover:bg-slate-50"
+                                        className={`w-full rounded-2xl px-3 py-2.5 text-left transition ${isActive(item.path) ? "bg-teal-50 text-teal-800" : "text-slate-700 hover:bg-slate-50"
                                             }`}
                                     >
                                         <span className="flex items-center gap-3">
@@ -112,15 +102,11 @@ const DashboardModern = () => {
                             ))}
                         </ul>
                     </nav>
-
-                    <div className="mt-auto rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-                        Account visibility, status tracking, and communication are now grouped into one calmer workspace.
-                    </div>
                 </div>
             </aside>
 
-            <main className="min-w-0 flex-1 overflow-auto pt-16 md:pt-0">
-                <div className="min-h-full w-full p-4 md:p-6 xl:p-8">
+            <main className="modal-scroll h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-16 md:pt-0">
+                <div className="w-full p-4 md:p-6 xl:p-8">
                     <Outlet />
                 </div>
             </main>

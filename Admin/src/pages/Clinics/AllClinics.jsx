@@ -1,405 +1,247 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-    getClinics,
-    resetClinicState,
-    createClinic,
-    updateClinic,
-    addDoctorToClinic,
-    removeDoctorFromClinic
-} from '../../features/Clinics/ClinicSlice';
-import { getAllDoctors } from '../../features/Doctors/DoctorSlice';
-import {
-    Search,
-    Plus,
-    Edit,
-    Building,
-    Phone,
-    Mail,
-    MapPin,
-    Clock,
-    Calendar,
-    User,
-    X,
-    ChevronDown,
-    ChevronUp,
-    Trash2
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import ClinicModal from './ClinicModal';
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Building2, Clock, Edit3, Mail, MapPin, Plus, Trash2, UserRound } from "lucide-react";
+import toast from "react-hot-toast";
+import { EmptyState, PageHeader, SearchInput, StatusPill } from "../../components/AdminUI.jsx";
+import { addDoctorToClinic, createClinic, getClinics, removeDoctorFromClinic, resetClinicState, updateClinic } from "../../features/Clinics/ClinicSlice";
+import { getAllDoctors } from "../../features/Doctors/DoctorSlice";
+import ClinicModal from "./ClinicModal";
+
+const formatTime = (time) => {
+    if (!time) return "Closed";
+    const [hours, minutes] = time.split(":");
+    const hour = Number(hours);
+    if (Number.isNaN(hour)) return time;
+    return `${hour % 12 || 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
+};
 
 const ClinicPage = () => {
     const dispatch = useDispatch();
-    const {
-        clinics,
-        isLoading: isClinicLoading,
-        isError: isClinicError,
-        isSuccess: isClinicSuccess,
-        message: clinicMessage
-    } = useSelector((state) => state.clinic);
-
-    const {
-        doctors: allDoctors,
-        isLoading: isDoctorLoading
-    } = useSelector((state) => state.doctor);
-
-    const [searchTerm, setSearchTerm] = useState('');
+    const { clinics = [], isLoading: isClinicLoading, isError: isClinicError, isSuccess: isClinicSuccess, message: clinicMessage } = useSelector((state) => state.clinic);
+    const { doctors: allDoctors = [], isLoading: isDoctorLoading } = useSelector((state) => state.doctor);
+    const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [expandedClinic, setExpandedClinic] = useState(null);
     const [showAddDoctor, setShowAddDoctor] = useState(null);
-    const [selectedDoctorId, setSelectedDoctorId] = useState('');
 
     useEffect(() => {
         dispatch(getClinics());
         dispatch(getAllDoctors());
-
-        return () => {
-            dispatch(resetClinicState());
-        };
+        return () => dispatch(resetClinicState());
     }, [dispatch]);
 
     useEffect(() => {
-        if (isClinicError) {
-            toast.error(clinicMessage);
-        }
-        if (isClinicSuccess && clinicMessage) {
-            toast.success(clinicMessage);
-        }
+        if (isClinicError) toast.error(clinicMessage);
+        if (isClinicSuccess && clinicMessage) toast.success(clinicMessage);
     }, [isClinicError, isClinicSuccess, clinicMessage]);
 
-    const filteredClinics = clinics.filter(clinic =>
-        clinic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clinic.address.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clinic.contact?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clinic.contact?.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || " "
-    );
+    const filteredClinics = useMemo(() => {
+        const query = searchTerm.trim().toLowerCase();
+        return clinics.filter((clinic) =>
+            !query ||
+            (clinic.name || "").toLowerCase().includes(query) ||
+            (clinic.address?.city || "").toLowerCase().includes(query) ||
+            (clinic.contact?.email || "").toLowerCase().includes(query) ||
+            (clinic.contact?.phone || "").toLowerCase().includes(query)
+        );
+    }, [clinics, searchTerm]);
 
     const handleSubmitClinic = async ({ id, clinicData }) => {
         try {
             if (id) {
                 await dispatch(updateClinic({ id, clinicData })).unwrap();
-                toast.success('Clinic Updated Successfully');
+                toast.success("Clinic updated successfully");
             } else {
                 await dispatch(createClinic(clinicData)).unwrap();
-                toast.success('Clinic Register Successfully');
+                toast.success("Clinic registered successfully");
             }
             setIsModalOpen(false);
         } catch (error) {
-            toast.error(error.message || 'Failed to save clinic');
+            toast.error(error.message || "Failed to save clinic");
         }
     };
 
-    const handleAddDoctor = async (clinicId) => {
-        if (!selectedDoctorId) {
-            toast.error('Please select a doctor');
-            return;
-        }
-        const doctorData = {
-            doctorId: selectedDoctorId
-        }
-
+    const handleAddDoctor = async (clinicId, doctorId) => {
+        if (!doctorId) return;
         try {
-            await dispatch(addDoctorToClinic({ clinicId, doctorData })).unwrap();
+            await dispatch(addDoctorToClinic({ clinicId, doctorData: { doctorId } })).unwrap();
             setShowAddDoctor(null);
-            setSelectedDoctorId('');
-            toast.success('Doctor added successfully');
+            toast.success("Doctor added successfully");
         } catch (error) {
-            toast.error(error.message || 'Failed to add doctor');
+            toast.error(error.message || "Failed to add doctor");
         }
     };
 
     const handleRemoveDoctor = async (clinicId, doctorId) => {
-        if (window.confirm('Are you sure you want to remove this doctor from the clinic?')) {
-            try {
-                await dispatch(removeDoctorFromClinic({ clinicId, doctorId })).unwrap();
-                toast.success('Doctor removed successfully');
-            } catch (error) {
-                toast.error(error.message || 'Failed to remove doctor');
-            }
+        if (!window.confirm("Are you sure you want to remove this doctor from the clinic?")) return;
+        try {
+            await dispatch(removeDoctorFromClinic({ clinicId, doctorId })).unwrap();
+            toast.success("Doctor removed successfully");
+        } catch (error) {
+            toast.error(error.message || "Failed to remove doctor");
         }
     };
 
-    const formatTime = (time) => {
-        if (!time) return 'Closed';
-        const [hours, minutes] = time.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
-    };
-
-    const toggleExpand = (id) => {
-        setExpandedClinic(expandedClinic === id ? null : id);
-    };
-
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Clinics Management</h1>
-                <button
-                    onClick={() => {
-                        setSelectedClinic(null);
-                        setIsModalOpen(true);
-                    }}
-                    className="flex items-center bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors"
-                >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add Clinic
-                </button>
-            </div>
+        <div className="space-y-6">
+            <PageHeader
+                eyebrow="Clinics"
+                title="Clinics management"
+                description="Manage clinic profiles, access codes, assigned doctors, hours, and appointment settings."
+                action={(
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setSelectedClinic(null);
+                            setIsModalOpen(true);
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add clinic
+                    </button>
+                )}
+            />
 
-            {/* Search Bar */}
-            <div className="relative mb-6">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                    type="text"
-                    placeholder="Search clinics by name, city, email or phone..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
+            <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search clinics by name, city, email, or phone..." />
 
-            {/* Clinics List */}
-            {isClinicLoading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {filteredClinics.length > 0 ? (
-                        filteredClinics.map((clinic) => (
-                            <div key={clinic._id} className="bg-white shadow rounded-lg overflow-hidden">
-                                <div className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-start space-x-4">
-                                            <div className="flex-shrink-0">
-                                                <div className="h-16 w-16 rounded-full bg-teal-100 flex items-center justify-center">
-                                                    <Building className="h-8 w-8 text-teal-600" />
-                                                </div>
+                {isClinicLoading ? (
+                    <div className="mt-5 grid gap-4">
+                        {[1, 2, 3].map((item) => <div key={item} className="h-52 animate-pulse rounded-3xl bg-slate-100" />)}
+                    </div>
+                ) : filteredClinics.length ? (
+                    <div className="mt-5 space-y-4">
+                        {filteredClinics.map((clinic) => {
+                            const expanded = expandedClinic === clinic._id;
+                            const assignableDoctors = allDoctors
+                                .filter((doctor) => doctor.approvalStatus === "approved")
+                                .filter((doctor) => !clinic.doctors?.some((assigned) => assigned._id === doctor._id));
+
+                            return (
+                                <article key={clinic._id} className="rounded-3xl border border-slate-200 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm">
+                                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+                                        <div className="flex min-w-0 gap-4">
+                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-teal-50 text-teal-700">
+                                                <Building2 className="h-8 w-8" />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h2 className="text-lg font-bold text-gray-900">{clinic.name}</h2>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    {clinic.address.street}, {clinic.address.city}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h2 className="text-xl font-bold text-slate-950">{clinic.name || "Unnamed clinic"}</h2>
+                                                    <StatusPill tone={clinic.isActive ? "emerald" : "amber"}>{clinic.isActive ? "Active" : "Pending activation"}</StatusPill>
+                                                </div>
+                                                <p className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+                                                    <MapPin className="h-4 w-4 text-teal-700" />
+                                                    {[clinic.address?.street, clinic.address?.city, clinic.address?.state].filter(Boolean).join(", ") || "Address unavailable"}
                                                 </p>
-                                                <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                                                    {clinic.owner?.name ? (
-                                                        <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 font-medium text-teal-700">
-                                                            Owner: {clinic.owner.name}
-                                                        </span>
-                                                    ) : null}
-                                                    {clinic.accessCode ? (
-                                                        <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 font-medium text-teal-700">
-                                                            Access code: {clinic.accessCode}
-                                                        </span>
-                                                    ) : null}
-                                                    <span className={`inline-flex items-center rounded-full px-3 py-1 font-medium ${clinic.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                                                        {clinic.isActive ? 'Active' : 'Pending activation'}
-                                                    </span>
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {clinic.owner?.name ? <StatusPill tone="teal">Owner: {clinic.owner.name}</StatusPill> : null}
+                                                    {clinic.accessCode ? <StatusPill tone="slate">Access code: {clinic.accessCode}</StatusPill> : null}
                                                 </div>
-
-                                                <div className="mt-2 flex items-center text-sm text-gray-500">
-                                                    <Phone className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                                                    {clinic.contact?.phone}
-                                                </div>
-                                                <div className="mt-1 flex items-center text-sm text-gray-500">
-                                                    <Mail className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                                                    {clinic.contact?.email}
+                                                <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                                                    <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-teal-700" />{clinic.contact?.email || "Email unavailable"}</p>
+                                                    <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-teal-700" />{formatTime(clinic.operatingHours?.weekdays?.open)} - {formatTime(clinic.operatingHours?.weekdays?.close)}</p>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div className="flex items-center space-x-2">
-                                            <button
-                                                onClick={() => toggleExpand(clinic._id)}
-                                                className="text-teal-600 hover:text-teal-800 p-1 rounded-md hover:bg-teal-50"
-                                            >
-                                                {expandedClinic === clinic._id ? (
-                                                    <ChevronUp className="h-5 w-5" />
-                                                ) : (
-                                                    <ChevronDown className="h-5 w-5" />
-                                                )}
+                                        <div className="flex flex-wrap justify-start gap-2 xl:justify-end">
+                                            <button type="button" onClick={() => setExpandedClinic(expanded ? null : clinic._id)} className="rounded-2xl border border-teal-200 px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50">
+                                                {expanded ? "Hide details" : "View details"}
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedClinic(clinic);
-                                                    setIsModalOpen(true);
-                                                }}
-                                                className="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-50"
-                                                title="Edit"
-                                            >
-                                                <Edit className="h-5 w-5" />
+                                            <button type="button" onClick={() => { setSelectedClinic(clinic); setIsModalOpen(true); }} className="flex h-10 w-10 items-center justify-center rounded-xl border border-teal-200 text-teal-700 hover:bg-teal-50" aria-label="Edit clinic">
+                                                <Edit3 className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    {expandedClinic === clinic._id && (
-                                        <div className="mt-6 pt-6 border-t border-gray-200">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* Operating Hours */}
-                                                <div>
-                                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Operating Hours</h3>
-                                                    <div className="space-y-2">
-                                                        <div className="flex justify-between">
-                                                            <span className="text-sm text-gray-600">Weekdays:</span>
-                                                            <span className="text-sm font-medium">
-                                                                {formatTime(clinic.operatingHours?.weekdays?.open)} - {formatTime(clinic.operatingHours?.weekdays?.close)}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-sm text-gray-600">Weekends:</span>
-                                                            <span className="text-sm font-medium">
-                                                                {clinic.operatingHours?.weekends?.open ?
-                                                                    `${formatTime(clinic.operatingHours.weekends.open)} - ${formatTime(clinic.operatingHours.weekends.close)}` :
-                                                                    'Closed'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                                    {expanded ? (
+                                        <div className="mt-5 space-y-4 border-t border-slate-200 pt-5">
+                                            <div className="grid gap-4 md:grid-cols-2">
+                                                <DetailBlock title="Operating hours" rows={[
+                                                    ["Weekdays", `${formatTime(clinic.operatingHours?.weekdays?.open)} - ${formatTime(clinic.operatingHours?.weekdays?.close)}`],
+                                                    ["Weekends", clinic.operatingHours?.weekends?.open ? `${formatTime(clinic.operatingHours.weekends.open)} - ${formatTime(clinic.operatingHours.weekends.close)}` : "Closed"],
+                                                ]} />
+                                                <DetailBlock title="Appointment settings" rows={[
+                                                    ["Slot duration", `${clinic.appointmentSettings?.slotDuration || "N/A"} minutes`],
+                                                    ["Max daily appointments", clinic.appointmentSettings?.maxDailyAppointments || "N/A"],
+                                                ]} />
+                                            </div>
+
+                                            {clinic.facilities?.length ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {clinic.facilities.map((facility) => <StatusPill key={facility} tone="emerald">{facility}</StatusPill>)}
+                                                </div>
+                                            ) : null}
+
+                                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                                    <h3 className="text-sm font-bold text-slate-950">Doctors ({clinic.doctors?.length || 0})</h3>
+                                                    <button type="button" onClick={() => setShowAddDoctor(showAddDoctor === clinic._id ? null : clinic._id)} className="rounded-2xl border border-teal-200 px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-white">
+                                                        {showAddDoctor === clinic._id ? "Cancel" : "Add doctor"}
+                                                    </button>
                                                 </div>
 
-                                                {/* Appointment Settings */}
-                                                <div>
-                                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Appointment Settings</h3>
-                                                    <div className="space-y-2">
-                                                        <div className="flex justify-between">
-                                                            <span className="text-sm text-gray-600">Slot Duration:</span>
-                                                            <span className="text-sm font-medium">
-                                                                {clinic.appointmentSettings?.slotDuration} minutes
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-sm text-gray-600">Max Daily Appointments:</span>
-                                                            <span className="text-sm font-medium">
-                                                                {clinic.appointmentSettings?.maxDailyAppointments}
-                                                            </span>
-                                                        </div>
+                                                {showAddDoctor === clinic._id ? (
+                                                    <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                        {isDoctorLoading ? <p className="text-sm text-slate-500">Loading doctors...</p> : assignableDoctors.length ? assignableDoctors.map((doctor) => (
+                                                            <button key={doctor._id} type="button" onClick={() => handleAddDoctor(clinic._id, doctor._id)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm hover:border-teal-200">
+                                                                <span className="font-semibold text-slate-950">{doctor.name}</span>
+                                                                <span className="mt-1 block text-xs text-slate-500">{doctor.specialty}</span>
+                                                            </button>
+                                                        )) : <p className="text-sm text-slate-500">No available approved doctors.</p>}
                                                     </div>
-                                                </div>
+                                                ) : null}
 
-                                                {/* Facilities */}
-                                                {clinic.facilities?.length > 0 && (
-                                                    <div className="md:col-span-2">
-                                                        <h3 className="text-sm font-medium text-gray-700 mb-2">Facilities</h3>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {clinic.facilities.map((facility, index) => (
-                                                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                    {facility}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Doctors */}
-                                                <div className="md:col-span-2">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <h3 className="text-sm font-medium text-gray-700">Doctors ({clinic.doctors?.length || 0})</h3>
-                                                        <button
-                                                            onClick={() => setShowAddDoctor(showAddDoctor === clinic._id ? null : clinic._id)}
-                                                            className="text-sm text-teal-600 hover:text-teal-800"
-                                                        >
-                                                            {showAddDoctor === clinic._id ? 'Cancel' : 'Add Doctor'}
-                                                        </button>
-                                                    </div>
-
-                                                    {showAddDoctor === clinic._id && (
-                                                        <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                                                            {isDoctorLoading ? (
-                                                                <div className="text-center py-2">Loading doctors...</div>
-                                                            ) : (
-                                                                <>
-                                                                    <select
-                                                                        value={selectedDoctorId}
-                                                                        onChange={(e) => setSelectedDoctorId(e.target.value)}
-                                                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border mb-2"
-                                                                    >
-                                                                        <option value="">Select a doctor</option>
-                                                                        {allDoctors
-                                                                            .filter(doctor => doctor.approvalStatus === 'approved')
-                                                                            .filter(doctor => !clinic.doctors?.some(d => d._id === doctor._id))
-                                                                            .map(doctor => (
-                                                                                <option key={doctor._id} value={doctor._id}>
-                                                                                    {doctor.name} ({doctor.specialty})
-                                                                                </option>
-                                                                            ))}
-                                                                    </select>
-                                                                    <button
-                                                                        onClick={() => handleAddDoctor(clinic._id)}
-                                                                        className="px-3 py-1 bg-teal-600 text-white rounded-md text-sm hover:bg-teal-700"
-                                                                        disabled={!selectedDoctorId}
-                                                                    >
-                                                                        Add Doctor
-                                                                    </button>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    )}
-
-                                                    {clinic.doctors?.length > 0 ? (
-                                                        <div className="space-y-3">
-                                                            {clinic.doctors.map((doctor) => (
-                                                                <div key={doctor._id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                                                    <div className="flex items-center">
-                                                                        {doctor.image ? (
-                                                                            <img
-                                                                                src={doctor.image}
-                                                                                alt={doctor.name}
-                                                                                className="h-10 w-10 rounded-full object-cover mr-3"
-                                                                            />
-                                                                        ) : (
-                                                                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                                                                                <User className="h-5 w-5 text-gray-400" />
-                                                                            </div>
-                                                                        )}
-                                                                        <div>
-                                                                            <p className="text-sm font-medium">{doctor.name}</p>
-                                                                            <p className="text-xs text-gray-500">{doctor.specialty}</p>
-                                                                        </div>
+                                                {clinic.doctors?.length ? (
+                                                    <div className="grid gap-3 md:grid-cols-2">
+                                                        {clinic.doctors.map((doctor) => (
+                                                            <div key={doctor._id} className="flex items-center justify-between gap-3 rounded-2xl bg-white p-3">
+                                                                <div className="flex min-w-0 items-center gap-3">
+                                                                    {doctor.image ? <img src={doctor.image} alt={doctor.name} className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 text-teal-700"><UserRound className="h-5 w-5" /></div>}
+                                                                    <div className="min-w-0">
+                                                                        <p className="truncate text-sm font-semibold text-slate-950">{doctor.name}</p>
+                                                                        <p className="truncate text-xs text-slate-500">{doctor.specialty}</p>
                                                                     </div>
-                                                                    <button
-                                                                        onClick={() => handleRemoveDoctor(clinic._id, doctor._id)}
-                                                                        className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
-                                                                        title="Remove Doctor"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </button>
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <p className="text-sm text-gray-500">No doctors assigned yet</p>
-                                                    )}
-                                                </div>
+                                                                <button type="button" onClick={() => handleRemoveDoctor(clinic._id, doctor._id)} className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 text-rose-600 hover:bg-rose-50" aria-label="Remove doctor">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : <p className="text-sm text-slate-500">No doctors assigned yet.</p>}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
-                            <p className="text-gray-500">
-                                {searchTerm ? 'No clinics match your search' : 'No clinics found'}
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )}
+                                    ) : null}
+                                </article>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="mt-5">
+                        <EmptyState icon={<Building2 className="h-7 w-7" />} title="No clinics found" description="Try another search or add a clinic." />
+                    </div>
+                )}
+            </section>
 
-            {/* Clinic Modal */}
-            <ClinicModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                clinic={selectedClinic}
-                onSubmit={handleSubmitClinic}
-                isLoading={isClinicLoading}
-            />
+            <ClinicModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} clinic={selectedClinic} onSubmit={handleSubmitClinic} isLoading={isClinicLoading} />
         </div>
     );
 };
+
+const DetailBlock = ({ title, rows }) => (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h3 className="text-sm font-bold text-slate-950">{title}</h3>
+        <div className="mt-3 space-y-2">
+            {rows.map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-3 rounded-xl bg-white px-3 py-2 text-sm">
+                    <span className="text-slate-500">{label}</span>
+                    <span className="font-semibold text-slate-950">{value}</span>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 export default ClinicPage;

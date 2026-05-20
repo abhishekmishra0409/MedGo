@@ -10,7 +10,7 @@ const NavItem = ({ item }) => {
             <div className="flex flex-col">
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className={`flex items-center justify-between w-full rounded-2xl p-3 transition-colors duration-200 ${
+                    className={`flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition-colors duration-200 ${
                         isExpanded ? "bg-teal-50 text-teal-700" : "hover:bg-slate-50"
                     }`}
                 >
@@ -25,7 +25,7 @@ const NavItem = ({ item }) => {
                     )}
                 </button>
                 {isExpanded && (
-                    <div className="pl-6 mt-1 space-y-1">
+                    <div className="mt-1 space-y-1 pl-4">
                         {item.children.map((child) => (
                             <NavItem key={child.path} item={child} />
                         ))}
@@ -39,7 +39,7 @@ const NavItem = ({ item }) => {
         <NavLink
             to={item.path}
             className={({ isActive }) =>
-                `flex items-center gap-2 rounded-2xl p-3 transition-colors duration-200 ${
+                `flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition-colors duration-200 ${
                     isActive
                         ? "bg-teal-50 text-teal-700 hover:bg-teal-100 font-medium"
                         : "hover:bg-slate-50"
