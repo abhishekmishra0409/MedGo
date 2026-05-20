@@ -1,0 +1,35 @@
+{
+  "name": "medgo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root scripts for the MedGo client, admin, and server apps.",
+  "workspaces": [
+    "client",
+    "Admin",
+    "server"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces --include-workspace-root",
+    "dev": "concurrently -n server,client,admin -c green,cyan,magenta \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:admin\"",
+    "dev:client": "npm --prefix client run dev",
+    "dev:admin": "npm --prefix Admin run dev",
+    "dev:server": "npm --prefix server run dev",
+    "start": "npm --prefix server start",
+    "build": "npm run build:client && npm run build:admin",
+    "build:client": "npm --prefix client run build",
+    "build:admin": "npm --prefix Admin run build",
+    "lint": "npm run lint:client && npm run lint:admin",
+    "lint:client": "npm --prefix client run lint",
+    "lint:admin": "npm --prefix Admin run lint",
+    "preview": "concurrently -n client,admin -c cyan,magenta \"npm run preview:client\" \"npm run preview:admin\"",
+    "preview:client": "npm --prefix client run preview",
+    "preview:admin": "npm --prefix Admin run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
