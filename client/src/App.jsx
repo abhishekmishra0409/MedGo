@@ -21,6 +21,7 @@ import LabTest from "./page/LabTest.jsx";
 import LabTestList from "./page/LabTestList.jsx";
 import LabTestBookingForm from "./page/LabTestBookingForm.jsx";
 import OrderConfirmation from "./page/OrderConfirmation.jsx";
+import OrderDetails from "./page/OrderDetails.jsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -113,6 +114,14 @@ function App() {
             element={
               <RequireAuth allowedRoles={['user']}>
                 <OrderConfirmation />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/order-details/:orderId"
+            element={
+              <RequireAuth allowedRoles={['user']}>
+                <OrderDetails />
               </RequireAuth>
             }
           />
