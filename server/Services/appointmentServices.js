@@ -4,6 +4,7 @@ const User = require('../Models/UserModel');
 const { buildDoctorAccount } = require('../Utils/doctorAccount');
 const { buildDoctorSearchQuery } = require('../Utils/doctorAccount');
 const mongoose = require('mongoose');
+const NotificationService = require('./notificationService');
 
 class AppointmentService {
     static parseTimeToMinutes(value) {
@@ -202,7 +203,40 @@ class AppointmentService {
             };
         }
 
-        return await Appointment.create(payload);
+        const appointment = await Appointment.create(payload);
+
+        await Promise.all([
+            NotificationService.safeCreate({
+                recipient: appointment.patient,
+                recipientRole: 'user',
+                type: 'appointment.created',
+                title: 'Appointment booked',
+                message: `Your appointment with Dr. ${doctor.name || doctor.username || 'your doctor'} is booked.`,
+                entityType: 'appointment',
+                entityId: appointment._id,
+                metadata: { status: appointment.status, date: appointment.date, timeSlot: appointment.timeSlot },
+            }),
+            NotificationService.safeCreate({
+                recipient: appointment.doctor,
+                recipientRole: 'doctor',
+                type: 'appointment.created',
+                title: 'New appointment request',
+                message: 'A patient booked a new appointment with you.',
+                entityType: 'appointment',
+                entityId: appointment._id,
+                metadata: { status: appointment.status, date: appointment.date, timeSlot: appointment.timeSlot },
+            }),
+            NotificationService.safeCreateForAdmins({
+                type: 'appointment.created',
+                title: 'Appointment booked',
+                message: `A ${appointment.type} appointment was booked.`,
+                entityType: 'appointment',
+                entityId: appointment._id,
+                metadata: { doctorId: appointment.doctor, patientId: appointment.patient },
+            }),
+        ]);
+
+        return appointment;
     }
 
     static async checkAvailability(doctorId, date, timeSlot) {
@@ -265,11 +299,40 @@ class AppointmentService {
         if (notes) update['notes.doctorNotes'] = notes;
         if (paymentStatus) update['payment.status'] = paymentStatus;
 
-        return await Appointment.findByIdAndUpdate(
+        const appointment = await Appointment.findByIdAndUpdate(
             id,
             update,
             { new: true, runValidators: true }
         );
+
+        if (!appointment) {
+            throw new Error('Appointment not found');
+        }
+
+        await Promise.all([
+            NotificationService.safeCreate({
+                recipient: appointment.patient,
+                recipientRole: 'user',
+                type: 'appointment.status',
+                title: 'Appointment updated',
+                message: `Your appointment is now ${status}.`,
+                entityType: 'appointment',
+                entityId: appointment._id,
+                metadata: { status, paymentStatus: appointment.payment?.status },
+            }),
+            NotificationService.safeCreate({
+                recipient: appointment.doctor,
+                recipientRole: 'doctor',
+                type: 'appointment.status',
+                title: 'Appointment status changed',
+                message: `An appointment was marked ${status}.`,
+                entityType: 'appointment',
+                entityId: appointment._id,
+                metadata: { status, paymentStatus: appointment.payment?.status },
+            }),
+        ]);
+
+        return appointment;
     }
 }
 

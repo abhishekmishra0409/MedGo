@@ -112,7 +112,7 @@ export const doctorSlice = createSlice({
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `doctor-fetch-error-${state.message}` });
             })
 
             // Fetch doctor by ID
@@ -128,7 +128,7 @@ export const doctorSlice = createSlice({
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `doctor-detail-error-${state.message}` });
             })
 
             // Doctor login
@@ -148,7 +148,7 @@ export const doctorSlice = createSlice({
                 state.token = session.token;
                 state.role = session.role;
                 state.isAuthenticated = true;
-                toast.success("Login successful!");
+                toast.success("Login successful!", { toastId: "auth-login-success" });
             })
             .addCase(loginDoctor.rejected, (state, action) => {
                 state.isLoading = false;
@@ -156,7 +156,7 @@ export const doctorSlice = createSlice({
                 state.isSuccess = false;
                 state.message = action.payload;
                 state.isAuthenticated = false;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `auth-login-error-${state.message}` });
             })
 
             // Doctor logout
@@ -170,12 +170,12 @@ export const doctorSlice = createSlice({
                 state.isSuccess = false;
                 state.isError = false;
                 state.isLoading = false;
-                toast.success("Logged out successfully.");
+                toast.success("Logged out successfully.", { toastId: "auth-logout-success" });
             })
             .addCase(logoutDoctor.rejected, (state, action) => {
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `auth-logout-error-${state.message}` });
             })
 
             // Get logged-in doctor profile
@@ -198,7 +198,7 @@ export const doctorSlice = createSlice({
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `doctor-profile-load-error-${state.message}` });
             })
 
             // Update logged-in doctor profile
@@ -216,13 +216,13 @@ export const doctorSlice = createSlice({
                 state.isSuccess = true;
                 state.profile = session.profile;
                 state.doctor = session.profile;
-                toast.success("Profile updated successfully");
+                toast.success("Profile updated successfully", { toastId: "doctor-profile-update-success" });
             })
             .addCase(updateDoctorProfile.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `doctor-profile-update-error-${state.message}` });
             });
     },
 });

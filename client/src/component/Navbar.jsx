@@ -4,6 +4,7 @@ import { Menu, X, Search, ShoppingCart, UserRound, LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../features/User/UserSlice";
 import { logoutDoctor } from "../features/Doctor/DoctorSlice";
+import NotificationBell from "./Notifications/NotificationBell.jsx";
 
 const navLinks = [
     { to: "/doctorlists", label: "Doctors" },
@@ -68,6 +69,7 @@ const Navbar = () => {
                   { to: "/user/appointments", label: "Appointments" },
                   { to: "/user/labtest", label: "Lab bookings" },
               ];
+    const notificationTokenKey = session?.role === "doctor" ? "doctorToken" : "userToken";
 
     return (
         <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
@@ -105,6 +107,12 @@ const Navbar = () => {
                                 <ShoppingCart className="h-5 w-5" />
                             </Link>
                         )}
+
+                        {session ? (
+                            <div className="mr-3">
+                                <NotificationBell tokenKey={notificationTokenKey} />
+                            </div>
+                        ) : null}
 
                         {session ? (
                             <div className="relative">
@@ -212,14 +220,17 @@ const Navbar = () => {
 
                         {session ? (
                             <div className="space-y-2 rounded-2xl bg-slate-50 p-4">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-800">
                                         <UserRound className="h-5 w-5" />
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-sm font-semibold text-slate-900">{session.profile?.username || session.profile?.name || "My account"}</p>
                                         <p className="text-xs text-slate-500">{session.profile?.email || "Account access"}</p>
                                     </div>
+                                    </div>
+                                    <NotificationBell tokenKey={notificationTokenKey} />
                                 </div>
                                 <div className="grid gap-2">
                                     {dashboardLinks.map((item) => (

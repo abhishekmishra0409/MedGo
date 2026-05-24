@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const config = require('../config/config');
+const NotificationService = require('./notificationService');
 
 const normalizeStringArray = (value) =>
     Array.isArray(value)
@@ -191,6 +192,21 @@ class UserService {
             const newUser = new User(userPayload);
             await newUser.save();
             newUser.password = undefined;
+
+            if (role === 'doctor') {
+                await NotificationService.safeCreateForAdmins({
+                    type: 'doctor.application',
+                    title: 'Doctor application submitted',
+                    message: `${newUser.name || newUser.username || 'A doctor'} submitted a doctor application.`,
+                    entityType: 'doctor',
+                    entityId: newUser._id,
+                    metadata: {
+                        approvalStatus: newUser.doctorProfile?.approvalStatus,
+                        registrationMode: newUser.doctorProfile?.registrationMode,
+                    },
+                });
+            }
+
             return newUser;
         } catch (error) {
             if (createdClinic?._id) {

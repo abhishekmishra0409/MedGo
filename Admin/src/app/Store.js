@@ -5,6 +5,7 @@ import orderReducer from "../features/Orders/OrderSlice.js";
 import doctorReducer from "../features/Doctors/DoctorSlice.js";
 import clinicReducer from "../features/Clinics/ClinicSlice.js";
 import testReducer from "../features/Tests/TestSlice.js";
+import notificationReducer from "../features/Notifications/NotificationSlice.js";
 
 export const store = configureStore({
     reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
         order: orderReducer,
         doctor: doctorReducer,
         clinic: clinicReducer,
-        test: testReducer
+        test: testReducer,
+        notifications: notificationReducer
     },
 });
 

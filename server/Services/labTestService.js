@@ -2,6 +2,7 @@ const LabTestBooking = require('../Models/LabTestModel');
 const Test = require('../Models/TestModel');
 const Clinic = require('../Models/ClinicModel');
 const { createClient } = require('@supabase/supabase-js');
+const NotificationService = require('./notificationService');
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -49,7 +50,43 @@ class LabTestService {
             status: 'booked'
         });
 
-        return await booking.save();
+        const savedBooking = await booking.save();
+        const clinicDoctors = Array.isArray(clinic.doctors) ? clinic.doctors : [];
+
+        await Promise.all([
+            NotificationService.safeCreate({
+                recipient: savedBooking.patient,
+                recipientRole: 'user',
+                type: 'lab.booked',
+                title: 'Lab test booked',
+                message: `${test.name} is booked with ${clinic.name}.`,
+                entityType: 'lab-test',
+                entityId: savedBooking._id,
+                metadata: { status: savedBooking.status, clinicId: clinic._id, testName: test.name },
+            }),
+            ...clinicDoctors.map((doctorId) =>
+                NotificationService.safeCreate({
+                    recipient: doctorId,
+                    recipientRole: 'doctor',
+                    type: 'lab.booked',
+                    title: 'New lab booking',
+                    message: `${test.name} was booked at ${clinic.name}.`,
+                    entityType: 'lab-test',
+                    entityId: savedBooking._id,
+                    metadata: { status: savedBooking.status, clinicId: clinic._id, testName: test.name },
+                })
+            ),
+            NotificationService.safeCreateForAdmins({
+                type: 'lab.booked',
+                title: 'Lab test booked',
+                message: `${test.name} was booked at ${clinic.name}.`,
+                entityType: 'lab-test',
+                entityId: savedBooking._id,
+                metadata: { clinicId: clinic._id, patientId: savedBooking.patient, testName: test.name },
+            }),
+        ]);
+
+        return savedBooking;
     }
 
     static async getPatientBookings(patientId) {
@@ -62,11 +99,28 @@ class LabTestService {
         const validStatuses = ['booked', 'sample-collected', 'processing', 'completed', 'cancelled'];
         if (!validStatuses.includes(status)) throw new Error('Invalid status');
 
-        return await LabTestBooking.findByIdAndUpdate(
+        const booking = await LabTestBooking.findByIdAndUpdate(
             bookingId,
             { status },
             { new: true }
         );
+
+        if (!booking) {
+            throw new Error('Booking not found');
+        }
+
+        await NotificationService.safeCreate({
+            recipient: booking.patient,
+            recipientRole: 'user',
+            type: 'lab.status',
+            title: 'Lab booking updated',
+            message: `Your lab booking is now ${status}.`,
+            entityType: 'lab-test',
+            entityId: booking._id,
+            metadata: { status },
+        });
+
+        return booking;
     }
 
     static async getClinicBookings(clinicId, date) {
@@ -114,6 +168,17 @@ class LabTestService {
                 },
                 { new: true }
             );
+
+            await NotificationService.safeCreate({
+                recipient: updatedBooking.patient,
+                recipientRole: 'user',
+                type: 'lab.report',
+                title: 'Lab report ready',
+                message: `${updatedBooking.test?.name || 'Your lab test'} report is ready to view.`,
+                entityType: 'lab-test',
+                entityId: updatedBooking._id,
+                metadata: { reportFile: updatedBooking.reportFile, status: updatedBooking.status },
+            });
 
             return updatedBooking;
         } catch (error) {

@@ -105,14 +105,14 @@ export const authSlice = createSlice({
                 state.token = "";
                 state.role = null;
                 state.isAuthenticated = false;
-                toast.success("Registration successful! Please login.");
+                toast.success("Registration successful! Please login.", { toastId: "auth-register-success" });
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.isSuccess = false;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `auth-register-error-${state.message}` });
             })
 
             // Login user
@@ -132,7 +132,7 @@ export const authSlice = createSlice({
                 state.token = session.token;
                 state.role = session.role;
                 state.isAuthenticated = true;
-                toast.success("Login successful!");
+                toast.success("Login successful!", { toastId: "auth-login-success" });
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
@@ -140,7 +140,7 @@ export const authSlice = createSlice({
                 state.isSuccess = false;
                 state.message = action.payload;
                 state.isAuthenticated = false;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `auth-login-error-${state.message}` });
             })
 
             // Update user profile
@@ -161,13 +161,13 @@ export const authSlice = createSlice({
                 state.user = session.raw;
                 state.profile = session.profile;
                 state.role = session.role;
-                toast.success("User profile updated successfully!");
+                toast.success("User profile updated successfully!", { toastId: "user-profile-update-success" });
             })
             .addCase(updateUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `user-profile-update-error-${state.message}` });
             })
 
             // Logout user
@@ -181,12 +181,12 @@ export const authSlice = createSlice({
                 state.isSuccess = false;
                 state.isError = false;
                 state.isLoading = false;
-                toast.success("Logged out successfully.");
+                toast.success("Logged out successfully.", { toastId: "auth-logout-success" });
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.isError = true;
                 state.message = action.payload;
-                toast.error(state.message);
+                toast.error(state.message, { toastId: `auth-logout-error-${state.message}` });
             })
 
             // Fetch user data

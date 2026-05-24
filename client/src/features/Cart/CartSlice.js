@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import cartService from "./CartService.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 // Initial state
+const AUTH_REQUIRED = "AUTH_REQUIRED";
+const AUTH_REQUIRED_MESSAGE = "Please login to add products to your cart.";
+
 const initialState = {
     cartItems: [],
     isLoading: false,
@@ -38,6 +41,12 @@ export const fetchCart = createAsyncThunk("cart/getCart", async (_, thunkAPI) =>
 // Add Item to Cart
 export const addCartItem = createAsyncThunk("cart/addCartItem", async ( productData , thunkAPI) => {
     try {
+        const { auth } = thunkAPI.getState();
+
+        if (!auth?.isAuthenticated) {
+            return thunkAPI.rejectWithValue(AUTH_REQUIRED);
+        }
+
         return await cartService.addToCart(productData);
     } catch (error) {
         return thunkAPI.rejectWithValue(getErrorMessage(error, "Failed to add item"));
@@ -105,12 +114,18 @@ const cartSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.cartItems = getCartItems(action.payload);
-                toast.success("Product added successfully.");
+                toast.success("Product added successfully.", { toastId: "cart-add-success" });
             })
             .addCase(addCartItem.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                state.message = action.payload;
+                state.message = action.payload === AUTH_REQUIRED ? AUTH_REQUIRED_MESSAGE : action.payload;
+
+                if (action.payload === AUTH_REQUIRED) {
+                    toast.warning(AUTH_REQUIRED_MESSAGE, { toastId: "cart-auth-required" });
+                } else if (state.message) {
+                    toast.error(state.message, { toastId: `cart-add-error-${state.message}` });
+                }
             })
             .addCase(updateCartItem.pending, (state) => {
                 state.isLoading = true;

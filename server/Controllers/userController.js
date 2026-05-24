@@ -1,5 +1,6 @@
 const UserService = require('../Services/userServices');
 const doctorService = require('../Services/doctorServices');
+const NotificationService = require('../Services/notificationService');
 const cloudinary = require('cloudinary').v2;
 
 class UserController {
@@ -140,6 +141,20 @@ class UserController {
                 req.body.approvalStatus,
                 req.body.approvalNotes
             );
+
+            await NotificationService.safeCreate({
+                recipient: doctor._id,
+                recipientRole: 'doctor',
+                type: 'doctor.approval',
+                title: 'Doctor application updated',
+                message: `Your doctor application is ${doctor.approvalStatus}.`,
+                entityType: 'doctor',
+                entityId: doctor._id,
+                metadata: {
+                    approvalStatus: doctor.approvalStatus,
+                    approvalNotes: req.body.approvalNotes || '',
+                },
+            });
 
             res.status(200).json({
                 success: true,

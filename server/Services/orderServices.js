@@ -2,6 +2,7 @@ const Order = require('../Models/OrderModel');
 const Cart = require('../Models/CartModel');
 const Product = require('../Models/ProductModel');
 const User = require('../Models/UserModel');
+const NotificationService = require('./notificationService');
 // const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
 class OrderService {
@@ -85,6 +86,27 @@ class OrderService {
             //     console.error('Failed to send confirmation email:', emailError);
             // }
 
+            await Promise.all([
+                NotificationService.safeCreate({
+                    recipient: userId,
+                    recipientRole: 'user',
+                    type: 'order.created',
+                    title: 'Order placed',
+                    message: `Your order #${String(order._id).slice(-6).toUpperCase()} was placed successfully.`,
+                    entityType: 'order',
+                    entityId: order._id,
+                    metadata: { total: order.total, status: order.status },
+                }),
+                NotificationService.safeCreateForAdmins({
+                    type: 'order.created',
+                    title: 'New pharmacy order',
+                    message: `${user.username || user.email || 'A customer'} placed order #${String(order._id).slice(-6).toUpperCase()}.`,
+                    entityType: 'order',
+                    entityId: order._id,
+                    metadata: { total: order.total, customerId: userId },
+                }),
+            ]);
+
             return order;
         } catch (error) {
             await session.abortTransaction();
@@ -165,6 +187,17 @@ class OrderService {
 
                 await session.commitTransaction();
                 session.endSession();
+                await NotificationService.safeCreate({
+                    recipient: updatedOrder.user,
+                    recipientRole: 'user',
+                    type: 'order.status',
+                    title: 'Order cancelled',
+                    message: `Your order #${String(updatedOrder._id).slice(-6).toUpperCase()} was cancelled.`,
+                    entityType: 'order',
+                    entityId: updatedOrder._id,
+                    metadata: { status },
+                });
+
                 return updatedOrder;
             } catch (error) {
                 await session.abortTransaction();
@@ -183,6 +216,17 @@ class OrderService {
         if (userId && !order.user.equals(userId)) {
             throw new Error('Unauthorized to update this order');
         }
+
+        await NotificationService.safeCreate({
+            recipient: order.user,
+            recipientRole: 'user',
+            type: 'order.status',
+            title: 'Order status updated',
+            message: `Your order #${String(order._id).slice(-6).toUpperCase()} is now ${status}.`,
+            entityType: 'order',
+            entityId: order._id,
+            metadata: { status },
+        });
 
         return order;
     }

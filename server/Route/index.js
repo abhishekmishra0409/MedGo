@@ -10,6 +10,7 @@ const labTestRoutes = require('./labTestRoute');
 const cartRoutes = require('./cartRoute');
 const orderRoutes = require('./orderRoute');
 const messageRoutes = require('./messageRoute');
+const notificationRoutes = require('./notificationRoute');
 
 const authMiddleware = require('../Middlewares/authMiddleware');
 const rateLimit = require('express-rate-limit');
@@ -42,7 +43,8 @@ router.use('/tests', testRoutes);
 router.use('/lab-tests', labTestRoutes);
 router.use('/carts', cartRoutes);
 router.use('/orders', orderRoutes);
-router.use('/messages',messageRoutes)
+router.use('/messages', messageRoutes);
+router.use('/notifications', notificationRoutes);
 
 // 404 handler for undefined routes
 router.use('*', (req, res) => {

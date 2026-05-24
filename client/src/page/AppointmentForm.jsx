@@ -297,12 +297,12 @@ const AppointmentForm = () => {
 
     const handleCheckAvailability = () => {
         if (!formData.date || !formData.timeSlot.start || !formData.timeSlot.end) {
-            toast.error("Please select date and time slot");
+            toast.error("Please select date and time slot", { toastId: "appointment-date-slot-required" });
             return;
         }
 
         if (!selectedDoctorId) {
-            toast.error("Doctor information is unavailable. Please refresh and try again.");
+            toast.error("Doctor information is unavailable. Please refresh and try again.", { toastId: "appointment-doctor-missing" });
             return;
         }
 
@@ -322,18 +322,18 @@ const AppointmentForm = () => {
         event.preventDefault();
 
         if (!formData.date || !formData.timeSlot.start || !formData.timeSlot.end) {
-            toast.error("Please select date and time slot before confirming");
+            toast.error("Please select date and time slot before confirming", { toastId: "appointment-confirm-slot-required" });
             setStep(1);
             return;
         }
 
         if (!formData.reason || formData.reason.length < 10) {
-            toast.error("Please provide a detailed reason (at least 10 characters)");
+            toast.error("Please provide a detailed reason (at least 10 characters)", { toastId: "appointment-reason-required" });
             return;
         }
 
         if (!selectedDoctorId) {
-            toast.error("Doctor information is unavailable. Please refresh and try again.");
+            toast.error("Doctor information is unavailable. Please refresh and try again.", { toastId: "appointment-doctor-missing" });
             return;
         }
 
@@ -351,7 +351,7 @@ const AppointmentForm = () => {
         };
 
         if (formData.type === "in-person" && !primaryClinic?._id) {
-            toast.error("No clinic is assigned for in-person appointment. Please choose teleconsultation.");
+            toast.error("No clinic is assigned for in-person appointment. Please choose teleconsultation.", { toastId: "appointment-clinic-missing" });
             return;
         }
 

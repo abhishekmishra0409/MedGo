@@ -1,22 +1,6 @@
-import { toast } from "react-toastify";
-
-const authMiddlewares = (store) => (next) => (action) => {
-    const state = store.getState();
-    const isAuthenticated = state.auth.isAuthenticated;
-
-    // List of actions that require authentication
-    const protectedActions = [
-        "cart/addCartItem/pending",
-        "cart/addCartItem/rejected",
-    ];
-
-    // If the action is a protected one and the user is not authenticated
-    if (protectedActions.includes(action.type) && !isAuthenticated) {
-        toast.warning("Please login to access this page");
-        return;
-    }
-
-    // Continue if authenticated or not a protected action
+const authMiddlewares = () => (next) => (action) => {
+    // Auth feedback is handled at the route/thunk level with toast IDs so
+    // one user action cannot create duplicate notifications.
     return next(action);
 };
 

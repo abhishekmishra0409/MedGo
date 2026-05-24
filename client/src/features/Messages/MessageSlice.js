@@ -11,6 +11,10 @@ const initialState = {
     message: "",
 };
 
+const showMessageError = (message) => {
+    toast.error(message, { toastId: `message-error-${message}` });
+};
+
 // USER THUNKS
 export const sendUserMessage = createAsyncThunk("messages/sendUserMessage", async (messageData, thunkAPI) => {
     try {
@@ -103,13 +107,13 @@ const messageSlice = createSlice({
             .addCase(sendUserMessage.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                toast.success("Message sent successfully");
+                toast.success("Message sent successfully", { toastId: "message-send-success" });
                 state.messages.push(action.payload.data);
             })
             .addCase(sendUserMessage.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Send doctor message
@@ -119,13 +123,13 @@ const messageSlice = createSlice({
             .addCase(sendDoctorMessage.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                toast.success("Message sent successfully");
+                toast.success("Message sent successfully", { toastId: "message-send-success" });
                 state.messages.push(action.payload.data);
             })
             .addCase(sendDoctorMessage.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Get user conversations
@@ -140,7 +144,7 @@ const messageSlice = createSlice({
             .addCase(getUserConversations.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Get doctor conversations
@@ -155,7 +159,7 @@ const messageSlice = createSlice({
             .addCase(getDoctorConversations.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Get user messages
@@ -171,7 +175,7 @@ const messageSlice = createSlice({
             .addCase(getUserMessages.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Get doctor messages
@@ -187,7 +191,7 @@ const messageSlice = createSlice({
             .addCase(getDoctorMessages.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Mark user messages as read
@@ -201,7 +205,7 @@ const messageSlice = createSlice({
             .addCase(markUserMessagesRead.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             })
 
             // Mark doctor messages as read
@@ -215,7 +219,7 @@ const messageSlice = createSlice({
             .addCase(markDoctorMessagesRead.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
-                toast.error(action.payload);
+                showMessageError(action.payload);
             });
     },
 });

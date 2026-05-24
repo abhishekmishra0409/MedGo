@@ -5,6 +5,7 @@ import { PiFlask } from "react-icons/pi";
 import { MdOutlineMessage } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutDoctor } from "../../features/Doctor/DoctorSlice.js";
+import NotificationBell from "../../component/Notifications/NotificationBell.jsx";
 
 const menuItems = [
     { icon: <FiUser className="text-lg" />, label: "Profile", path: "" },
@@ -116,6 +117,9 @@ const DashboardModern = () => {
 
             <main className="modal-scroll h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-16 md:pt-0">
                 <div className="w-full p-4 md:p-6 xl:p-8">
+                    <div className="mb-4 flex justify-end">
+                        <NotificationBell tokenKey="doctorToken" />
+                    </div>
                     <Outlet />
                 </div>
             </main>

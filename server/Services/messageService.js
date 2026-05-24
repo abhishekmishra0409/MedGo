@@ -3,6 +3,7 @@ const Message = require('../Models/Message');
 const User = require('../Models/UserModel');
 const { getWSSInstance } = require('../config/websocket');
 const { buildDoctorAccount } = require('../Utils/doctorAccount');
+const NotificationService = require('./notificationService');
 
 class MessageService {
     static async getOrCreateConversation(doctorId, patientId) {
@@ -71,6 +72,21 @@ class MessageService {
         }
 
         await Promise.all([message.save(), conversation.save()]);
+
+        await NotificationService.safeCreate({
+            recipient: recipientId,
+            recipientRole: recipient.role,
+            type: 'message.received',
+            title: 'New message',
+            message: `${sender.name || sender.username || 'A contact'} sent you a message.`,
+            entityType: 'message',
+            entityId: message._id,
+            metadata: {
+                conversationId: conversation._id,
+                senderId,
+                senderRole: sender.role,
+            },
+        });
 
         // WebSocket notifications
         getWSSInstance().notifyUser(recipientId, 'NEW_MESSAGE', message);

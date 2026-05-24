@@ -52,25 +52,32 @@ function App() {
 
             {/* Toast Container */}
             <Toaster
-                position="top-center"
+                position="top-right"
                 reverseOrder={false}
-                gutter={8}
+                gutter={10}
                 containerClassName=""
-                containerStyle={{}}
+                containerStyle={{ top: 18, right: 18 }}
                 toastOptions={{
-                    // Default options for specific types
+                    duration: 3600,
+                    style: {
+                        border: '1px solid rgba(148, 163, 184, 0.24)',
+                        borderRadius: '18px',
+                        boxShadow: '0 22px 48px rgba(15, 23, 42, 0.14)',
+                        color: '#0f172a',
+                        fontWeight: 600,
+                        maxWidth: '420px',
+                        padding: '14px 16px',
+                    },
                     success: {
                         duration: 3000,
                         style: {
-                            background: '#10B981',
-                            color: '#fff',
+                            borderColor: 'rgba(15, 156, 140, 0.24)',
                         },
                     },
                     error: {
                         duration: 4000,
                         style: {
-                            background: '#EF4444',
-                            color: '#fff',
+                            borderColor: 'rgba(220, 38, 38, 0.24)',
                         },
                     },
                 }}

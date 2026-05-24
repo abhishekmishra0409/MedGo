@@ -25,6 +25,13 @@ import OrderDetails from "./page/OrderDetails.jsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 
 import MainLayout from "./page/Users/DashboardModern.jsx";
 import Profile from "./page/Users/Profile.jsx";
@@ -47,26 +54,57 @@ import { RequireAuth, PreventAuth } from './middleware/AuthMiddleware.jsx';
 import UnauthorizedPage from './page/UnauthorizedPage.jsx';
 import PublicLayout from "./component/Layout/PublicLayout.jsx";
 
+const toastIcons = {
+  success: CheckCircle2,
+  error: AlertCircle,
+  warning: TriangleAlert,
+  info: Info,
+  default: Info,
+};
+
+const ToastIcon = ({ type }) => {
+  const toastType = type || "default";
+  const Icon = toastIcons[toastType] || toastIcons.default;
+
+  return (
+    <span className={`medgo-toast__icon medgo-toast__icon--${toastType}`} aria-hidden="true">
+      <Icon className="h-5 w-5" strokeWidth={2.4} />
+    </span>
+  );
+};
+
+const ToastCloseButton = ({ closeToast }) => (
+  <button
+    type="button"
+    className="medgo-toast__close"
+    onClick={closeToast}
+    aria-label="Dismiss notification"
+  >
+    <X className="h-4 w-4" strokeWidth={2.4} />
+  </button>
+);
 
 function App() {
   return (
     <Router>
       <ToastContainer
         position="top-right"
-        autoClose={3200}
-        hideProgressBar
+        autoClose={4200}
+        hideProgressBar={false}
         newestOnTop
-        closeOnClick
+        closeOnClick={false}
         rtl={false}
         pauseOnFocusLoss
-        draggable={false}
+        draggable
         pauseOnHover
         theme="light"
         limit={3}
-        icon={false}
+        icon={ToastIcon}
+        closeButton={ToastCloseButton}
         containerClassName="medgo-toast-container"
         toastClassName={({ type }) => `medgo-toast medgo-toast--${type || "default"}`}
         bodyClassName={() => "medgo-toast__body"}
+        progressClassName="medgo-toast__progress"
       />
       <Routes>
         <Route element={<PublicLayout />}>
