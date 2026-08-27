@@ -2,26 +2,24 @@ import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+const resolveSession = ({ userAuthenticated, userRole, doctorAuthenticated, doctorRole, ownerAuthenticated, ownerRole }) => {
+    if (userAuthenticated && userRole === "user") return "user";
+    if (doctorAuthenticated && doctorRole === "doctor") return "doctor";
+    if (ownerAuthenticated && ownerRole === "clinic-owner") return "clinic-owner";
+    return null;
+};
+
 export const RequireAuth = ({ children, allowedRoles }) => {
     const { isAuthenticated: userAuthenticated, role: userRole } = useSelector((state) => state.auth);
     const { isAuthenticated: doctorAuthenticated, role: doctorRole } = useSelector((state) => state.doctor);
+    const { isAuthenticated: ownerAuthenticated, role: ownerRole } = useSelector((state) => state.owner);
     const location = useLocation();
 
-    let isAuthenticated = false;
-    let role = null;
+    const role = resolveSession({ userAuthenticated, userRole, doctorAuthenticated, doctorRole, ownerAuthenticated, ownerRole });
 
-    if (userAuthenticated && userRole === "user") {
-        isAuthenticated = true;
-        role = "user";
-    } else if (doctorAuthenticated && doctorRole === "doctor") {
-        isAuthenticated = true;
-        role = "doctor";
-    }
-
-    if (!isAuthenticated) {
-        const loginPath = allowedRoles?.includes("doctor") ? "/login?role=doctor" : "/login?role=user";
+    if (!role) {
         toast.warning("Please login to access this page", { toastId: "auth-required" });
-        return <Navigate to={loginPath} state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (!allowedRoles.includes(role)) {
@@ -35,13 +33,12 @@ export const RequireAuth = ({ children, allowedRoles }) => {
 export const PreventAuth = ({ children }) => {
     const { isAuthenticated: userAuthenticated, role: userRole } = useSelector((state) => state.auth);
     const { isAuthenticated: doctorAuthenticated, role: doctorRole } = useSelector((state) => state.doctor);
+    const { isAuthenticated: ownerAuthenticated, role: ownerRole } = useSelector((state) => state.owner);
     const location = useLocation();
 
-    const isAuthenticated =
-        (userAuthenticated && userRole === "user") ||
-        (doctorAuthenticated && doctorRole === "doctor");
+    const role = resolveSession({ userAuthenticated, userRole, doctorAuthenticated, doctorRole, ownerAuthenticated, ownerRole });
 
-    if (isAuthenticated) {
+    if (role) {
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 

@@ -20,7 +20,17 @@ module.exports = async (req, res, next) => {
             return res.status(401).json({ error: 'Doctor not found' });
         }
 
-        // 4. Attach doctor to request
+        // 4. Platform approval gate. Pending/rejected doctors can still log in
+        // (see UserService.loginUser) but can't touch doctor-only features —
+        // appointments, blogs, lab bookings, messages all route through here.
+        if (currentDoctor.doctorProfile?.approvalStatus !== 'approved') {
+            return res.status(403).json({
+                error: 'Your doctor account is awaiting platform approval.',
+                approvalStatus: currentDoctor.doctorProfile?.approvalStatus || 'pending',
+            });
+        }
+
+        // 5. Attach doctor to request
         req.user = currentDoctor;
         next();
     } catch (error) {

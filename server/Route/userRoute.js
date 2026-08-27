@@ -34,6 +34,7 @@ userRouter.use(authMiddleware);
 
 userRouter.get('/me', UserController.getMe);
 userRouter.put('/profile', UserController.updateUser);
+userRouter.delete('/account', UserController.deleteUser);
 
 // Admin-only routes (require admin role)
 userRouter.use(adminMiddleware);
@@ -41,10 +42,12 @@ userRouter.use(adminMiddleware);
 userRouter.get('/admin/doctors', UserController.getAllDoctorsAdmin);
 userRouter.post('/admin/doctors', UserController.createDoctorAdmin);
 userRouter.put('/admin/doctors/:id', UserController.updateDoctorAdmin);
-userRouter.patch('/admin/doctors/:id/approval', UserController.updateDoctorApprovalAdmin);
+userRouter.patch('/admin/doctors/:id/approval', UserController.updateAccountApprovalAdmin);
 userRouter.delete('/admin/doctors/:id', UserController.deleteDoctorAdmin);
 
-userRouter.delete('/account', UserController.deleteUser);
+userRouter.get('/admin/owners', UserController.getAllOwnersAdmin);
+userRouter.patch('/admin/owners/:id/approval', UserController.updateAccountApprovalAdmin);
+
 userRouter.get('/', UserController.getAllUsers);
 userRouter.get('/:id', UserController.getUser);
 

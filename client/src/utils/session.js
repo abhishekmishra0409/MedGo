@@ -9,6 +9,11 @@ const STORAGE_KEYS = {
         token: "doctorToken",
         raw: "doctor",
     },
+    "clinic-owner": {
+        session: "ownerSession",
+        token: "ownerToken",
+        raw: "owner",
+    },
 };
 
 const safeParse = (value) => {
@@ -53,7 +58,13 @@ const flattenDoctorProfile = (payload) => {
         specializations: profile.specializations || source.specializations || [],
         rating: profile.rating ?? source.rating ?? 0,
         reviews: profile.reviews ?? source.reviews ?? 0,
-        approvalStatus: profile.approvalStatus || source.approvalStatus || "approved",
+        // Fail-closed: an unrecognized/missing status must never read as approved.
+        approvalStatus: profile.approvalStatus || source.approvalStatus || "pending",
+        clinicMembershipStatus: profile.clinicMembershipStatus || source.clinicMembershipStatus || "none",
+        clinicMembershipNotes: profile.clinicMembershipNotes || source.clinicMembershipNotes || "",
+        councilRegistrationNumber: profile.councilRegistrationNumber || source.councilRegistrationNumber || "",
+        councilName: profile.councilName || source.councilName || "",
+        practiceAddress: profile.practiceAddress || source.practiceAddress || {},
     };
 };
 
@@ -93,6 +104,14 @@ export const clearSession = (role) => {
     localStorage.removeItem(keys.session);
     localStorage.removeItem(keys.token);
     localStorage.removeItem(keys.raw);
+};
+
+// Role is derived from the login response now, not chosen by the user, so a
+// stale session under a different role bucket can never coexist with a fresh
+// login — e.g. logging in as a patient after a doctor session leaves no
+// dangling doctorToken behind.
+export const clearAllSessions = () => {
+    Object.keys(STORAGE_KEYS).forEach(clearSession);
 };
 
 export const getStoredSession = (role) => {

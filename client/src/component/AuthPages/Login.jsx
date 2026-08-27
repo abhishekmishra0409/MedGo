@@ -1,11 +1,18 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { LoaderCircle } from "lucide-react";
+import { toast } from "react-toastify";
 import { loginUser } from "../../features/User/UserSlice.js";
-import { loginDoctor } from "../../features/Doctor/DoctorSlice.js";
+
 import AuthShell from "./AuthShell.jsx";
-import { normalizeAuthRole } from "./authConfig.js";
+import PasswordInput from "../ui/PasswordInput.jsx";
+
+const REDIRECT_BY_ROLE = {
+    user: "/user",
+    doctor: "/doctor",
+    "clinic-owner": "/clinic",
+};
 
 const getRedirectTarget = ({ role, location, searchParams }) => {
     const redirect = searchParams.get("redirect");
@@ -14,7 +21,9 @@ const getRedirectTarget = ({ role, location, searchParams }) => {
         return "/checkout";
     }
 
-    if (redirect?.startsWith("/")) {
+    // startsWith("/") alone lets a protocol-relative URL ("//evil.com") through
+    // browsers treat that as an absolute external redirect.
+    if (redirect?.startsWith("/") && !redirect.startsWith("//")) {
         return redirect;
     }
 
@@ -25,37 +34,17 @@ const getRedirectTarget = ({ role, location, searchParams }) => {
         return `${fromPath}${fromSearch}`;
     }
 
-    return role === "doctor" ? "/doctor" : "/user";
+    return REDIRECT_BY_ROLE[role] || "/user";
 };
 
 const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const role = normalizeAuthRole(searchParams.get("role"));
+    const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({ email: "", password: "" });
-
-    const userState = useSelector((state) => state.auth);
-    const doctorState = useSelector((state) => state.doctor);
-
-    const isLoading = role === "doctor" ? doctorState.isLoading : userState.isLoading;
-    const errorMessage = role === "doctor" ? doctorState.message : userState.message;
-    const showError = role === "doctor" ? doctorState.isError : userState.isError;
-
-    const helperCopy = useMemo(
-        () =>
-            role === "doctor"
-                ? "Use your doctor workspace credentials to access appointments, messages, and lab bookings."
-                : "Use your patient account to continue with bookings, orders, and your care timeline.",
-        [role]
-    );
-
-    const handleRoleChange = (nextRole) => {
-        const nextParams = new URLSearchParams(searchParams);
-        nextParams.set("role", normalizeAuthRole(nextRole));
-        setSearchParams(nextParams, { replace: true });
-    };
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -64,38 +53,43 @@ const Login = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
-        const action =
-            role === "doctor"
-                ? loginDoctor({ email: formData.email, password: formData.password })
-                : loginUser({ email: formData.email, password: formData.password });
+        setErrorMessage("");
+        setIsLoading(true);
 
         try {
-            await dispatch(action).unwrap();
+            const result = await dispatch(loginUser({ email: formData.email, password: formData.password })).unwrap();
+            const role = result?.data?.role;
+            // Clears the "please login" warning if that's what sent the user
+            // here — otherwise it lingers on screen next to "Login successful!"
+            // since the two toasts have different ids and don't replace each other.
+            toast.dismiss("auth-required");
+            toast.success("Login successful!", { toastId: "auth-login-success" });
             navigate(getRedirectTarget({ role, location, searchParams }), { replace: true });
-        } catch {
-            // Toast and error state are handled in the slices.
+        } catch (error) {
+            const message = error?.message || error || "Invalid credentials";
+            setErrorMessage(message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <AuthShell
-            role={role}
+            role="user"
             mode="login"
-            onRoleChange={handleRoleChange}
-            title={`Welcome back, ${role === "doctor" ? "doctor" : "patient"}`}
-            description={helperCopy}
+            title="Welcome back"
+            description="One account, one sign-in — you'll land in the right workspace automatically."
             footer={
                 <div className="flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         Need a new account?{" "}
-                        <Link to={`/signup?role=${role}`} className="auth-link font-semibold">
+                        <Link to="/signup" className="auth-link font-semibold">
                             Create one here
                         </Link>
                     </p>
                     <p>
                         Trouble signing in?{" "}
-                        <Link to={`/forgot-password?role=${role}`} className="auth-link font-semibold">
+                        <Link to="/forgot-password" className="auth-link font-semibold">
                             Reset your password
                         </Link>
                     </p>
@@ -109,7 +103,7 @@ const Login = () => {
                         type="email"
                         name="email"
                         autoComplete="email"
-                        placeholder={role === "doctor" ? "doctor@medgo.com" : "patient@example.com"}
+                        placeholder="you@example.com"
                         value={formData.email}
                         onChange={handleChange}
                         className="auth-input"
@@ -117,26 +111,24 @@ const Login = () => {
                     />
                 </label>
 
-                <label className="auth-field">
-                    <div className="flex items-center justify-between gap-3">
-                        <span>Password</span>
-                        <Link to={`/forgot-password?role=${role}`} className="auth-link text-xs font-semibold">
-                            Forgot password?
-                        </Link>
-                    </div>
-                    <input
-                        type="password"
-                        name="password"
-                        autoComplete={role === "doctor" ? "current-password" : "current-password"}
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        className="auth-input"
-                        required
-                    />
-                </label>
+                <PasswordInput
+                    label={
+                        <div className="flex items-center justify-between gap-3">
+                            <span>Password</span>
+                            <Link to="/forgot-password" className="auth-link text-xs font-semibold">
+                                Forgot password?
+                            </Link>
+                        </div>
+                    }
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                />
 
-                {showError && errorMessage ? <div className="auth-alert auth-alert--error">{errorMessage}</div> : null}
+                {errorMessage ? <div className="auth-alert auth-alert--error">{errorMessage}</div> : null}
 
                 <button type="submit" className="btn-primary auth-submit" disabled={isLoading}>
                     {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}

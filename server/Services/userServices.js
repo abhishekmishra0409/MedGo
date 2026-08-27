@@ -91,13 +91,25 @@ const validateClinicPayload = (clinic = {}) => {
         !clinic.address?.postalCode ||
         !clinic.address?.country ||
         !clinic.contact?.phone ||
-        !clinic.contact?.email ||
-        !clinic.operatingHours?.weekdays?.open ||
-        !clinic.operatingHours?.weekdays?.close
+        !clinic.contact?.email
     ) {
         throw new Error('Clinic information is incomplete');
     }
 };
+
+const validatePracticeAddress = (address = {}) => {
+    if (!address.street || !address.city || !address.state || !address.postalCode) {
+        throw new Error('Practice address is required to register as an independent doctor');
+    }
+};
+
+const sanitizePracticeAddress = (address = {}) => ({
+    street: address.street?.trim() || '',
+    city: address.city?.trim() || '',
+    state: address.state?.trim() || '',
+    postalCode: address.postalCode?.trim() || '',
+    country: address.country?.trim() || 'INDIA',
+});
 
 class UserService {
     static async registerUser(userData) {
@@ -106,7 +118,7 @@ class UserService {
         try {
             const normalizedEmail = userData.email?.toLowerCase().trim();
             const normalizedPhone = userData.phone?.trim();
-            const role = userData.role === 'doctor' ? 'doctor' : 'user';
+            const role = ['doctor', 'clinic-owner'].includes(userData.role) ? userData.role : 'user';
 
             if (!normalizedEmail || !normalizedPhone || !userData.password) {
                 throw new Error('Name, email, phone, and password are required');
@@ -138,6 +150,14 @@ class UserService {
                 throw new Error('Full name is required');
             }
 
+            // Shared by doctor create-clinic and the clinic-owner role: creates the
+            // clinic first with a pre-allocated owner id (no user saved yet), so
+            // failure anywhere after this point rolls it back in the catch below.
+            const createOwnedClinic = async (clinicPayload) => {
+                validateClinicPayload(clinicPayload);
+                return Clinic.create(buildClinicPayload(clinicPayload, userId, false));
+            };
+
             if (role === 'doctor') {
                 const doctorProfileInput = userData.doctorProfile || {};
                 const registrationMode =
@@ -147,22 +167,33 @@ class UserService {
                     throw new Error('Specialty and qualification are required for doctor registration');
                 }
 
+                const councilRegistrationNumber = doctorProfileInput.councilRegistrationNumber?.trim().toUpperCase();
+                const councilName = doctorProfileInput.councilName?.trim();
+
+                if (!councilRegistrationNumber || !councilName) {
+                    throw new Error('Medical council registration number and issuing council are required');
+                }
+
                 userPayload.doctorProfile = {
                     approvalStatus: 'pending',
                     approvalNotes: '',
                     registrationMode,
-                    clinicRole: registrationMode === 'create-clinic' ? 'owner' : 'member',
+                    clinicMembershipStatus: 'none',
+                    clinicMembershipNotes: '',
+                    clinicRole: null,
                     specialty: doctorProfileInput.specialty.trim(),
                     qualification: doctorProfileInput.qualification.trim(),
-                    image: doctorProfileInput.image?.trim() || userPayload.avatar || '',
-                    contactEmail: doctorProfileInput.contactEmail?.toLowerCase().trim() || normalizedEmail,
-                    address: doctorProfileInput.address?.trim() || '',
-                    workingHours: sanitizeWorkingHours(doctorProfileInput.workingHours),
-                    education: normalizeStringArray(doctorProfileInput.education),
-                    biography: normalizeStringArray(doctorProfileInput.biography),
-                    specializations: normalizeStringArray(doctorProfileInput.specializations),
-                    rating: Number(doctorProfileInput.rating) || 0,
-                    reviews: Number(doctorProfileInput.reviews) || 0,
+                    councilRegistrationNumber,
+                    councilName,
+                    image: userPayload.avatar || '',
+                    contactEmail: normalizedEmail,
+                    address: '',
+                    workingHours: [],
+                    education: [],
+                    biography: [],
+                    specializations: [],
+                    rating: 0,
+                    reviews: 0,
                 };
 
                 if (registrationMode === 'join-clinic') {
@@ -179,14 +210,26 @@ class UserService {
 
                     userPayload.doctorProfile.primaryClinic = clinic._id;
                     userPayload.doctorProfile.requestedClinicAccessCode = clinic.accessCode;
-                }
-
-                if (registrationMode === 'create-clinic') {
-                    validateClinicPayload(userData.clinic);
-                    createdClinic = await Clinic.create(buildClinicPayload(userData.clinic, userId, false));
+                    userPayload.doctorProfile.clinicRole = 'member';
+                    userPayload.doctorProfile.clinicMembershipStatus = 'pending';
+                } else if (registrationMode === 'create-clinic') {
+                    createdClinic = await createOwnedClinic(userData.clinic);
                     userPayload.doctorProfile.primaryClinic = createdClinic._id;
                     userPayload.doctorProfile.requestedClinicAccessCode = createdClinic.accessCode;
+                    userPayload.doctorProfile.clinicRole = 'owner';
+                    // No second party's permission needed to join a clinic you own.
+                    userPayload.doctorProfile.clinicMembershipStatus = 'approved';
+                } else if (registrationMode === 'solo') {
+                    validatePracticeAddress(doctorProfileInput.practiceAddress);
+                    userPayload.doctorProfile.practiceAddress = sanitizePracticeAddress(doctorProfileInput.practiceAddress);
+                } else {
+                    throw new Error('Invalid registration mode');
                 }
+            }
+
+            if (role === 'clinic-owner') {
+                createdClinic = await createOwnedClinic(userData.clinic);
+                userPayload.ownerProfile = { approvalStatus: 'pending', approvalNotes: '' };
             }
 
             const newUser = new User(userPayload);
@@ -203,6 +246,35 @@ class UserService {
                     metadata: {
                         approvalStatus: newUser.doctorProfile?.approvalStatus,
                         registrationMode: newUser.doctorProfile?.registrationMode,
+                    },
+                });
+
+                if (newUser.doctorProfile?.registrationMode === 'join-clinic' && createdClinic === null) {
+                    const clinic = await Clinic.findById(newUser.doctorProfile.primaryClinic).select('owner name');
+                    if (clinic?.owner) {
+                        await NotificationService.safeCreate({
+                            recipient: clinic.owner,
+                            recipientRole: 'clinic-owner',
+                            type: 'clinic.join-request',
+                            title: 'New doctor wants to join your clinic',
+                            message: `${newUser.name || newUser.username} requested to join ${clinic.name}.`,
+                            entityType: 'doctor',
+                            entityId: newUser._id,
+                            metadata: { clinicId: clinic._id },
+                        });
+                    }
+                }
+            }
+
+            if (role === 'clinic-owner') {
+                await NotificationService.safeCreateForAdmins({
+                    type: 'owner.application',
+                    title: 'Clinic owner application submitted',
+                    message: `${newUser.name || newUser.username || 'A clinic owner'} submitted a facility application.`,
+                    entityType: 'clinic-owner',
+                    entityId: newUser._id,
+                    metadata: {
+                        approvalStatus: newUser.ownerProfile?.approvalStatus,
                     },
                 });
             }
@@ -230,14 +302,12 @@ class UserService {
                 throw new Error('Invalid credentials');
             }
 
-            if (user.role === 'doctor' && user.doctorProfile?.approvalStatus !== 'approved') {
-                throw new Error(
-                    user.doctorProfile?.approvalStatus === 'rejected'
-                        ? 'Doctor access has been rejected. Please contact admin.'
-                        : 'Doctor account is pending admin approval.'
-                );
-            }
-
+            // Pending/rejected doctors and clinic-owners are allowed to log in so
+            // they can see their own application status and finish setting up
+            // their profile/clinic. The actual gate on doctor-only actions
+            // (appointments, blogs, lab bookings, messages) lives in
+            // doctorMiddleware, which re-reads approvalStatus from the DB on
+            // every request — never from this token.
             const token = jwt.sign(
                 { id: user._id, role: user.role },
                 config.JWT_SECRET,
@@ -385,27 +455,53 @@ class UserService {
                 );
             }
 
-            if (updateData.doctorProfile) {
+            if (updateData.doctorProfile && user.role === 'doctor') {
+                // Whitelist: approvalStatus, clinicMembershipStatus, primaryClinic, etc. are
+                // admin/owner-controlled and must never be settable from a client profile update.
+                const input = updateData.doctorProfile;
+                const current = user.doctorProfile?.toObject?.() || user.doctorProfile || {};
+
                 user.doctorProfile = {
-                    ...user.doctorProfile?.toObject?.(),
-                    ...updateData.doctorProfile,
-                    specialty: updateData.doctorProfile.specialty?.trim() ?? user.doctorProfile?.specialty,
-                    qualification: updateData.doctorProfile.qualification?.trim() ?? user.doctorProfile?.qualification,
-                    image: updateData.doctorProfile.image?.trim() ?? user.doctorProfile?.image,
-                    contactEmail: updateData.doctorProfile.contactEmail?.toLowerCase().trim() ?? user.doctorProfile?.contactEmail,
-                    address: updateData.doctorProfile.address?.trim() ?? user.doctorProfile?.address,
-                    workingHours: updateData.doctorProfile.workingHours
-                        ? sanitizeWorkingHours(updateData.doctorProfile.workingHours)
-                        : user.doctorProfile?.workingHours,
-                    education: updateData.doctorProfile.education
-                        ? normalizeStringArray(updateData.doctorProfile.education)
-                        : user.doctorProfile?.education,
-                    biography: updateData.doctorProfile.biography
-                        ? normalizeStringArray(updateData.doctorProfile.biography)
-                        : user.doctorProfile?.biography,
-                    specializations: updateData.doctorProfile.specializations
-                        ? normalizeStringArray(updateData.doctorProfile.specializations)
-                        : user.doctorProfile?.specializations,
+                    ...current,
+                    specialty: input.specialty?.trim() ?? current.specialty,
+                    qualification: input.qualification?.trim() ?? current.qualification,
+                    image: input.image?.trim() ?? current.image,
+                    cloudinary_id: input.cloudinary_id?.trim() ?? current.cloudinary_id,
+                    contactEmail: input.contactEmail?.toLowerCase().trim() ?? current.contactEmail,
+                    address: input.address?.trim() ?? current.address,
+                    workingHours: input.workingHours
+                        ? sanitizeWorkingHours(input.workingHours)
+                        : current.workingHours,
+                    education: input.education
+                        ? normalizeStringArray(input.education)
+                        : current.education,
+                    biography: input.biography
+                        ? normalizeStringArray(input.biography)
+                        : current.biography,
+                    specializations: input.specializations
+                        ? normalizeStringArray(input.specializations)
+                        : current.specializations,
+                    practiceAddress: input.practiceAddress
+                        ? sanitizePracticeAddress(input.practiceAddress)
+                        : current.practiceAddress,
+                    operatingHours: input.operatingHours
+                        ? {
+                            weekdays: {
+                                open: input.operatingHours.weekdays?.open?.trim() || current.operatingHours?.weekdays?.open,
+                                close: input.operatingHours.weekdays?.close?.trim() || current.operatingHours?.weekdays?.close,
+                            },
+                            weekends: {
+                                open: input.operatingHours.weekends?.open?.trim() || '',
+                                close: input.operatingHours.weekends?.close?.trim() || '',
+                            },
+                        }
+                        : current.operatingHours,
+                    consultationSettings: input.consultationSettings
+                        ? {
+                            slotDuration: Number(input.consultationSettings.slotDuration) || current.consultationSettings?.slotDuration || 30,
+                            maxDailyAppointments: Number(input.consultationSettings.maxDailyAppointments) || current.consultationSettings?.maxDailyAppointments || 20,
+                        }
+                        : current.consultationSettings,
                 };
             }
 

@@ -118,6 +118,12 @@ const ClinicPage = () => {
                             const assignableDoctors = allDoctors
                                 .filter((doctor) => doctor.approvalStatus === "approved")
                                 .filter((doctor) => !clinic.doctors?.some((assigned) => assigned._id === doctor._id));
+                            // Doctors who used this clinic's access code but the owner
+                            // hasn't approved them onto the roster yet — they don't
+                            // appear in clinic.doctors, only as their own User record.
+                            const pendingMembers = allDoctors.filter(
+                                (doctor) => String(doctor.primaryClinic) === String(clinic._id) && doctor.clinicMembershipStatus === "pending"
+                            );
 
                             return (
                                 <article key={clinic._id} className="rounded-3xl border border-slate-200 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm">
@@ -130,6 +136,9 @@ const ClinicPage = () => {
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <h2 className="text-xl font-bold text-slate-950">{clinic.name || "Unnamed clinic"}</h2>
                                                     <StatusPill tone={clinic.isActive ? "emerald" : "amber"}>{clinic.isActive ? "Active" : "Pending activation"}</StatusPill>
+                                                    {pendingMembers.length ? (
+                                                        <StatusPill tone="amber">{pendingMembers.length} awaiting roster approval</StatusPill>
+                                                    ) : null}
                                                 </div>
                                                 <p className="mt-2 flex items-center gap-2 text-sm text-slate-600">
                                                     <MapPin className="h-4 w-4 text-teal-700" />

@@ -20,36 +20,6 @@ const getDoctorById = async (doctorId) => {
     }
 };
 
-const loginDoctor = async (loginData) => {
-    try {
-        const response = await axios.post(buildApiUrl("users/login"), loginData);
-        return response.data;
-    } catch (error) {
-        throw getErrorMessage(error, "Invalid login credentials");
-    }
-};
-
-const requestPasswordReset = async (email) => {
-    try {
-        const response = await axios.post(buildApiUrl("users/forgot-password"), { email });
-        return response.data;
-    } catch (error) {
-        throw getErrorMessage(error, "Failed to start password reset");
-    }
-};
-
-const resetPassword = async ({ token, password, confirmPassword }) => {
-    try {
-        const response = await axios.post(buildApiUrl(`users/reset-password/${token}`), {
-            password,
-            confirmPassword,
-        });
-        return response.data;
-    } catch (error) {
-        throw getErrorMessage(error, "Failed to reset password");
-    }
-};
-
 const getMyProfile = async () => {
     try {
         const response = await axios.get(buildApiUrl("users/me"), doctorConfig());
@@ -77,10 +47,7 @@ const logoutDoctor = async () => {
 export const doctorService = {
     getAllDoctors,
     getDoctorById,
-    loginDoctor,
     getMyProfile,
     updateMyProfile,
-    requestPasswordReset,
-    resetPassword,
     logoutDoctor,
 };

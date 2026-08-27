@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "./UserService.js";
 import { toast } from "react-toastify";
 import userConfig from "../../utils/userConfig.js";
-import { clearSession, getStoredSession, persistSession } from "../../utils/session.js";
+import { clearAllSessions, clearSession, getStoredSession, persistSession } from "../../utils/session.js";
 
 // Async thunk for user registration
 export const registerUser = createAsyncThunk(
@@ -123,16 +123,25 @@ export const authSlice = createSlice({
                 state.message = "";
             })
             .addCase(loginUser.fulfilled, (state, action) => {
-                const session = persistSession("user", action.payload);
                 state.isLoading = false;
                 state.isError = false;
+
+                // The login endpoint is shared across roles; only claim this
+                // session if the response is actually a patient. Login.jsx
+                // routes the response and owns the success toast so it fires
+                // exactly once regardless of which slice matches.
+                if (action.payload?.data?.role !== "user") {
+                    return;
+                }
+
+                clearAllSessions();
+                const session = persistSession("user", action.payload);
                 state.isSuccess = true;
                 state.user = session.raw;
                 state.profile = session.profile;
                 state.token = session.token;
                 state.role = session.role;
                 state.isAuthenticated = true;
-                toast.success("Login successful!", { toastId: "auth-login-success" });
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
@@ -140,7 +149,6 @@ export const authSlice = createSlice({
                 state.isSuccess = false;
                 state.message = action.payload;
                 state.isAuthenticated = false;
-                toast.error(state.message, { toastId: `auth-login-error-${state.message}` });
             })
 
             // Update user profile

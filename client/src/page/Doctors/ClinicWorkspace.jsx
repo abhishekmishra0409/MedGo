@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Building2, Clock, Copy, Mail, MapPin, Phone, Save, Settings, Users } from "lucide-react";
-import { fetchMyClinic, updateMyClinic } from "../../features/Clinic/ClinicSlice.js";
+import { Building2, Clock, Copy, LoaderCircle, Mail, MapPin, Phone, Save, Settings, Users } from "lucide-react";
+import { fetchMyClinic, joinClinic, updateMyClinic } from "../../features/Clinic/ClinicSlice.js";
 
 const defaultForm = {
     name: "",
@@ -82,12 +82,22 @@ const StatCard = ({ icon, label, value }) => (
 const ClinicWorkspace = () => {
     const dispatch = useDispatch();
     const { myClinic, isLoading } = useSelector((state) => state.clinic);
+    const isDoctor = useSelector((state) => state.doctor.isAuthenticated);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState(defaultForm);
+    const [joinCode, setJoinCode] = useState("");
+    const [isJoining, setIsJoining] = useState(false);
 
     useEffect(() => {
         dispatch(fetchMyClinic());
     }, [dispatch]);
+
+    const handleJoinClinic = async (event) => {
+        event.preventDefault();
+        setIsJoining(true);
+        await dispatch(joinClinic(joinCode));
+        setIsJoining(false);
+    };
 
     useEffect(() => {
         setFormData(buildForm(myClinic));
@@ -178,7 +188,33 @@ const ClinicWorkspace = () => {
             <div className="w-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Clinic workspace</p>
                 <h1 className="mt-2 text-2xl font-semibold text-slate-950">No clinic assigned</h1>
-                <p className="mt-2 text-sm leading-6 text-slate-500">This doctor account is not linked to an active clinic yet. Join a clinic with an access code or ask admin to attach your account.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                    You're practising independently right now. Enter a clinic's access code below to request joining it — the
+                    clinic owner and platform team both need to approve you before you're listed there.
+                </p>
+
+                {isDoctor ? (
+                    <form onSubmit={handleJoinClinic} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <label className="block flex-1">
+                            <span className="mb-1 block text-sm font-semibold text-slate-700">Clinic access code</span>
+                            <input
+                                value={joinCode}
+                                onChange={(event) => setJoinCode(event.target.value)}
+                                placeholder="Enter clinic access code"
+                                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm uppercase outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
+                                required
+                            />
+                        </label>
+                        <button
+                            type="submit"
+                            disabled={isJoining}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-70"
+                        >
+                            {isJoining ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                            {isJoining ? "Joining..." : "Join clinic"}
+                        </button>
+                    </form>
+                ) : null}
             </div>
         );
     }

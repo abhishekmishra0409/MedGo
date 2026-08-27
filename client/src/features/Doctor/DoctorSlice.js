@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { doctorService } from "./DoctorService.js";
 import { toast } from "react-toastify";
-import { clearSession, getStoredSession, persistSession } from "../../utils/session.js";
+import { clearAllSessions, clearSession, getStoredSession, persistSession } from "../../utils/session.js";
+import { loginUser } from "../User/UserSlice.js";
 
 // Fetch all doctors
 export const fetchDoctors = createAsyncThunk(
@@ -23,18 +24,6 @@ export const fetchDoctorById = createAsyncThunk(
             return await doctorService.getDoctorById(doctorId);
         } catch (error) {
             return thunkApi.rejectWithValue(error?.message || "Doctor not found");
-        }
-    }
-);
-
-// Doctor login
-export const loginDoctor = createAsyncThunk(
-    "doctor/login",
-    async (loginData, thunkApi) => {
-        try {
-            return await doctorService.loginDoctor(loginData);
-        } catch (error) {
-            return thunkApi.rejectWithValue(error?.message || "Invalid login credentials");
         }
     }
 );
@@ -131,32 +120,38 @@ export const doctorSlice = createSlice({
                 toast.error(state.message, { toastId: `doctor-detail-error-${state.message}` });
             })
 
-            // Doctor login
-            .addCase(loginDoctor.pending, (state) => {
+            // Doctor login — shares the single users/login endpoint via UserSlice's
+            // loginUser thunk. Only claims the session when the response role
+            // is actually "doctor"; Login.jsx owns routing/toast for this action.
+            .addCase(loginUser.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
                 state.isSuccess = false;
                 state.message = "";
             })
-            .addCase(loginDoctor.fulfilled, (state, action) => {
-                const session = persistSession("doctor", action.payload);
+            .addCase(loginUser.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isError = false;
+
+                if (action.payload?.data?.role !== "doctor") {
+                    return;
+                }
+
+                clearAllSessions();
+                const session = persistSession("doctor", action.payload);
                 state.isSuccess = true;
                 state.doctor = session.profile;
                 state.profile = session.profile;
                 state.token = session.token;
                 state.role = session.role;
                 state.isAuthenticated = true;
-                toast.success("Login successful!", { toastId: "auth-login-success" });
             })
-            .addCase(loginDoctor.rejected, (state, action) => {
+            .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.isSuccess = false;
                 state.message = action.payload;
                 state.isAuthenticated = false;
-                toast.error(state.message, { toastId: `auth-login-error-${state.message}` });
             })
 
             // Doctor logout

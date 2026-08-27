@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 import AuthShell from "./AuthShell.jsx";
 import { normalizeAuthRole } from "./authConfig.js";
 import { authService } from "../../features/User/UserService.js";
-import { doctorService } from "../../features/Doctor/DoctorService.js";
+import PasswordInput from "../ui/PasswordInput.jsx";
 
 const ResetPassword = () => {
     const navigate = useNavigate();
     const params = useParams();
+    // The reset link's :role segment (from the emailed URL) only picks the
+    // hero copy here — the reset endpoint itself is shared across all roles.
     const role = normalizeAuthRole(params.role);
     const token = params.token;
     const [formData, setFormData] = useState({ password: "", confirmPassword: "" });
@@ -34,8 +36,7 @@ const ResetPassword = () => {
         setIsSubmitting(true);
 
         try {
-            const service = role === "doctor" ? doctorService : authService;
-            const response = await service.resetPassword({
+            const response = await authService.resetPassword({
                 token,
                 password: formData.password,
                 confirmPassword: formData.confirmPassword,
@@ -44,7 +45,7 @@ const ResetPassword = () => {
             setIsCompleted(true);
             toast.success(response?.data?.message || "Password reset successfully");
             setTimeout(() => {
-                navigate(`/login?role=${role}`, { replace: true });
+                navigate("/login", { replace: true });
             }, 900);
         } catch (error) {
             toast.error(error || "Failed to reset password");
@@ -63,13 +64,13 @@ const ResetPassword = () => {
                 <div className="flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         Back to access?{" "}
-                        <Link to={`/login?role=${role}`} className="auth-link font-semibold">
+                        <Link to="/login" className="auth-link font-semibold">
                             Open login
                         </Link>
                     </p>
                     <p>
                         Need another link?{" "}
-                        <Link to={`/forgot-password?role=${role}`} className="auth-link font-semibold">
+                        <Link to="/forgot-password" className="auth-link font-semibold">
                             Request a fresh reset
                         </Link>
                     </p>
@@ -81,39 +82,31 @@ const ResetPassword = () => {
             ) : isCompleted ? (
                 <div className="space-y-4 rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-5">
                     <div className="auth-alert auth-alert--success">Password updated successfully. Redirecting you to login now.</div>
-                    <Link to={`/login?role=${role}`} className="btn-primary auth-submit">
+                    <Link to="/login" className="btn-primary auth-submit">
                         Continue to login
                     </Link>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <label className="auth-field">
-                        <span>New password</span>
-                        <input
-                            type="password"
-                            name="password"
-                            autoComplete="new-password"
-                            placeholder="At least 6 characters"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="auth-input"
-                            required
-                        />
-                    </label>
+                    <PasswordInput
+                        label="New password"
+                        name="password"
+                        autoComplete="new-password"
+                        placeholder="At least 6 characters"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
 
-                    <label className="auth-field">
-                        <span>Confirm new password</span>
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            autoComplete="new-password"
-                            placeholder="Repeat your password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className="auth-input"
-                            required
-                        />
-                    </label>
+                    <PasswordInput
+                        label="Confirm new password"
+                        name="confirmPassword"
+                        autoComplete="new-password"
+                        placeholder="Repeat your password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                    />
 
                     <button type="submit" className="btn-primary auth-submit" disabled={isSubmitting}>
                         {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}

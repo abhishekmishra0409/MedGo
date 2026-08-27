@@ -9,6 +9,7 @@ const initialState = {
     myClinic: null,
     availableSlots: [],
     doctorClinics: [],
+    roster: [],
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -76,6 +77,33 @@ export const updateMyClinic = createAsyncThunk("clinic/updateMyClinic", async (c
         return thunkAPI.rejectWithValue(error || "Failed to update clinic");
     }
 });
+
+export const joinClinic = createAsyncThunk("clinic/joinClinic", async (accessCode, thunkAPI) => {
+    try {
+        return await clinicService.joinClinic(accessCode);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error || "Failed to join clinic");
+    }
+});
+
+export const fetchMyRoster = createAsyncThunk("clinic/fetchMyRoster", async (_, thunkAPI) => {
+    try {
+        return await clinicService.getMyRoster();
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error || "Failed to fetch doctor roster");
+    }
+});
+
+export const updateRosterMembership = createAsyncThunk(
+    "clinic/updateRosterMembership",
+    async ({ doctorId, status, notes }, thunkAPI) => {
+        try {
+            return await clinicService.updateRosterMembership({ doctorId, status, notes });
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error || "Failed to update roster membership");
+        }
+    }
+);
 
 // Clinic Slice
 const clinicSlice = createSlice({
@@ -191,6 +219,54 @@ const clinicSlice = createSlice({
             })
             .addCase(updateMyClinic.rejected, (state, action) => {
                 state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+                toast.error(state.message);
+            })
+
+            // Self-service: a solo (or removed) doctor joins a clinic via access code
+            .addCase(joinClinic.pending, (state) => {
+                state.isLoading = true;
+                state.isError = false;
+                state.message = "";
+            })
+            .addCase(joinClinic.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.myClinic = action.payload.data;
+                toast.success("Clinic join request sent — waiting on approval");
+            })
+            .addCase(joinClinic.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+                toast.error(state.message);
+            })
+
+            // Fetch this clinic's doctor roster (owner-only)
+            .addCase(fetchMyRoster.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(fetchMyRoster.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.roster = action.payload.data;
+            })
+            .addCase(fetchMyRoster.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+            })
+
+            // Approve/reject a doctor's roster membership (owner-only)
+            .addCase(updateRosterMembership.fulfilled, (state, action) => {
+                state.isSuccess = true;
+                state.roster = state.roster.map((doctor) =>
+                    doctor._id === action.payload.data._id ? action.payload.data : doctor
+                );
+                toast.success("Roster membership updated");
+            })
+            .addCase(updateRosterMembership.rejected, (state, action) => {
                 state.isError = true;
                 state.message = action.payload;
                 toast.error(state.message);

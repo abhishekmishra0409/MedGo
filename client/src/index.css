@@ -256,6 +256,10 @@ textarea:disabled,
     background: var(--toast-accent);
 }
 
+.medgo-toast .Toastify__progress-bar--bg {
+    display: none;
+}
+
 .medgo-toast__progress {
     opacity: 0.95;
 }
@@ -487,6 +491,39 @@ textarea:disabled,
 
 .auth-input::placeholder {
     color: #94a3b8;
+}
+
+.auth-input-wrap {
+    position: relative;
+}
+
+.auth-input-wrap > .auth-input {
+    padding-right: 3.1rem;
+}
+
+.auth-input-toggle {
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    width: 2.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.auth-input-toggle:hover,
+.auth-input-toggle:focus-visible {
+    color: var(--color-brand-dark);
+    background: rgba(15, 156, 140, 0.08);
+    outline: none;
 }
 
 .auth-alert {

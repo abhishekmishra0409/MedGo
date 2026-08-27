@@ -10,6 +10,7 @@ import CreateProductPage from "./pages/Products/CreateProducts.jsx";
 import EditProductPage from "./pages/Products/EditProductPage.jsx";
 import OrdersPage from "./pages/Orders/AllOrders.jsx";
 import AllDoctors from "./pages/Doctors/AllDoctors.jsx";
+import AllOwners from "./pages/Owners/AllOwners.jsx";
 import AllClinics from "./pages/Clinics/AllClinics.jsx";
 import AllTests from "./pages/Tests/AllTests.jsx";
 
@@ -37,6 +38,8 @@ function App() {
                             <Route path="orders" element={<OrdersPage />} />
                             {/* Doctors Routes */}
                             <Route path="doctors/all" element={<AllDoctors />} />
+                            {/* Clinic Owners Routes */}
+                            <Route path="owners/all" element={<AllOwners />} />
                             {/* Clinics Routes */}
                             <Route path="clinics/all" element={<AllClinics />} />
                             {/* Lab Tests Routes */}

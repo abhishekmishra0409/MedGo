@@ -11,12 +11,12 @@ const appointmentSchema = new mongoose.Schema({
         ref: 'User',
         required: [true, 'Doctor ID is required']
     },
+    // Optional even for in-person: a solo doctor's in-person appointment has no
+    // clinic. appointmentServices.createAppointment enforces the real rule
+    // (clinic required unless the doctor is solo with a practice address).
     clinic: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Clinic',
-        required: function() {
-            return this.type === 'in-person';
-        }
     },
     date: {
         type: Date,

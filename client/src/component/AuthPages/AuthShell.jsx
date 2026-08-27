@@ -1,20 +1,21 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, HeartPulse, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
+import { ArrowLeft, Building2, HeartPulse, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
 import { authRoleContent, authRoleOptions, normalizeAuthRole } from "./authConfig.js";
 
 const roleIcons = {
     user: UserRound,
     doctor: Stethoscope,
+    "clinic-owner": Building2,
 };
 
 const modeCopy = {
     login: {
         eyebrow: "Secure sign in",
-        support: "Use the same entry point across patient and doctor flows.",
+        support: "One sign-in for every account — you're routed to the right workspace automatically.",
     },
     signup: {
         eyebrow: "Create account",
-        support: "Patient signup is instant. Doctor access is provisioned through the platform team.",
+        support: "Patient signup is instant. Doctor and clinic applications go live once the platform team approves them.",
     },
     forgot: {
         eyebrow: "Password recovery",

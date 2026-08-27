@@ -1,33 +1,21 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LoaderCircle, MailCheck } from "lucide-react";
 import { toast } from "react-toastify";
 import AuthShell from "./AuthShell.jsx";
-import { normalizeAuthRole } from "./authConfig.js";
 import { authService } from "../../features/User/UserService.js";
-import { doctorService } from "../../features/Doctor/DoctorService.js";
 
 const ForgotPassword = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const role = normalizeAuthRole(searchParams.get("role"));
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [resetState, setResetState] = useState(null);
-
-    const handleRoleChange = (nextRole) => {
-        const nextParams = new URLSearchParams(searchParams);
-        nextParams.set("role", normalizeAuthRole(nextRole));
-        setSearchParams(nextParams, { replace: true });
-        setResetState(null);
-    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
 
         try {
-            const service = role === "doctor" ? doctorService : authService;
-            const response = await service.requestPasswordReset(email);
+            const response = await authService.requestPasswordReset(email);
             setResetState(response?.data || null);
             toast.success(response?.data?.message || "Password reset started");
         } catch (error) {
@@ -39,22 +27,21 @@ const ForgotPassword = () => {
 
     return (
         <AuthShell
-            role={role}
+            role="user"
             mode="forgot"
-            onRoleChange={handleRoleChange}
             title="Forgot your password?"
             description="Enter the email address linked to your account and we will generate a secure reset link."
             footer={
                 <div className="flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         Remembered it?{" "}
-                        <Link to={`/login?role=${role}`} className="auth-link font-semibold">
+                        <Link to="/login" className="auth-link font-semibold">
                             Go back to login
                         </Link>
                     </p>
                     <p>
-                        Need a new patient account?{" "}
-                        <Link to="/signup?role=user" className="auth-link font-semibold">
+                        Need an account?{" "}
+                        <Link to="/signup" className="auth-link font-semibold">
                             Sign up
                         </Link>
                     </p>
@@ -68,7 +55,7 @@ const ForgotPassword = () => {
                         type="email"
                         name="email"
                         autoComplete="email"
-                        placeholder={role === "doctor" ? "doctor@medgo.com" : "patient@example.com"}
+                        placeholder="you@example.com"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
                         className="auth-input"

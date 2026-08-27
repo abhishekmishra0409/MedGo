@@ -25,6 +25,8 @@ const DoctorModal = ({
         email: '',
         specialty: '',
         qualification: '',
+        councilRegistrationNumber: '',
+        councilName: '',
         image: '',
         contact: {
             phone: '',
@@ -48,6 +50,8 @@ const DoctorModal = ({
                 email: doctor.email || '',
                 specialty: doctor.specialty || '',
                 qualification: doctor.qualification || '',
+                councilRegistrationNumber: doctor.councilRegistrationNumber || '',
+                councilName: doctor.councilName || '',
                 image: doctor.image || '',
                 contact: {
                     phone: doctor.contact?.phone || '',
@@ -75,6 +79,8 @@ const DoctorModal = ({
                 email: '',
                 specialty: '',
                 qualification: '',
+                councilRegistrationNumber: '',
+                councilName: '',
                 image: '',
                 contact: {
                     phone: '',
@@ -322,6 +328,32 @@ const DoctorModal = ({
                                         onChange={handleChange}
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                         required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Council registration number
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="councilRegistrationNumber"
+                                        value={formData.councilRegistrationNumber}
+                                        onChange={handleChange}
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border uppercase"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Issuing council
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="councilName"
+                                        value={formData.councilName}
+                                        onChange={handleChange}
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm p-2 border"
                                     />
                                 </div>
                             </div>

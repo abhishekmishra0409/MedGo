@@ -1,6 +1,6 @@
 import axios from "axios";
 import { buildApiUrl, getErrorMessage } from "../../utils/api.js";
-import doctorConfig from "../../utils/doctorConfig.js";
+import workspaceConfig from "../../utils/workspaceConfig.js";
 
 const API_URL = buildApiUrl("clinics");
 
@@ -30,7 +30,7 @@ const getClinicByDoctor = async (doctorId) => {
 
 const getMyClinic = async () => {
     try {
-        const response = await axios.get(`${API_URL}/me/workspace`, doctorConfig());
+        const response = await axios.get(`${API_URL}/me/workspace`, workspaceConfig());
         return response.data;
     } catch (error) {
         throw getErrorMessage(error, "Failed to fetch your clinic");
@@ -39,10 +39,37 @@ const getMyClinic = async () => {
 
 const updateMyClinic = async (clinicData) => {
     try {
-        const response = await axios.put(`${API_URL}/me/workspace`, clinicData, doctorConfig());
+        const response = await axios.put(`${API_URL}/me/workspace`, clinicData, workspaceConfig());
         return response.data;
     } catch (error) {
         throw getErrorMessage(error, "Failed to update clinic");
+    }
+};
+
+const joinClinic = async (accessCode) => {
+    try {
+        const response = await axios.post(`${API_URL}/join`, { accessCode }, workspaceConfig());
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to join clinic");
+    }
+};
+
+const getMyRoster = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/me/roster`, workspaceConfig());
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to fetch doctor roster");
+    }
+};
+
+const updateRosterMembership = async ({ doctorId, status, notes }) => {
+    try {
+        const response = await axios.patch(`${API_URL}/me/roster/${doctorId}`, { status, notes }, workspaceConfig());
+        return response.data;
+    } catch (error) {
+        throw getErrorMessage(error, "Failed to update roster membership");
     }
 };
 
@@ -53,6 +80,9 @@ const clinicService = {
     getClinicByDoctor,
     getMyClinic,
     updateMyClinic,
+    joinClinic,
+    getMyRoster,
+    updateRosterMembership,
 };
 
 export default clinicService;

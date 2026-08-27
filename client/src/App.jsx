@@ -14,7 +14,6 @@ import DoctorProfile from "./page/DoctorProfile.jsx";
 import AppointmentForm from "./page/AppointmentForm.jsx";
 import Blogs from "./page/Blogs.jsx";
 import BlogDetail from "./page/BlogDetails.jsx";
-import LoginOption from "./page/LoginOption.jsx";
 import CartPage from "./page/CartPage.jsx";
 import CheckoutPage from "./page/Checkout.jsx";
 import LabTest from "./page/LabTest.jsx";
@@ -47,8 +46,11 @@ import DoctorProfessionalDetails from "./page/Doctors/ProfessionalDetails.jsx";
 import DoctorClinicWorkspace from "./page/Doctors/ClinicWorkspace.jsx";
 import DoctorsBlogs from "./page/Doctors/Blogs.jsx"
 import DoctorLabBookings from "./page/Doctors/DoctorLabBookings.jsx";
+import DoctorRoster from "./page/Clinic/DoctorRoster.jsx";
 import ConversationPage from "./page/Conversation.jsx";
 import SearchResults from "./page/SearchResults.jsx";
+
+import ClinicMainLayout from "./page/Clinic/DashboardModern.jsx";
 
 import { RequireAuth, PreventAuth } from './middleware/AuthMiddleware.jsx';
 import UnauthorizedPage from './page/UnauthorizedPage.jsx';
@@ -173,14 +175,6 @@ function App() {
           />
 
           <Route
-            path="/login-option"
-            element={
-              <PreventAuth>
-                <LoginOption />
-              </PreventAuth>
-            }
-          />
-          <Route
             path="/login"
             element={
               <PreventAuth>
@@ -235,9 +229,22 @@ function App() {
           <Route path="availability" element={<DoctorAvailability />} />
           <Route path="professional-details" element={<DoctorProfessionalDetails />} />
           <Route path="clinic" element={<DoctorClinicWorkspace />} />
+          <Route path="roster" element={<DoctorRoster />} />
           <Route path="blogs" element={<DoctorsBlogs />} />
           <Route path="labtest" element={<DoctorLabBookings />} />
           <Route path="messages" element={<ConversationPage userType="doctor" />} />
+        </Route>
+
+        <Route
+          path="/clinic"
+          element={
+            <RequireAuth allowedRoles={['clinic-owner']}>
+              <ClinicMainLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<DoctorClinicWorkspace />} />
+          <Route path="roster" element={<DoctorRoster />} />
         </Route>
       </Routes>
     </Router>

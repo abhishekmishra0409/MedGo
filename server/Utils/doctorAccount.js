@@ -34,32 +34,43 @@ const buildDoctorAccount = (user = {}) => {
         specializations: profile.specializations || [],
         rating: profile.rating ?? 0,
         reviews: profile.reviews ?? 0,
-        approvalStatus: profile.approvalStatus || "approved",
+        approvalStatus: profile.approvalStatus || "pending",
         approvalNotes: profile.approvalNotes || "",
         clinicRole: profile.clinicRole || null,
         registrationMode: profile.registrationMode || null,
         primaryClinic: profile.primaryClinic || null,
         requestedClinicAccessCode: profile.requestedClinicAccessCode || "",
+        clinicMembershipStatus: profile.clinicMembershipStatus || "none",
+        clinicMembershipNotes: profile.clinicMembershipNotes || "",
+        councilRegistrationNumber: profile.councilRegistrationNumber || "",
+        councilName: profile.councilName || "",
+        practiceAddress: profile.practiceAddress || {},
+        operatingHours: profile.operatingHours || {},
+        consultationSettings: profile.consultationSettings || {},
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };
 };
 
-const buildDoctorSearchQuery = ({ search, specialty, approvalStatus = "approved" } = {}) => {
+// approvalStatus = layer 1 (super admin credential verification).
+// clinicMembershipStatus = layer 2 (clinic owner roster approval), independent
+// of layer 1. Both must pass for the doctor to be publicly visible/bookable;
+// 'none' (solo, no clinic) never blocks visibility.
+const buildDoctorSearchQuery = ({ search, specialty, approvalStatus = "approved", clinicMembershipStatus } = {}) => {
     const query = {
         role: "doctor",
     };
 
     if (approvalStatus && approvalStatus !== "all") {
-        if (approvalStatus === "approved") {
-            query.$or = [
-                { "doctorProfile.approvalStatus": "approved" },
-                { "doctorProfile.approvalStatus": { $exists: false } },
-                { "doctorProfile.approvalStatus": null },
-            ];
-        } else {
-            query["doctorProfile.approvalStatus"] = approvalStatus;
+        query["doctorProfile.approvalStatus"] = approvalStatus;
+
+        if (approvalStatus === "approved" && !clinicMembershipStatus) {
+            query["doctorProfile.clinicMembershipStatus"] = { $in: ["none", "approved"] };
         }
+    }
+
+    if (clinicMembershipStatus && clinicMembershipStatus !== "all") {
+        query["doctorProfile.clinicMembershipStatus"] = clinicMembershipStatus;
     }
 
     if (specialty?.trim()) {

@@ -12,6 +12,7 @@ import {
 import { fetchAllUsers } from "../features/Auth/AuthSlice.js";
 import { getAllOrders } from "../features/Orders/OrderSlice.js";
 import { getAllDoctors } from "../features/Doctors/DoctorSlice.js";
+import { getAllOwners } from "../features/Owners/OwnerSlice.js";
 import { getAllProducts } from "../features/Products/ProductSlice.js";
 import { getClinics } from "../features/Clinics/ClinicSlice.js";
 import { getAllTests } from "../features/Tests/TestSlice.js";
@@ -75,6 +76,7 @@ const Dashboard = () => {
     const { users = [], isLoading: isUsersLoading } = useSelector((state) => state.auth);
     const { orders = [], totalOrders = 0, isLoading: isOrdersLoading } = useSelector((state) => state.order);
     const { doctors = [], isLoading: isDoctorsLoading } = useSelector((state) => state.doctor);
+    const { owners = [], isLoading: isOwnersLoading } = useSelector((state) => state.owner);
     const { products = [], isLoading: isProductsLoading } = useSelector((state) => state.product);
     const { clinics = [], isLoading: isClinicsLoading } = useSelector((state) => state.clinic);
     const { tests = [], isLoading: isTestsLoading } = useSelector((state) => state.test);
@@ -83,6 +85,7 @@ const Dashboard = () => {
         dispatch(fetchAllUsers());
         dispatch(getAllOrders({ page: 1, limit: 5 }));
         dispatch(getAllDoctors());
+        dispatch(getAllOwners());
         dispatch(getAllProducts());
         dispatch(getClinics());
         dispatch(getAllTests());
@@ -92,6 +95,7 @@ const Dashboard = () => {
         isUsersLoading ||
         isOrdersLoading ||
         isDoctorsLoading ||
+        isOwnersLoading ||
         isProductsLoading ||
         isClinicsLoading ||
         isTestsLoading;
@@ -102,12 +106,18 @@ const Dashboard = () => {
     const activeClinics = clinics.filter((clinic) => clinic.isActive !== false).length;
     const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
     const pendingOrders = orders.filter((order) => order.status === "pending").length;
+    // Platform-level (layer 1) approvals still open across both account types
+    // that require them, plus doctors whose clinic (layer 2) hasn't decided yet.
+    const pendingDoctorCount = doctors.filter((doctor) => (doctor.approvalStatus || "pending") === "pending").length;
+    const pendingOwnerCount = owners.filter((owner) => (owner.ownerProfile?.approvalStatus || "pending") === "pending").length;
+    const pendingRosterCount = doctors.filter((doctor) => doctor.clinicMembershipStatus === "pending").length;
+    const pendingApprovalCount = pendingDoctorCount + pendingOwnerCount + pendingRosterCount;
 
     const stats = [
         { title: "Patient Users", value: formatNumber(patientCount), icon: Users, caption: `${formatNumber(users.length)} total accounts` },
         { title: "Total Orders", value: formatNumber(totalOrders), icon: ShoppingCart, caption: `${formatNumber(pendingOrders)} pending in latest batch` },
         { title: "Active Products", value: formatNumber(activeProducts), icon: ClipboardList, caption: `${formatNumber(products.length)} products listed` },
-        { title: "Registered Doctors", value: formatNumber(doctors.length), icon: Stethoscope, caption: `${formatNumber(doctors.filter((doctor) => doctor.approvalStatus === "pending").length)} awaiting approval` },
+        { title: "Registered Doctors", value: formatNumber(doctors.length), icon: Stethoscope, caption: `${formatNumber(pendingApprovalCount)} awaiting approval (doctors + owners)` },
         { title: "Active Clinics", value: formatNumber(activeClinics), icon: Building, caption: `${formatNumber(clinics.length)} clinics listed` },
         { title: "Active Lab Tests", value: formatNumber(activeTests), icon: FlaskConical, caption: `${formatNumber(tests.length)} tests configured` },
     ];

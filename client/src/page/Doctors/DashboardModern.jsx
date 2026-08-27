@@ -1,21 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FiBook, FiBriefcase, FiCalendar, FiClock, FiHome, FiLogOut, FiMenu, FiUser, FiX } from "react-icons/fi";
+import { FiBook, FiBriefcase, FiCalendar, FiClock, FiHome, FiLogOut, FiMenu, FiUser, FiUsers, FiX } from "react-icons/fi";
 import { PiFlask } from "react-icons/pi";
 import { MdOutlineMessage } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutDoctor } from "../../features/Doctor/DoctorSlice.js";
+import { fetchMyClinic } from "../../features/Clinic/ClinicSlice.js";
 import NotificationBell from "../../component/Notifications/NotificationBell.jsx";
 
-const menuItems = [
+const baseMenuItems = [
     { icon: <FiUser className="text-lg" />, label: "Profile", path: "" },
     { icon: <FiBriefcase className="text-lg" />, label: "Professional Details", path: "professional-details" },
     { icon: <FiHome className="text-lg" />, label: "Clinic", path: "clinic" },
-    { icon: <FiBook className="text-lg" />, label: "Blogs", path: "blogs" },
-    { icon: <FiCalendar className="text-lg" />, label: "Appointments", path: "appointments" },
+    // Gated by doctorMiddleware server-side (403 while approvalStatus !== 'approved') —
+    // disabled here rather than left to fail with an error toast.
+    { icon: <FiBook className="text-lg" />, label: "Blogs", path: "blogs", requiresApproval: true },
+    { icon: <FiCalendar className="text-lg" />, label: "Appointments", path: "appointments", requiresApproval: true },
     { icon: <FiClock className="text-lg" />, label: "Availability", path: "availability" },
-    { icon: <PiFlask className="text-lg" />, label: "LabTest", path: "labtest" },
-    { icon: <MdOutlineMessage className="text-lg" />, label: "Messages", path: "messages" },
+    { icon: <PiFlask className="text-lg" />, label: "LabTest", path: "labtest", requiresApproval: true },
+    { icon: <MdOutlineMessage className="text-lg" />, label: "Messages", path: "messages", requiresApproval: true },
     { icon: <FiLogOut className="text-lg" />, label: "Logout", path: "/logout" },
 ];
 
@@ -25,12 +28,32 @@ const DashboardModern = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const { profile } = useSelector((state) => state.doctor);
+    const canManageClinic = useSelector((state) => Boolean(state.clinic.myClinic?.canManage));
+    const isApproved = profile?.approvalStatus === "approved";
 
-    const handleNavigation = (path) => {
+    const menuItems = canManageClinic
+        ? [
+            ...baseMenuItems.slice(0, 3),
+            { icon: <FiUsers className="text-lg" />, label: "Doctor Roster", path: "roster" },
+            ...baseMenuItems.slice(3),
+        ]
+        : baseMenuItems;
+
+    // Fetched eagerly (not just from the Clinic tab) so the Roster menu item
+    // appears immediately for doctor-owners without a detour through Clinic first.
+    useEffect(() => {
+        dispatch(fetchMyClinic());
+    }, [dispatch]);
+
+    const handleNavigation = (path, requiresApproval) => {
         if (path === "/logout") {
             dispatch(logoutDoctor())
                 .unwrap()
-                .then(() => navigate("/login?role=doctor"));
+                .then(() => navigate("/login"));
+            return;
+        }
+
+        if (requiresApproval && !isApproved) {
             return;
         }
 
@@ -94,22 +117,32 @@ const DashboardModern = () => {
 
                     <nav className="flex-1">
                         <ul className="space-y-1.5">
-                            {menuItems.map((item) => (
-                                <li key={item.label}>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleNavigation(item.path)}
-                                        className={`w-full rounded-2xl px-3 py-2.5 text-left transition ${
-                                            isActive(item.path) ? "bg-teal-50 text-teal-800" : "text-slate-700 hover:bg-slate-50"
-                                        }`}
-                                    >
-                                        <span className="flex items-center gap-3">
-                                            {item.icon}
-                                            <span>{item.label}</span>
-                                        </span>
-                                    </button>
-                                </li>
-                            ))}
+                            {menuItems.map((item) => {
+                                const isLocked = item.requiresApproval && !isApproved;
+
+                                return (
+                                    <li key={item.label}>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleNavigation(item.path, item.requiresApproval)}
+                                            disabled={isLocked}
+                                            title={isLocked ? "Unlocks once your account is approved" : undefined}
+                                            className={`w-full rounded-2xl px-3 py-2.5 text-left transition ${
+                                                isLocked
+                                                    ? "cursor-not-allowed text-slate-300"
+                                                    : isActive(item.path)
+                                                        ? "bg-teal-50 text-teal-800"
+                                                        : "text-slate-700 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            <span className="flex items-center gap-3">
+                                                {item.icon}
+                                                <span>{item.label}</span>
+                                            </span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </nav>
                 </div>
@@ -120,6 +153,20 @@ const DashboardModern = () => {
                     <div className="mb-4 flex justify-end">
                         <NotificationBell tokenKey="doctorToken" />
                     </div>
+                    {profile?.approvalStatus === "rejected" ? (
+                        <div className="auth-alert auth-alert--error mb-4">
+                            Your doctor application was rejected{profile.approvalNotes ? `: ${profile.approvalNotes}` : "."} Contact support if you believe this is a mistake.
+                        </div>
+                    ) : profile?.approvalStatus === "pending" ? (
+                        <div className="auth-alert auth-alert--info mb-4">
+                            Your credentials are being verified. You can complete your profile now; appointments, blogs, lab bookings, and messages unlock after approval.
+                        </div>
+                    ) : null}
+                    {profile?.approvalStatus === "approved" && profile?.clinicMembershipStatus === "pending" ? (
+                        <div className="auth-alert auth-alert--info mb-4">
+                            Waiting for your clinic to confirm you on their roster before you appear in patient search.
+                        </div>
+                    ) : null}
                     <Outlet />
                 </div>
             </main>

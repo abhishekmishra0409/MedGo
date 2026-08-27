@@ -98,6 +98,56 @@ class ClinicController {
         }
     }
 
+    static async joinClinic(req, res) {
+        try {
+            const clinic = await ClinicService.joinClinicByAccessCode(req.user, req.body.accessCode);
+            res.status(200).json({
+                success: true,
+                data: clinic,
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
+    static async getMyRoster(req, res) {
+        try {
+            const roster = await ClinicService.getMyRoster(req.user);
+            res.status(200).json({
+                success: true,
+                data: roster,
+            });
+        } catch (error) {
+            res.status(403).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
+    static async updateRosterMembership(req, res) {
+        try {
+            const doctor = await ClinicService.updateRosterMembership(
+                req.user,
+                req.params.doctorId,
+                req.body.status,
+                req.body.notes
+            );
+            res.status(200).json({
+                success: true,
+                data: doctor,
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
     static async addDoctor(req, res) {
         try {
             const clinic = await ClinicService.addDoctorToClinic(
@@ -152,6 +202,24 @@ class ClinicController {
         }
     }
 
+    static async getDoctorAvailableSlots(req, res) {
+        try {
+            const slots = await ClinicService.getDoctorAvailableSlots(
+                req.params.doctorId,
+                req.query.date
+            );
+            res.status(200).json({
+                success: true,
+                data: slots
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
     static async getClinicByDoctor(req, res) {
         try {
             const clinic = await ClinicService.getClinicByDoctorId(req.params.doctorId);
@@ -190,7 +258,7 @@ class ClinicController {
 
     static async getClinicsAdmin(req, res) {
         try {
-            const clinics = await ClinicService.getClinics({ includeInactive: true, includeAccessCode: true });
+            const clinics = await ClinicService.getClinics({ includeInactive: true, includeAccessCode: true, publicOnly: false });
             res.status(200).json({
                 success: true,
                 count: clinics.length,

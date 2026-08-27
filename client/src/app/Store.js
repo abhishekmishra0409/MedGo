@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../features/User/UserSlice.js";
 import doctorReducer from "../features/Doctor/DoctorSlice.js";
+import ownerReducer from "../features/Owner/OwnerSlice.js";
 import productReducer from "../features/Product/ProductSlice.js";
 import blogReducer from "../features/Blog/BlogSlice.js";
 import cartReducer from "../features/Cart/CartSlice.js";
@@ -15,6 +16,7 @@ export const store = configureStore({
     reducer: {
         auth: authReducer,
         doctor: doctorReducer,
+        owner: ownerReducer,
         products: productReducer,
         blogs: blogReducer,
         cart: cartReducer,

@@ -4,6 +4,7 @@ import { Menu, X, Search, ShoppingCart, UserRound, LogOut } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../features/User/UserSlice";
 import { logoutDoctor } from "../features/Doctor/DoctorSlice";
+import { logoutOwner } from "../features/Owner/OwnerSlice";
 import NotificationBell from "./Notifications/NotificationBell.jsx";
 
 const navLinks = [
@@ -19,6 +20,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const { profile: userProfile, isAuthenticated: userAuthenticated } = useSelector((state) => state.auth);
     const { profile: doctorProfile, isAuthenticated: doctorAuthenticated } = useSelector((state) => state.doctor);
+    const { profile: ownerProfile, isAuthenticated: ownerAuthenticated } = useSelector((state) => state.owner);
     const [showDropdown, setShowDropdown] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -32,19 +34,25 @@ const Navbar = () => {
             return { role: "doctor", profile: doctorProfile };
         }
 
+        if (ownerAuthenticated && ownerProfile) {
+            return { role: "clinic-owner", profile: ownerProfile };
+        }
+
         return null;
-    }, [doctorAuthenticated, doctorProfile, userAuthenticated, userProfile]);
+    }, [doctorAuthenticated, doctorProfile, userAuthenticated, userProfile, ownerAuthenticated, ownerProfile]);
 
     const handleLogout = () => {
         if (session?.role === "user") {
             dispatch(logoutUser());
         } else if (session?.role === "doctor") {
             dispatch(logoutDoctor());
+        } else if (session?.role === "clinic-owner") {
+            dispatch(logoutOwner());
         }
 
         setShowDropdown(false);
         setMenuOpen(false);
-        navigate(`/login?role=${session?.role || "user"}`);
+        navigate("/login");
     };
 
     const handleSearchSubmit = (event) => {
@@ -63,13 +71,18 @@ const Navbar = () => {
                   { to: "/doctor/blogs", label: "Blogs" },
                   { to: "/doctor/labtest", label: "Lab bookings" },
               ]
+            : session?.role === "clinic-owner"
+            ? [
+                  { to: "/clinic", label: "Clinic" },
+                  { to: "/clinic/roster", label: "Doctor Roster" },
+              ]
             : [
                   { to: "/user", label: "Profile" },
                   { to: "/user/orders", label: "Orders" },
                   { to: "/user/appointments", label: "Appointments" },
                   { to: "/user/labtest", label: "Lab bookings" },
               ];
-    const notificationTokenKey = session?.role === "doctor" ? "doctorToken" : "userToken";
+    const notificationTokenKey = session?.role === "doctor" ? "doctorToken" : session?.role === "clinic-owner" ? "ownerToken" : "userToken";
 
     return (
         <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
@@ -125,7 +138,7 @@ const Navbar = () => {
                                     </div>
                                     <div className="text-left">
                                         <p className="text-sm font-semibold text-slate-900">{session.profile?.username || session.profile?.name || "My account"}</p>
-                                        <p className="text-xs text-slate-500">{session.role === "doctor" ? "Doctor dashboard" : "Patient account"}</p>
+                                        <p className="text-xs text-slate-500">{session.role === "doctor" ? "Doctor dashboard" : session.role === "clinic-owner" ? "Clinic workspace" : "Patient account"}</p>
                                     </div>
                                 </button>
 

@@ -58,6 +58,13 @@ export const routes = [
                 icon: Stethoscope,
                 component: "Doctors",
             },
+            // Clinic Owners
+            {
+                path: "owners/all",
+                name: "Clinic Owners",
+                icon: Hospital,
+                component: "Owners",
+            },
             // Clinics
             {
                 path: "clinics/all",

@@ -118,7 +118,7 @@ const CheckoutPage = () => {
 
     useEffect(() => {
         if (!isAuthenticated) {
-            navigate("/login?role=user");
+            navigate("/login");
         }
     }, [isAuthenticated, navigate]);
 

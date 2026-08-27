@@ -50,8 +50,8 @@ const clinicSchema = new mongoose.Schema({
     facilities: [String],
     operatingHours: {
         weekdays: {
-            open: { type: String, required: true },
-            close: { type: String, required: true }
+            open: { type: String, default: '09:00' },
+            close: { type: String, default: '18:00' }
         },
         weekends: {
             open: String,

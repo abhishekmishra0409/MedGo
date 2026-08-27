@@ -8,9 +8,13 @@ const adminMiddleware = require('../Middlewares/adminMiddleware');
 router.get('/', ClinicController.getClinics);
 router.get('/me/workspace', authMiddleware, ClinicController.getMyClinic);
 router.put('/me/workspace', authMiddleware, ClinicController.updateMyClinic);
+router.post('/join', authMiddleware, ClinicController.joinClinic);
+router.get('/me/roster', authMiddleware, ClinicController.getMyRoster);
+router.patch('/me/roster/:doctorId', authMiddleware, ClinicController.updateRosterMembership);
 router.get('/doctor/:doctorId', ClinicController.getClinicByDoctor);
 router.get('/all-by-doctor/:doctorId', ClinicController.getClinicsByDoctor);
 router.get('/:clinicId/slots', ClinicController.getAvailableSlots);
+router.get('/doctor/:doctorId/slots', ClinicController.getDoctorAvailableSlots);
 
 // ─── Protected Admin Routes ─────────────────────────────────────────────────────
 router.get('/admin/all', authMiddleware, adminMiddleware, ClinicController.getClinicsAdmin);

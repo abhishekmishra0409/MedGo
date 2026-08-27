@@ -178,15 +178,24 @@ class AppointmentService {
             throw new Error('Selected time slot is not available');
         }
 
-        // For in-person appointments, verify clinic
+        // For in-person appointments: a solo doctor (no primaryClinic) is
+        // verified against their own practiceAddress instead of a clinic.
         if (appointmentData.type === 'in-person') {
-            if (!appointmentData.clinic) {
-                throw new Error('Clinic is required for in-person appointments');
-            }
+            const isSolo = !doctor.doctorProfile?.primaryClinic;
 
-            const clinic = await Clinic.findById(appointmentData.clinic);
-            if (!clinic || !clinic.doctors.some((doctorId) => String(doctorId) === String(canonicalDoctorId))) {
-                throw new Error('Doctor is not available at this clinic');
+            if (isSolo) {
+                if (!doctor.doctorProfile?.practiceAddress?.city) {
+                    throw new Error('This doctor has not set up in-person consultations yet');
+                }
+            } else {
+                if (!appointmentData.clinic) {
+                    throw new Error('Clinic is required for in-person appointments');
+                }
+
+                const clinic = await Clinic.findById(appointmentData.clinic);
+                if (!clinic || !clinic.doctors.some((doctorId) => String(doctorId) === String(canonicalDoctorId))) {
+                    throw new Error('Doctor is not available at this clinic');
+                }
             }
         }
 

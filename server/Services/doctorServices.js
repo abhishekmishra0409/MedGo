@@ -23,6 +23,8 @@ const buildDoctorProfileFromPayload = (payload = {}, existingProfile = {}) => ({
     ...existingProfile,
     specialty: payload.specialty?.trim() ?? existingProfile.specialty ?? '',
     qualification: payload.qualification?.trim() ?? existingProfile.qualification ?? '',
+    councilRegistrationNumber: payload.councilRegistrationNumber?.trim().toUpperCase() ?? existingProfile.councilRegistrationNumber ?? '',
+    councilName: payload.councilName?.trim() ?? existingProfile.councilName ?? '',
     image: payload.image?.trim() ?? payload.avatar?.trim() ?? existingProfile.image ?? '',
     contactEmail: payload.contact?.email?.toLowerCase().trim() ?? existingProfile.contactEmail ?? payload.email?.toLowerCase().trim() ?? '',
     address: payload.contact?.address?.trim() ?? existingProfile.address ?? '',
@@ -49,7 +51,11 @@ const getAllDoctors = async (filters = {}) => {
 };
 
 const getAllDoctorsAdmin = async (filters = {}) => {
-    const doctors = await User.find(buildDoctorSearchQuery({ ...filters, approvalStatus: filters.approvalStatus || 'all' }))
+    const doctors = await User.find(buildDoctorSearchQuery({
+        ...filters,
+        approvalStatus: filters.approvalStatus || 'all',
+        clinicMembershipStatus: filters.clinicMembershipStatus || 'all',
+    }))
         .select('-password -__v')
         .sort({ createdAt: -1 })
         .lean();
@@ -109,10 +115,13 @@ const createDoctor = async (doctorData) => {
         avatar: doctorData.image?.trim() || doctorData.avatar?.trim() || '',
         doctorProfile: {
             ...buildDoctorProfileFromPayload(doctorData),
+            // Admin creating an account directly *is* the approval.
             approvalStatus: doctorData.approvalStatus || 'approved',
             clinicRole: doctorData.clinicRole || null,
             registrationMode: doctorData.registrationMode || null,
             requestedClinicAccessCode: doctorData.requestedClinicAccessCode || '',
+            // Admin-created doctors should be listable without a roster round-trip.
+            clinicMembershipStatus: doctorData.clinicMembershipStatus || 'none',
         },
     });
 
@@ -153,43 +162,64 @@ const updateDoctor = async (id, updatedData) => {
     return buildDoctorAccount(doctor.toObject());
 };
 
-const updateDoctorApproval = async (id, approvalStatus, approvalNotes = '') => {
-    const doctor = await User.findOne({ _id: id, role: 'doctor' });
+// Role-aware: covers both 'doctor' (doctorProfile.approvalStatus) and
+// 'clinic-owner' (ownerProfile.approvalStatus) — the platform-level (layer 1)
+// approval. Clinic roster membership (layer 2) is a separate gate owned by
+// clinicService.updateRosterMembership and is never touched here except to
+// avoid silently bypassing it (see joinsRoster below).
+const updateAccountApproval = async (id, approvalStatus, approvalNotes = '') => {
+    const account = await User.findOne({ _id: id, role: { $in: ['doctor', 'clinic-owner'] } });
 
-    if (!doctor) {
-        throw new Error('Doctor not found');
+    if (!account) {
+        throw new Error('Account not found');
     }
 
     if (!['pending', 'approved', 'rejected'].includes(approvalStatus)) {
         throw new Error('Invalid approval status');
     }
 
-    doctor.doctorProfile = {
-        ...(doctor.doctorProfile?.toObject?.() || doctor.doctorProfile || {}),
-        approvalStatus,
-        approvalNotes: approvalNotes?.trim() || '',
-    };
+    const notes = approvalNotes?.trim() || '';
 
-    if (approvalStatus === 'approved' && doctor.doctorProfile?.primaryClinic) {
-        await Clinic.findByIdAndUpdate(
-            doctor.doctorProfile.primaryClinic,
-            {
+    if (account.role === 'clinic-owner') {
+        account.ownerProfile = {
+            ...(account.ownerProfile?.toObject?.() || account.ownerProfile || {}),
+            approvalStatus,
+            approvalNotes: notes,
+        };
+
+        const clinic = await Clinic.findOne({ owner: account._id });
+        if (clinic) {
+            await Clinic.findByIdAndUpdate(clinic._id, { isActive: approvalStatus === 'approved' });
+        }
+    } else {
+        const profile = account.doctorProfile?.toObject?.() || account.doctorProfile || {};
+        account.doctorProfile = { ...profile, approvalStatus, approvalNotes: notes };
+
+        // A doctor who owns their clinic, or whose clinicMembershipStatus is
+        // already 'approved' by the clinic owner, joins the roster on platform
+        // approval. A member still awaiting the owner's roster decision does not
+        // — approving layer 1 must never silently bypass layer 2.
+        const joinsRoster = profile.clinicRole === 'owner' || profile.clinicMembershipStatus === 'approved';
+
+        if (approvalStatus === 'approved' && joinsRoster && profile.primaryClinic) {
+            await Clinic.findByIdAndUpdate(profile.primaryClinic, {
                 $set: {
                     isActive: true,
-                    ...(doctor.doctorProfile.clinicRole === 'owner' ? { owner: doctor._id } : {}),
+                    ...(profile.clinicRole === 'owner' ? { owner: account._id } : {}),
                 },
-                $addToSet: { doctors: doctor._id },
-            },
-            { new: true }
-        );
+                $addToSet: { doctors: account._id },
+            });
+        }
+
+        // Deactivation only follows the owner losing platform approval — never
+        // a plain member, whose clinic isn't theirs to take down.
+        if (approvalStatus !== 'approved' && profile.clinicRole === 'owner' && profile.primaryClinic) {
+            await Clinic.findByIdAndUpdate(profile.primaryClinic, { isActive: false });
+        }
     }
 
-    if (approvalStatus !== 'approved' && doctor.doctorProfile?.clinicRole === 'owner' && doctor.doctorProfile?.primaryClinic) {
-        await Clinic.findByIdAndUpdate(doctor.doctorProfile.primaryClinic, { isActive: false });
-    }
-
-    await doctor.save();
-    return buildDoctorAccount(doctor.toObject());
+    await account.save();
+    return account.role === 'clinic-owner' ? account.toObject() : buildDoctorAccount(account.toObject());
 };
 
 const deleteDoctor = async (id) => {
@@ -217,5 +247,5 @@ module.exports = {
     getAllDoctorsAdmin,
     getDoctorById,
     updateDoctor,
-    updateDoctorApproval,
+    updateAccountApproval,
 };

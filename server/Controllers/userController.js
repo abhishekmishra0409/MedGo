@@ -52,7 +52,6 @@ class UserController {
             const doctors = await doctorService.getAllDoctors({
                 search: req.query.search,
                 specialty: req.query.specialty || req.query.speciality,
-                approvalStatus: req.query.approvalStatus || 'approved',
             });
 
             res.status(200).json({
@@ -134,34 +133,53 @@ class UserController {
         }
     }
 
-    static async updateDoctorApprovalAdmin(req, res) {
+    static async updateAccountApprovalAdmin(req, res) {
         try {
-            const doctor = await doctorService.updateDoctorApproval(
+            const account = await doctorService.updateAccountApproval(
                 req.params.id,
                 req.body.approvalStatus,
                 req.body.approvalNotes
             );
 
+            const isOwner = account.role === 'clinic-owner';
+            const approvalStatus = isOwner ? account.ownerProfile?.approvalStatus : account.approvalStatus;
+
             await NotificationService.safeCreate({
-                recipient: doctor._id,
-                recipientRole: 'doctor',
-                type: 'doctor.approval',
-                title: 'Doctor application updated',
-                message: `Your doctor application is ${doctor.approvalStatus}.`,
-                entityType: 'doctor',
-                entityId: doctor._id,
+                recipient: account._id,
+                recipientRole: isOwner ? 'clinic-owner' : 'doctor',
+                type: isOwner ? 'owner.approval' : 'doctor.approval',
+                title: isOwner ? 'Clinic application updated' : 'Doctor application updated',
+                message: `Your ${isOwner ? 'clinic' : 'doctor'} application is ${approvalStatus}.`,
+                entityType: isOwner ? 'clinic-owner' : 'doctor',
+                entityId: account._id,
                 metadata: {
-                    approvalStatus: doctor.approvalStatus,
+                    approvalStatus,
                     approvalNotes: req.body.approvalNotes || '',
                 },
             });
 
             res.status(200).json({
                 success: true,
-                data: doctor,
+                data: account,
             });
         } catch (error) {
             res.status(400).json({
+                success: false,
+                error: error.message,
+            });
+        }
+    }
+
+    static async getAllOwnersAdmin(req, res) {
+        try {
+            const owners = await UserService.getAllUsers({ role: 'clinic-owner' });
+            res.status(200).json({
+                success: true,
+                count: owners.length,
+                data: owners,
+            });
+        } catch (error) {
+            res.status(500).json({
                 success: false,
                 error: error.message,
             });
@@ -322,7 +340,7 @@ class UserController {
     // Delete user account
     static async deleteUser(req, res) {
         try {
-            const result = await UserService.deleteUser(req.params.id);
+            const result = await UserService.deleteUser(req.user.id);
             res.status(200).json({
                 success: true,
                 data: result

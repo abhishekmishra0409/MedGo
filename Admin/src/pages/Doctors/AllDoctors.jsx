@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BookOpen, CalendarDays, Clock, Edit3, GraduationCap, Mail, MapPin, Phone, Plus, Stethoscope, Trash2, UserRound } from "lucide-react";
+import { BadgeCheck, BookOpen, CalendarDays, Clock, Edit3, GraduationCap, Mail, MapPin, Phone, Plus, Stethoscope, Trash2, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import { EmptyState, PageHeader, SearchInput, SegmentedControl, StatusPill } from "../../components/AdminUI.jsx";
 import { createDoctor, deleteDoctor, getAllDoctors, resetDoctorState, updateDoctor, updateDoctorApproval } from "../../features/Doctors/DoctorSlice.js";
@@ -16,6 +16,20 @@ const statusTone = (status) => {
     if (status === "approved") return "emerald";
     if (status === "rejected") return "rose";
     return "amber";
+};
+
+const membershipTone = (status) => {
+    if (status === "approved") return "emerald";
+    if (status === "rejected") return "rose";
+    if (status === "pending") return "amber";
+    return "slate";
+};
+
+const registrationModeLabel = (mode) => {
+    if (mode === "join-clinic") return "Join clinic";
+    if (mode === "create-clinic") return "Own clinic";
+    if (mode === "solo") return "Solo practice";
+    return null;
 };
 
 const formatDate = (dateString) => {
@@ -47,7 +61,7 @@ const DoctorsPage = () => {
     const filteredDoctors = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
         return doctors.filter((doctor) => {
-            const status = doctor.approvalStatus || "approved";
+            const status = doctor.approvalStatus || "pending";
             const matchesStatus = statusFilter === "all" || status === statusFilter;
             const matchesSearch =
                 !query ||
@@ -124,7 +138,9 @@ const DoctorsPage = () => {
                 ) : filteredDoctors.length ? (
                     <div className="mt-5 space-y-4">
                         {filteredDoctors.map((doctor) => {
-                            const status = doctor.approvalStatus || "approved";
+                            const status = doctor.approvalStatus || "pending";
+                            const membershipStatus = doctor.clinicMembershipStatus || "none";
+                            const modeLabel = registrationModeLabel(doctor.registrationMode);
                             const expanded = expandedDoctor === doctor._id;
 
                             return (
@@ -143,6 +159,8 @@ const DoctorsPage = () => {
                                                     <h2 className="text-xl font-bold text-slate-950">{doctor.name || "Unnamed doctor"}</h2>
                                                     <StatusPill tone="teal">{doctor.specialty || "Specialty N/A"}</StatusPill>
                                                     <StatusPill tone={statusTone(status)}>{status}</StatusPill>
+                                                    <StatusPill tone={membershipTone(membershipStatus)}>roster: {membershipStatus}</StatusPill>
+                                                    {modeLabel ? <StatusPill tone="slate">{modeLabel}</StatusPill> : null}
                                                 </div>
                                                 <p className="mt-1 text-sm text-slate-500">{doctor.qualification || "Qualification not provided"}</p>
                                                 <div className="mt-3 flex flex-wrap gap-2">
@@ -151,6 +169,7 @@ const DoctorsPage = () => {
                                                     ))}
                                                 </div>
                                                 <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                                                    <p className="flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-teal-700" />{doctor.councilRegistrationNumber ? `${doctor.councilRegistrationNumber} — ${doctor.councilName || "council not specified"}` : "No council registration on file"}</p>
                                                     <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-teal-700" />{doctor.contact?.phone || "Phone unavailable"}</p>
                                                     <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-teal-700" />{doctor.contact?.email || "Email unavailable"}</p>
                                                     <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-teal-700" />{doctor.contact?.address || "Address unavailable"}</p>
