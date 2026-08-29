@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../Models/OrderModel');
 const Cart = require('../Models/CartModel');
 const Product = require('../Models/ProductModel');
@@ -129,18 +130,33 @@ class OrderService {
     static async getUserOrders(userId, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
 
-        const [orders, total] = await Promise.all([
+        // The summary has to span every order, not the current page — the client
+        // renders lifetime "total spent" from it.
+        const [orders, total, grouped] = await Promise.all([
             Order.find({ user: userId })
                 .populate('items.product')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
-            Order.countDocuments({ user: userId })
+            Order.countDocuments({ user: userId }),
+            Order.aggregate([
+                { $match: { user: new mongoose.Types.ObjectId(String(userId)) } },
+                { $group: { _id: '$status', count: { $sum: 1 }, spend: { $sum: '$total' } } }
+            ])
         ]);
+
+        const summary = grouped.reduce((acc, row) => {
+            const status = String(row._id || '').toLowerCase();
+            acc.spend += row.spend || 0;
+            if (status === 'delivered') acc.delivered += row.count;
+            else if (status !== 'cancelled') acc.active += row.count;
+            return acc;
+        }, { active: 0, delivered: 0, spend: 0 });
 
         return {
             orders,
             total,
+            summary: { ...summary, total },
             pages: Math.ceil(total / limit),
             currentPage: page
         };

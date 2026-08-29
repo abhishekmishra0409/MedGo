@@ -121,28 +121,31 @@ const buildTimeline = (currentStatus) => {
 
 const Orders = () => {
     const dispatch = useDispatch();
-    const { orders, order, isLoading } = useSelector((state) => state.order);
+    const { orders, order, isLoading, pagination, summary } = useSelector((state) => state.order);
     const [activeFilter, setActiveFilter] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [page, setPage] = useState(1);
 
     const orderList = useMemo(() => (Array.isArray(orders) ? orders : []), [orders]);
 
     useEffect(() => {
-        dispatch(getMyOrders());
-    }, [dispatch]);
+        dispatch(getMyOrders({ page }));
+    }, [dispatch, page]);
 
+    // Lifetime figures come from the server aggregate — computing them from
+    // orderList would only ever describe the page currently loaded.
     const stats = useMemo(() => {
-        const activeOrders = orderList.filter((item) => !["delivered", "cancelled"].includes(normalizeStatus(item.status))).length;
-        const delivered = orderList.filter((item) => normalizeStatus(item.status) === "delivered").length;
-        const totalSpend = orderList.reduce((sum, item) => sum + Number(item.total || 0), 0);
+        if (summary) {
+            return {
+                total: summary.total || 0,
+                active: summary.active || 0,
+                delivered: summary.delivered || 0,
+                spend: formatMoney(summary.spend || 0),
+            };
+        }
 
-        return {
-            total: orderList.length,
-            active: activeOrders,
-            delivered,
-            spend: formatMoney(totalSpend),
-        };
-    }, [orderList]);
+        return { total: 0, active: 0, delivered: 0, spend: formatMoney(0) };
+    }, [summary]);
 
     const filteredOrders = useMemo(() => {
         if (activeFilter === "active") {
@@ -203,7 +206,7 @@ const Orders = () => {
                         ))}
                     </div>
                     <p className="text-sm text-slate-500">
-                        {filteredOrders.length} order{filteredOrders.length === 1 ? "" : "s"} shown
+                        {filteredOrders.length} of {orderList.length} shown on this page
                     </p>
                 </div>
 
@@ -267,6 +270,30 @@ const Orders = () => {
                         <EmptyState activeFilter={activeFilter} />
                     </div>
                 )}
+
+                {pagination?.pages > 1 ? (
+                    <nav aria-label="Order pages" className="mt-6 flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setPage((current) => Math.max(1, current - 1))}
+                            disabled={page <= 1 || isLoading}
+                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Previous
+                        </button>
+                        <p className="text-sm text-slate-500" aria-live="polite">
+                            Page {pagination.currentPage} of {pagination.pages}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setPage((current) => Math.min(pagination.pages, current + 1))}
+                            disabled={page >= pagination.pages || isLoading}
+                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Next
+                        </button>
+                    </nav>
+                ) : null}
             </section>
 
             {isModalOpen ? (

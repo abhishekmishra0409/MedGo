@@ -93,7 +93,7 @@ const EmptyPanel = ({ title, description, action }) => (
 const ConversationPage = ({ userType }) => {
     const dispatch = useDispatch();
     const messagesEndRef = useRef(null);
-    const { conversations, messages, isLoading } = useSelector((state) => state.messages);
+    const { conversations, messages, isLoading, messagePagination } = useSelector((state) => state.messages);
     const { myAppointments, doctorAppointments } = useSelector((state) => state.appointment);
 
     const [activeConversation, setActiveConversation] = useState(null);
@@ -127,9 +127,12 @@ const ConversationPage = ({ userType }) => {
         };
     }, [dispatch, userType]);
 
+    // Keyed on the newest message, not the array: loading older history
+    // prepends entries and must NOT yank the reader back to the bottom.
+    const latestMessageId = messages[messages.length - 1]?._id;
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    }, [latestMessageId]);
 
     const reloadConversations = () => (
         userType === "user" ? dispatch(getUserConversations()) : dispatch(getDoctorConversations())
@@ -150,6 +153,13 @@ const ConversationPage = ({ userType }) => {
             dispatch(getDoctorMessages(conversation._id));
             dispatch(markDoctorMessagesRead(conversation._id));
         }
+    };
+
+    const loadOlderMessages = () => {
+        if (!activeConversation || !messagePagination?.hasMore || isLoading) return;
+
+        const args = { conversationId: activeConversation, page: (messagePagination.page || 1) + 1 };
+        dispatch(userType === "user" ? getUserMessages(args) : getDoctorMessages(args));
     };
 
     const handleSendMessage = async (event) => {
@@ -352,6 +362,18 @@ const ConversationPage = ({ userType }) => {
                                                 </div>
                                             ) : messages.length ? (
                                                 <div className="space-y-4">
+                                                    {messagePagination?.hasMore ? (
+                                                        <div className="flex justify-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={loadOlderMessages}
+                                                                disabled={isLoading}
+                                                                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-teal-200 hover:text-teal-700 disabled:opacity-50"
+                                                            >
+                                                                {isLoading ? "Loading..." : "Load older messages"}
+                                                            </button>
+                                                        </div>
+                                                    ) : null}
                                                     {messages.map((message) => {
                                                         const own = isOwnMessage(message, userType);
                                                         return (

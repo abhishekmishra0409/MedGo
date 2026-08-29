@@ -90,7 +90,8 @@ exports.updateAppointmentStatus = async (req, res) => {
 exports.cancelAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const appointment = await AppointmentService.updateAppointmentStatus(id, 'cancelled', undefined, null, req.user);
+        const { notes } = req.body || {};
+        const appointment = await AppointmentService.updateAppointmentStatus(id, 'cancelled', notes, null, req.user);
 
         res.status(200).json({
             success: true,

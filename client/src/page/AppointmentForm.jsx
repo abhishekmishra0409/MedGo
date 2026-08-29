@@ -8,7 +8,9 @@ import { checkAvailability, bookAppointment, resetAppointmentState } from "../fe
 import appointmentService from "../features/Appointment/AppointmentService.js";
 import { toast } from "react-toastify";
 
-const SLOT_DURATION_MINUTES = 30;
+// Fallback only — each doctor sets their own consultation length on the
+// availability page (doctorProfile.consultationSettings.slotDuration).
+const DEFAULT_SLOT_DURATION_MINUTES = 30;
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 const parseTimeToMinutes = (value = "") => {
@@ -185,6 +187,10 @@ const AppointmentForm = () => {
         setSelectedWorkingHourKey(matchingOption?.key || workingHourOptions[0].key);
     }, [workingHourOptions, formData.date]);
 
+    const slotDuration = Number(doctor?.consultationSettings?.slotDuration) > 0
+        ? Number(doctor.consultationSettings.slotDuration)
+        : DEFAULT_SLOT_DURATION_MINUTES;
+
     const buildTimeSlots = useCallback(() => {
         const selectedSchedule = workingHourOptions.find((option) => option.key === selectedWorkingHourKey);
         if (!selectedSchedule?.hours) {
@@ -199,9 +205,9 @@ const AppointmentForm = () => {
         const slots = [];
         let cursor = parsedRange.start;
 
-        while (cursor + SLOT_DURATION_MINUTES <= parsedRange.end) {
+        while (cursor + slotDuration <= parsedRange.end) {
             const slotStart = cursor;
-            const slotEnd = cursor + SLOT_DURATION_MINUTES;
+            const slotEnd = cursor + slotDuration;
 
             slots.push({
                 start: formatMinutes24(slotStart),
@@ -213,7 +219,7 @@ const AppointmentForm = () => {
         }
 
         return slots;
-    }, [selectedWorkingHourKey, workingHourOptions]);
+    }, [selectedWorkingHourKey, workingHourOptions, slotDuration]);
 
     useEffect(() => {
         setFormData((prev) => ({ ...prev, timeSlot: { start: "", end: "" } }));
@@ -420,7 +426,7 @@ const AppointmentForm = () => {
                                     <p className="text-gray-600 mb-1">{formatOperatingHours(primaryClinic)}</p>
                                     <div className="mt-2">
                                         <span className="text-sm font-medium">Slot duration:</span>
-                                        <span className="text-sm text-gray-600 ml-2">{SLOT_DURATION_MINUTES} minutes</span>
+                                        <span className="text-sm text-gray-600 ml-2">{slotDuration} minutes</span>
                                     </div>
                                 </div>
                             )}

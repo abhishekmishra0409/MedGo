@@ -19,6 +19,25 @@ const sanitizeWorkingHours = (value) =>
             .filter((slot) => slot.days || slot.hours)
         : [];
 
+// slotDuration is enum-constrained in the schema, so snap to a legal value
+// rather than letting an odd number fail validation on save.
+const ALLOWED_SLOT_DURATIONS = [10, 15, 20, 30, 45, 60];
+
+const sanitizeConsultationSettings = (payload = {}, existing = {}) => {
+    const requested = Number(payload.slotDuration);
+    const current = Number(existing.slotDuration);
+    const slotDuration = ALLOWED_SLOT_DURATIONS.includes(requested)
+        ? requested
+        : (ALLOWED_SLOT_DURATIONS.includes(current) ? current : 30);
+
+    const maxRequested = Number(payload.maxDailyAppointments);
+    const maxDailyAppointments = Number.isFinite(maxRequested) && maxRequested > 0
+        ? Math.min(200, Math.round(maxRequested))
+        : (Number(existing.maxDailyAppointments) || 20);
+
+    return { slotDuration, maxDailyAppointments };
+};
+
 const buildDoctorProfileFromPayload = (payload = {}, existingProfile = {}) => ({
     ...existingProfile,
     specialty: payload.specialty?.trim() ?? existingProfile.specialty ?? '',
@@ -29,6 +48,10 @@ const buildDoctorProfileFromPayload = (payload = {}, existingProfile = {}) => ({
     contactEmail: payload.contact?.email?.toLowerCase().trim() ?? existingProfile.contactEmail ?? payload.email?.toLowerCase().trim() ?? '',
     address: payload.contact?.address?.trim() ?? existingProfile.address ?? '',
     workingHours: payload.workingHours ? sanitizeWorkingHours(payload.workingHours) : existingProfile.workingHours || [],
+    consultationSettings: sanitizeConsultationSettings(
+        payload.consultationSettings,
+        existingProfile.consultationSettings || {}
+    ),
     education: payload.education ? normalizeStringArray(payload.education) : existingProfile.education || [],
     biography: payload.biography ? normalizeStringArray(payload.biography) : existingProfile.biography || [],
     specializations: payload.specializations ? normalizeStringArray(payload.specializations) : existingProfile.specializations || [],

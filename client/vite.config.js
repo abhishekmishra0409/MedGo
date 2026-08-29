@@ -24,10 +24,12 @@ export default defineConfig({
 
       // Manifest configuration
       manifest: {
-        name: 'DawaiLink',
-        short_name: 'DawaiLink',
-        description: 'A Healthcare ecosystem application',
-        theme_color: '#ffffff',
+        name: 'MedGo',
+        short_name: 'MedGo',
+        description: 'Clinical care, pharmacy and diagnostics',
+        // Matches --color-brand in index.css — this paints the installed
+        // app's title bar, so it has to track the brand, not stay white.
+        theme_color: '#0f9c8c',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',

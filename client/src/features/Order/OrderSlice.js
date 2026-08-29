@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 const initialState = {
     orders: [],
     order: null,
+    pagination: null,
+    summary: null,
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -31,9 +33,9 @@ export const getOrderById = createAsyncThunk("order/getOrder", async (orderId, t
 });
 
 // Get User's Orders
-export const getMyOrders = createAsyncThunk("order/getMyOrders", async (_, thunkAPI) => {
+export const getMyOrders = createAsyncThunk("order/getMyOrders", async (params, thunkAPI) => {
     try {
-        return await orderService.getMyOrders();
+        return await orderService.getMyOrders(params);
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch orders");
     }
@@ -93,6 +95,8 @@ const orderSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.orders = Array.isArray(action.payload?.data) ? action.payload.data : [];
+                state.pagination = action.payload?.pagination || null;
+                state.summary = action.payload?.summary || null;
             })
             .addCase(getMyOrders.rejected, (state, action) => {
                 state.isLoading = false;

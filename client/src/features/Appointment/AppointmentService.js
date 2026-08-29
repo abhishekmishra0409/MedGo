@@ -29,8 +29,10 @@ const updateAppointmentStatus = async ({ appointmentId, status, notes, paymentSt
     return response.data;
 };
 
-const cancelAppointment = async ({ appointmentId, notes }) => {
-    const response = await axios.patch(`${API_URL}/${appointmentId}/cancel`, { notes }, doctorConfig());
+// Either party can cancel, so the caller says which token to use.
+const cancelAppointment = async ({ appointmentId, notes, as = "doctor" }) => {
+    const config = as === "user" ? userConfig() : doctorConfig();
+    const response = await axios.patch(`${API_URL}/${appointmentId}/cancel`, { notes }, config);
     return response.data;
 };
 

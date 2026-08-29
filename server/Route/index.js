@@ -17,20 +17,30 @@ const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
 
-// Rate limiting for API endpoints
+// Rate limiting for API endpoints.
+// 100/15min was low enough that ordinary use tripped it: one dashboard view
+// fires ~9 requests, React StrictMode double-invokes every effect in dev, and
+// the whole API then 429s — which reads as "lab tests and appointments are
+// broken" rather than as a rate limit.
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later'
+    windowMs: 15 * 60 * 1000,
+    max: Number(process.env.RATE_LIMIT_MAX) || 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    // A bare string body gives axios nothing to read, so the client shows
+    // "Request failed with status code 429" instead of the reason.
+    message: { success: false, error: 'Too many requests from this IP, please try again later' },
+    // Dev reloads and StrictMode make the limit meaningless locally.
+    skip: () => process.env.NODE_ENV !== 'production',
 });
 
-// Apply rate limiting to all routes
-router.use(apiLimiter);
-
-// Health check endpoint
+// Health check endpoint — must answer even when the limiter is engaged.
 router.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
+
+// Apply rate limiting to all routes below the health check
+router.use(apiLimiter);
 
 // API versioning and routes
 router.use('/users', userRoutes);

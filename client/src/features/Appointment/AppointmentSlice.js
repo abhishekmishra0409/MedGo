@@ -3,6 +3,17 @@ import appointmentService from "./AppointmentService.js";
 import { toast } from "react-toastify";
 
 // Initial state
+// Every status mutation returns the updated appointment; patch it into both
+// lists so an open patient page reflects a doctor's change without a reload.
+const applyUpdated = (state, action) => {
+    const updated = action.payload?.data;
+    if (!updated?._id) return;
+
+    const patch = (list) => list.map((item) => (item._id === updated._id ? { ...item, ...updated } : item));
+    state.myAppointments = patch(state.myAppointments);
+    state.doctorAppointments = patch(state.doctorAppointments);
+};
+
 const initialState = {
     appointments: [],
     myAppointments: [],
@@ -51,9 +62,9 @@ export const updateAppointmentStatus = createAsyncThunk("appointment/updateStatu
 });
 
 // Cancel Appointment (With Notes)
-export const cancelAppointment = createAsyncThunk("appointment/cancel", async ({ appointmentId, notes }, thunkAPI) => {
+export const cancelAppointment = createAsyncThunk("appointment/cancel", async ({ appointmentId, notes, as }, thunkAPI) => {
     try {
-        return await appointmentService.cancelAppointment({ appointmentId, notes });
+        return await appointmentService.cancelAppointment({ appointmentId, notes, as });
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data?.error || "Failed to cancel appointment");
     }
@@ -146,9 +157,10 @@ const appointmentSlice = createSlice({
             .addCase(updateAppointmentStatus.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(updateAppointmentStatus.fulfilled, (state) => {
+            .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
+                applyUpdated(state, action);
                 toast.success("Appointment status updated.");
             })
             .addCase(updateAppointmentStatus.rejected, (state, action) => {
@@ -161,9 +173,10 @@ const appointmentSlice = createSlice({
             .addCase(cancelAppointment.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(cancelAppointment.fulfilled, (state) => {
+            .addCase(cancelAppointment.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
+                applyUpdated(state, action);
                 toast.success("Appointment canceled.");
             })
             .addCase(cancelAppointment.rejected, (state, action) => {
@@ -176,9 +189,10 @@ const appointmentSlice = createSlice({
             .addCase(completeAppointment.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(completeAppointment.fulfilled, (state) => {
+            .addCase(completeAppointment.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
+                applyUpdated(state, action);
                 toast.success("Appointment completed.");
             })
             .addCase(completeAppointment.rejected, (state, action) => {

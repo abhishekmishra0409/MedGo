@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Award, BookOpen, CalendarClock, GraduationCap, Star, Stethoscope } from "lucide-react";
+import { Award, BadgeCheck, BookOpen, CalendarClock, GraduationCap, Star, Stethoscope } from "lucide-react";
 import { getDoctorProfile, updateDoctorProfile } from "../../features/Doctor/DoctorSlice.js";
 
 const toMultilineText = (items = []) => (items || []).filter(Boolean).join("\n");
@@ -14,6 +14,8 @@ const parseMultilineText = (value = "") =>
 const buildFormFromProfile = (profile = {}) => ({
     specialty: profile.specialty || "",
     qualification: profile.qualification || "",
+    councilRegistrationNumber: profile.councilRegistrationNumber || "",
+    councilName: profile.councilName || "",
     practiceAddress: profile.contact?.address || "",
     contactEmail: profile.contact?.email || profile.email || "",
     image: profile.image || profile.avatar || "",
@@ -45,6 +47,9 @@ const ListBlock = ({ title, items, icon }) => (
 const ProfessionalDetails = () => {
     const dispatch = useDispatch();
     const { profile, isLoading } = useSelector((state) => state.doctor);
+    // A doctor attached to an approved clinic inherits its address and contact
+    // details; only a solo practitioner needs to supply their own.
+    const isSolo = profile?.clinicMembershipStatus !== "approved";
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState(buildFormFromProfile(profile));
     const initials = (profile?.name || profile?.username || "D").slice(0, 1).toUpperCase();
@@ -84,6 +89,8 @@ const ProfessionalDetails = () => {
             doctorProfile: {
                 specialty: formData.specialty,
                 qualification: formData.qualification,
+                councilRegistrationNumber: formData.councilRegistrationNumber,
+                councilName: formData.councilName,
                 image: formData.image,
                 contactEmail: formData.contactEmail,
                 address: formData.practiceAddress,
@@ -160,14 +167,51 @@ const ProfessionalDetails = () => {
                                         <input name="qualification" value={formData.qualification} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1 block text-sm font-medium text-slate-700">Practice email</span>
-                                        <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />
+                                        <span className="mb-1 block text-sm font-medium text-slate-700">
+                                            Medical council registration number
+                                        </span>
+                                        <input
+                                            name="councilRegistrationNumber"
+                                            value={formData.councilRegistrationNumber}
+                                            onChange={handleChange}
+                                            placeholder="e.g. MCI-12345"
+                                            autoComplete="off"
+                                            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="mb-1 block text-sm font-medium text-slate-700">Issuing council</span>
+                                        <input
+                                            name="councilName"
+                                            value={formData.councilName}
+                                            onChange={handleChange}
+                                            placeholder="e.g. Madhya Pradesh Medical Council"
+                                            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                        />
                                     </label>
                                 </div>
-                                <label className="block">
-                                    <span className="mb-1 block text-sm font-medium text-slate-700">Practice address</span>
-                                    <input name="practiceAddress" value={formData.practiceAddress} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />
-                                </label>
+
+                                <p className="rounded-2xl border border-teal-100 bg-teal-50/60 p-3 text-sm text-slate-600">
+                                    Your registration number is what the platform verifies before approving your account. It is never shown to patients.
+                                </p>
+
+                                {isSolo ? (
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <label className="block">
+                                            <span className="mb-1 block text-sm font-medium text-slate-700">Practice email</span>
+                                            <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100 focus-visible:ring-2 focus-visible:ring-teal-500" />
+                                        </label>
+                                        <label className="block">
+                                            <span className="mb-1 block text-sm font-medium text-slate-700">Practice address</span>
+                                            <input name="practiceAddress" value={formData.practiceAddress} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100 focus-visible:ring-2 focus-visible:ring-teal-500" />
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <p className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                                        Patients are shown your clinic's address and contact details. Update those under{" "}
+                                        <Link to="/doctor/clinic" className="font-semibold text-teal-700 underline">Clinic</Link>.
+                                    </p>
+                                )}
                                 <label className="block">
                                     <span className="mb-1 block text-sm font-medium text-slate-700">Education</span>
                                     <textarea name="educationText" value={formData.educationText} onChange={handleChange} rows={4} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100" placeholder="One item per line" />
@@ -194,6 +238,11 @@ const ProfessionalDetails = () => {
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <ListBlock title="Specialty" items={formData.specialty ? [formData.specialty] : []} icon={<Stethoscope className="h-4 w-4 text-teal-700" />} />
                                     <ListBlock title="Qualification" items={formData.qualification ? [formData.qualification] : []} icon={<Award className="h-4 w-4 text-teal-700" />} />
+                                    <ListBlock
+                                        title="Council registration"
+                                        items={[formData.councilRegistrationNumber, formData.councilName].filter(Boolean)}
+                                        icon={<BadgeCheck className="h-4 w-4 text-teal-700" />}
+                                    />
                                 </div>
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                     <p className="text-sm font-semibold text-slate-900">Practice contact</p>

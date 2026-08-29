@@ -47,6 +47,7 @@ exports.getMyOrders = async (req, res) => {
         res.json({
             success: true,
             data: result.orders,
+            summary: result.summary,
             pagination: {
                 total: result.total,
                 pages: result.pages,

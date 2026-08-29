@@ -43,7 +43,7 @@ exports.getConversations = async (req, res) => {
 
 exports.getMessages = async (req, res) => {
     try {
-        const messages = await MessageService.getConversationMessages(
+        const result = await MessageService.getConversationMessages(
             req.user.id,
             req.params.conversationId,
             Number(req.query.page),
@@ -52,7 +52,8 @@ exports.getMessages = async (req, res) => {
 
         res.json({
             success: true,
-            data: messages
+            data: result.messages,
+            pagination: result.pagination
         });
     } catch (error) {
         res.status(400).json({

@@ -15,7 +15,8 @@ import {
     Video,
     X,
 } from "lucide-react";
-import { getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { cancelAppointment, getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
 import JoinTeleconsultation from "../../component/Appointments/JoinTeleconsultation.jsx";
 
 const statusStyles = {
@@ -49,10 +50,16 @@ const safeFormatTime = (timeString) => {
 
 const buildAppointmentDateTime = (appointment) => {
     if (!appointment?.date) return null;
-    const day = format(new Date(appointment.date), "yyyy-MM-dd");
+    const parsedDay = new Date(appointment.date);
+    if (Number.isNaN(parsedDay.getTime())) return null;
+
+    const day = format(parsedDay, "yyyy-MM-dd");
     const start = appointment.timeSlot?.start || "00:00";
     const date = new Date(`${day}T${start}`);
-    return Number.isNaN(date.getTime()) ? null : date;
+
+    // An unreadable time still has a usable date — bucket it at midnight rather
+    // than dropping the appointment out of the list and the counts entirely.
+    return Number.isNaN(date.getTime()) ? new Date(`${day}T00:00`) : date;
 };
 
 const formatAddress = (clinic) => {
@@ -99,13 +106,14 @@ const EmptyState = ({ activeTab }) => (
     </div>
 );
 
-const AppointmentCard = ({ appointment, onViewDetails, onViewClinic }) => {
+const AppointmentCard = ({ appointment, onViewDetails, onViewClinic, onCancel }) => {
     const doctorName = appointment.doctor?.name || appointment.doctor?.username || "Doctor unavailable";
     const doctorInitial = doctorName.charAt(0).toUpperCase();
     const clinicName = appointment.clinic?.name || "Clinic not assigned";
     const isVirtual = appointment.type === "teleconsultation";
     const dateLabel = safeFormatDate(appointment.date, "EEEE, MMM dd");
     const timeLabel = `${safeFormatTime(appointment.timeSlot?.start)} - ${safeFormatTime(appointment.timeSlot?.end)}`;
+    const canCancel = ["pending", "confirmed"].includes(appointment.status);
 
     return (
         <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md">
@@ -161,6 +169,15 @@ const AppointmentCard = ({ appointment, onViewDetails, onViewClinic }) => {
                             Clinic
                         </button>
                     ) : null}
+                    {canCancel && onCancel ? (
+                        <button
+                            type="button"
+                            onClick={() => onCancel(appointment)}
+                            className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-100"
+                        >
+                            Cancel
+                        </button>
+                    ) : null}
                     <button
                         type="button"
                         onClick={() => onViewDetails(appointment)}
@@ -207,6 +224,9 @@ const Appointments = () => {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [activeTab, setActiveTab] = useState("upcoming");
+    const [cancelTarget, setCancelTarget] = useState(null);
+    const [cancelReason, setCancelReason] = useState("");
+    const [isCancelling, setIsCancelling] = useState(false);
 
     useEffect(() => {
         dispatch(getMyAppointments());
@@ -223,7 +243,7 @@ const Appointments = () => {
         const safeAppointments = Array.isArray(myAppointments) ? myAppointments : [];
 
         const normalized = safeAppointments
-            .filter((appointment) => appointment?.date && appointment?.timeSlot?.start && appointment?.timeSlot?.end)
+            .filter((appointment) => appointment?.date)
             .map((appointment) => ({
                 ...appointment,
                 appointmentDateTime: buildAppointmentDateTime(appointment),
@@ -253,7 +273,28 @@ const Appointments = () => {
     const visibleAppointments = activeTab === "upcoming" ? upcomingAppointments : pastAppointments;
     const nextAppointment = upcomingAppointments[0];
 
-    if (isLoading) {
+    const closeCancelDialog = () => {
+        setCancelTarget(null);
+        setCancelReason("");
+    };
+
+    const confirmCancel = async () => {
+        if (!cancelTarget) return;
+
+        setIsCancelling(true);
+        const result = await dispatch(cancelAppointment({
+            appointmentId: cancelTarget._id,
+            notes: cancelReason.trim() || undefined,
+            as: "user",
+        }));
+        setIsCancelling(false);
+
+        if (cancelAppointment.fulfilled.match(result)) {
+            closeCancelDialog();
+        }
+    };
+
+    if (isLoading && !myAppointments?.length) {
         return (
             <div className="w-full space-y-6 p-4 sm:p-6">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -356,6 +397,7 @@ const Appointments = () => {
                                 appointment={appointment}
                                 onViewDetails={setSelectedAppointment}
                                 onViewClinic={setSelectedClinic}
+                                onCancel={setCancelTarget}
                             />
                         ))
                     ) : (
@@ -446,6 +488,54 @@ const Appointments = () => {
                     </div>
                 </ModalShell>
             ) : null}
+
+            {/* Headless UI Dialog: focus trap, Escape, backdrop click and the
+                dialog role all come from the primitive — the hand-rolled
+                ModalShell above has none of them and is replaced in Phase 2. */}
+            <Dialog open={Boolean(cancelTarget)} onClose={closeCancelDialog} className="relative z-[70]">
+                <div className="fixed inset-0 bg-slate-950/60" aria-hidden="true" />
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                    <DialogPanel className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                        <DialogTitle className="text-xl font-bold text-slate-950">Cancel this appointment?</DialogTitle>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                            {cancelTarget
+                                ? `${safeFormatDate(cancelTarget.date, "EEEE, MMM dd")} at ${safeFormatTime(cancelTarget.timeSlot?.start)} with ${cancelTarget.doctor?.name || cancelTarget.doctor?.username || "your doctor"}.`
+                                : ""}
+                            {" "}This cannot be undone.
+                        </p>
+
+                        <label className="mt-4 block">
+                            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Reason (optional)</span>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(event) => setCancelReason(event.target.value)}
+                                rows={3}
+                                placeholder="Let the doctor know why."
+                                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50"
+                            />
+                        </label>
+
+                        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={closeCancelDialog}
+                                disabled={isCancelling}
+                                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                            >
+                                Keep appointment
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmCancel}
+                                disabled={isCancelling}
+                                className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60"
+                            >
+                                {isCancelling ? "Cancelling..." : "Cancel appointment"}
+                            </button>
+                        </div>
+                    </DialogPanel>
+                </div>
+            </Dialog>
         </div>
     );
 };

@@ -21,7 +21,7 @@ import {
 } from "../../features/Appointment/AppointmentSlice.js";
 import JoinTeleconsultation from "../../component/Appointments/JoinTeleconsultation.jsx";
 
-const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
+const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled", "no-show"];
 const paymentStatuses = ["pending", "paid", "failed", "refunded"];
 
 const statusStyles = {
@@ -29,6 +29,7 @@ const statusStyles = {
     confirmed: "border-teal-100 bg-teal-50 text-teal-800",
     completed: "border-emerald-100 bg-emerald-50 text-emerald-800",
     cancelled: "border-rose-100 bg-rose-50 text-rose-700",
+    "no-show": "border-slate-200 bg-slate-100 text-slate-700",
     paid: "border-emerald-100 bg-emerald-50 text-emerald-800",
     failed: "border-rose-100 bg-rose-50 text-rose-700",
     refunded: "border-slate-100 bg-slate-100 text-slate-700",

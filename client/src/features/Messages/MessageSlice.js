@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 const initialState = {
     conversations: [],
     messages: [],
+    messagePagination: null,
     isLoading: false,
     isSuccess: false,
     isError: false,
@@ -32,9 +33,10 @@ export const getUserConversations = createAsyncThunk("messages/getUserConversati
     }
 });
 
-export const getUserMessages = createAsyncThunk("messages/getUserMessages", async (conversationId, thunkAPI) => {
+export const getUserMessages = createAsyncThunk("messages/getUserMessages", async (args, thunkAPI) => {
     try {
-        return await messageService.getUserMessages(conversationId);
+        const params = typeof args === "string" ? { conversationId: args } : args;
+        return await messageService.getUserMessages(params);
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch user messages");
     }
@@ -65,9 +67,10 @@ export const getDoctorConversations = createAsyncThunk("messages/getDoctorConver
     }
 });
 
-export const getDoctorMessages = createAsyncThunk("messages/getDoctorMessages", async (conversationId, thunkAPI) => {
+export const getDoctorMessages = createAsyncThunk("messages/getDoctorMessages", async (args, thunkAPI) => {
     try {
-        return await messageService.getDoctorMessages(conversationId);
+        const params = typeof args === "string" ? { conversationId: args } : args;
+        return await messageService.getDoctorMessages(params);
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data?.error || error.response?.data?.message || "Failed to fetch doctor messages");
     }
@@ -170,7 +173,11 @@ const messageSlice = createSlice({
             .addCase(getUserMessages.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
+                const batch = Array.isArray(action.payload?.data) ? action.payload.data : [];
+                // Page 1 is the newest slice; later pages are older history and
+                // belong in front of what is already on screen.
+                state.messages = action.meta.arg?.page > 1 ? [...batch, ...state.messages] : batch;
+                state.messagePagination = action.payload?.pagination || null;
             })
             .addCase(getUserMessages.rejected, (state, action) => {
                 state.isLoading = false;
@@ -186,7 +193,11 @@ const messageSlice = createSlice({
             .addCase(getDoctorMessages.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
+                const batch = Array.isArray(action.payload?.data) ? action.payload.data : [];
+                // Page 1 is the newest slice; later pages are older history and
+                // belong in front of what is already on screen.
+                state.messages = action.meta.arg?.page > 1 ? [...batch, ...state.messages] : batch;
+                state.messagePagination = action.payload?.pagination || null;
             })
             .addCase(getDoctorMessages.rejected, (state, action) => {
                 state.isLoading = false;

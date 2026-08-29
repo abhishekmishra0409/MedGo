@@ -11,7 +11,9 @@ router.get('/my-appointments', authMiddleware, appointmentController.getMyAppoin
 // Doctor routes
 router.get('/doctor-appointments', doctorMiddleware, appointmentController.getDoctorAppointments);
 router.patch('/:id/status', doctorMiddleware, appointmentController.updateAppointmentStatus);
-router.patch('/:id/cancel', doctorMiddleware, appointmentController.cancelAppointment);
+// authMiddleware, not doctorMiddleware: both parties can cancel, and the
+// service's assertParticipant() already refuses anyone not on the appointment.
+router.patch('/:id/cancel', authMiddleware, appointmentController.cancelAppointment);
 router.patch('/:id/complete', doctorMiddleware, appointmentController.completeAppointment);
 
 // Teleconsultation — authMiddleware, not doctorMiddleware: both parties use

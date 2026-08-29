@@ -246,7 +246,7 @@ const BlogModal = ({ currentBlog, formData, imagePreview, loading, onChange, onC
                     <X className="h-5 w-5" />
                 </button>
             </header>
-            <form onSubmit={onSubmit} className="modal-scroll flex-1 space-y-4 overflow-y-auto p-5">
+            <form id="blog-form" onSubmit={onSubmit} className="modal-scroll flex-1 space-y-4 overflow-y-auto p-5">
                 <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Title" name="title" value={formData.title} onChange={onChange} required />
                     <Field label="Category" name="category" value={formData.category} onChange={onChange} required />
@@ -285,8 +285,8 @@ const BlogModal = ({ currentBlog, formData, imagePreview, loading, onChange, onC
                 </button>
                 <button
                     type="submit"
+                    form="blog-form"
                     disabled={loading}
-                    onClick={onSubmit}
                     className="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-70"
                 >
                     {loading ? "Saving..." : currentBlog ? "Update blog" : "Create blog"}

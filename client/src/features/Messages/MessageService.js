@@ -15,8 +15,11 @@ const getUserConversations = async () => {
     return response.data;
 };
 
-const getUserMessages = async (conversationId) => {
-    const response = await axios.get(`${API_URL}/user/conversations/${conversationId}/messages`, userConfig());
+const getUserMessages = async ({ conversationId, page = 1, limit = 20 }) => {
+    const response = await axios.get(`${API_URL}/user/conversations/${conversationId}/messages`, {
+        ...userConfig(),
+        params: { page, limit },
+    });
     return response.data;
 };
 
@@ -35,8 +38,11 @@ const getDoctorConversations = async () => {
     return response.data;
 };
 
-const getDoctorMessages = async (conversationId) => {
-    const response = await axios.get(`${API_URL}/doctor/conversations/${conversationId}/messages`, doctorConfig());
+const getDoctorMessages = async ({ conversationId, page = 1, limit = 20 }) => {
+    const response = await axios.get(`${API_URL}/doctor/conversations/${conversationId}/messages`, {
+        ...doctorConfig(),
+        params: { page, limit },
+    });
     return response.data;
 };
 

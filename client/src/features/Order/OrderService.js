@@ -12,8 +12,11 @@ const getOrderById = async (orderId) => {
     return response.data;
 };
 
-const getMyOrders = async () => {
-    const response = await axios.get(buildApiUrl("orders"), userConfig());
+const getMyOrders = async ({ page = 1, limit = 10 } = {}) => {
+    const response = await axios.get(buildApiUrl("orders"), {
+        ...userConfig(),
+        params: { page, limit },
+    });
     return response.data;
 };
 

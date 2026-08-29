@@ -108,11 +108,16 @@ class MessageService {
             throw new Error('Conversation not found or access denied');
         }
 
-        const messages = await Message.find({ conversation: conversationId })
-            .sort({ createdAt: 1 })
-            .skip((safePage - 1) * safeLimit)
+        // Page 1 must be the MOST RECENT messages — ascending skip/limit meant
+        // page 1 was the oldest 20 and a long conversation never showed today.
+        // Fetch newest-first for paging, then flip back to reading order.
+        const skip = (safePage - 1) * safeLimit;
+        const total = await Message.countDocuments({ conversation: conversationId });
+        const messages = (await Message.find({ conversation: conversationId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
             .limit(safeLimit)
-            .lean();
+            .lean()).reverse();
 
         const participantIds = [
             ...new Set(
@@ -128,11 +133,19 @@ class MessageService {
             .lean();
         const participantById = new Map(participants.map((participant) => [String(participant._id), participant]));
 
-        return messages.map((message) => ({
-            ...message,
-            sender: participantById.get(String(message.sender)) || null,
-            recipient: participantById.get(String(message.recipient)) || null,
-        }));
+        return {
+            messages: messages.map((message) => ({
+                ...message,
+                sender: participantById.get(String(message.sender)) || null,
+                recipient: participantById.get(String(message.recipient)) || null,
+            })),
+            pagination: {
+                total,
+                page: safePage,
+                limit: safeLimit,
+                hasMore: skip + messages.length < total,
+            },
+        };
     }
 
     static async getUserConversations(userId, userType) {

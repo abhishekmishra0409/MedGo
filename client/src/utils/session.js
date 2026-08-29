@@ -53,6 +53,10 @@ const flattenDoctorProfile = (payload) => {
             address: profile.address || source.contact?.address || "",
         },
         workingHours: profile.workingHours || source.workingHours || [],
+        consultationSettings: {
+            slotDuration: profile.consultationSettings?.slotDuration || 30,
+            maxDailyAppointments: profile.consultationSettings?.maxDailyAppointments || 20,
+        },
         education: profile.education || source.education || [],
         biography: profile.biography || source.biography || [],
         specializations: profile.specializations || source.specializations || [],

@@ -199,7 +199,7 @@ const userSchema = new mongoose.Schema(
                 slotDuration: {
                     type: Number,
                     default: 30,
-                    enum: [15, 30, 45, 60],
+                    enum: [10, 15, 20, 30, 45, 60],
                 },
                 maxDailyAppointments: {
                     type: Number,

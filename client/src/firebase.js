@@ -2,7 +2,7 @@ export const showDemoNotification = () => {
     if ("Notification" in window) {
         Notification.requestPermission().then((permission) => {
             if (permission === "granted") {
-                new Notification("Hello from DawaiLink!", {
+                new Notification("Hello from MedGo!", {
                     body: "This is a test notification.",
                     icon: "/android-icon-192x192.png",
                 });

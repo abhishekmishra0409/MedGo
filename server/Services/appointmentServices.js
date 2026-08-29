@@ -317,10 +317,24 @@ class AppointmentService {
             throw new Error('Appointment not found');
         }
         this.assertParticipant(existing, user);
+        this.assertTransition(existing.status, status);
 
         const update = { status };
-        if (notes) update['notes.doctorNotes'] = notes;
         if (paymentStatus) update['payment.status'] = paymentStatus;
+
+        // A cancellation reason is not a doctor's clinical note, and it can come
+        // from either side — route it to the cancellation record instead, so the
+        // audit trail the schema defines actually gets written.
+        if (status === 'cancelled') {
+            const userId = String(user?._id || user?.id || '');
+            update.cancellation = {
+                reason: notes || undefined,
+                initiatedBy: String(existing.patient) === userId ? 'patient' : 'doctor',
+                timestamp: new Date(),
+            };
+        } else if (notes) {
+            update['notes.doctorNotes'] = notes;
+        }
 
         const appointment = await Appointment.findByIdAndUpdate(
             id,
@@ -357,6 +371,29 @@ class AppointmentService {
     /* -------------------------------------------------------------- */
     /* teleconsultation                                                */
     /* -------------------------------------------------------------- */
+
+    // completed/cancelled/no-show are terminal. Without this, a completed
+    // appointment could be flipped back to pending, and un-cancelling could
+    // collide with the partial unique index (which only excludes 'cancelled').
+    static assertTransition(from, to) {
+        const allowed = {
+            // pending -> completed is legitimate: a walk-in seen without ever
+            // being formally confirmed. The doctor UI offers it today.
+            pending: ['confirmed', 'completed', 'cancelled', 'no-show'],
+            confirmed: ['completed', 'cancelled', 'no-show'],
+            completed: [],
+            cancelled: [],
+            'no-show': [],
+        };
+
+        if (from === to) return;
+
+        if (!allowed[from]?.includes(to)) {
+            const error = new Error(`Cannot change an appointment from ${from} to ${to}`);
+            error.status = 409;
+            throw error;
+        }
+    }
 
     // The one access rule for a single appointment: you are on it, or you are
     // an admin. Fails closed when `user` is missing entirely.
