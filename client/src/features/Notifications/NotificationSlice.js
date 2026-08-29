@@ -88,8 +88,12 @@ const notificationSlice = createSlice({
                     return;
                 }
 
+                const wasUnread = state.items.some((item) => item._id === updated._id && !item.readAt);
                 state.items = state.items.map((item) => (item._id === updated._id ? updated : item));
-                state.unreadCount = state.items.filter((item) => !item.readAt).length;
+                if (wasUnread) {
+                    // ponytail: decrement, don't recount — items holds one page, unreadCount is server-wide
+                    state.unreadCount = Math.max(0, state.unreadCount - 1);
+                }
             })
             .addCase(markAllNotificationsRead.fulfilled, (state) => {
                 const readAt = new Date().toISOString();

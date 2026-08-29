@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Bell, CheckCheck, Inbox, Loader2, X } from "lucide-react";
 import {
@@ -79,13 +80,14 @@ const NotificationBell = ({ tokenKey = "userToken", label = "Notifications", ali
             >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 ? (
-                    <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-rose-600 px-1.5 py-0.5 text-center text-[0.65rem] font-bold leading-none text-white">
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-600 px-1 text-[0.65rem] font-bold leading-none text-white">
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 ) : null}
             </button>
 
-            {isOpen ? (
+            {isOpen ? createPortal(
+                // ponytail: portal escapes the sticky/backdrop-blur header stacking context
                 <div className="fixed inset-0 z-[90]">
                     <button
                         type="button"
@@ -171,7 +173,8 @@ const NotificationBell = ({ tokenKey = "userToken", label = "Notifications", ali
                             </div>
                         </div>
                     </section>
-                </div>
+                </div>,
+                document.body
             ) : null}
         </>
     );
