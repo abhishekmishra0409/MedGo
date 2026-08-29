@@ -19,6 +19,7 @@ import {
     getDoctorAppointments,
     updateAppointmentStatus,
 } from "../../features/Appointment/AppointmentSlice.js";
+import JoinTeleconsultation from "../../component/Appointments/JoinTeleconsultation.jsx";
 
 const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
 const paymentStatuses = ["pending", "paid", "failed", "refunded"];
@@ -220,13 +221,16 @@ const DoctorsAppointments = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => openUpdateModal(appointment)}
-                                            className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
-                                        >
-                                            Update appointment
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            <JoinTeleconsultation appointment={appointment} tokenKey="doctorToken" />
+                                            <button
+                                                type="button"
+                                                onClick={() => openUpdateModal(appointment)}
+                                                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
+                                            >
+                                                Update appointment
+                                            </button>
+                                        </div>
                                     </div>
                                 </article>
                             );

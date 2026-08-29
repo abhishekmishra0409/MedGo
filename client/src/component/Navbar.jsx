@@ -87,10 +87,15 @@ const Navbar = () => {
     return (
         <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
             <div className="section-shell py-4">
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(18rem,34rem)_minmax(0,1fr)]">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,34rem)_minmax(0,1fr)]">
                     <Link to="/" className="flex min-w-0 items-center gap-3 justify-self-start">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))] shadow-[0_18px_40px_rgba(13,148,136,0.18)]">
-                            <img src="/android-icon-192x192.png" alt="MedGo" className="h-9 w-9 rounded-xl" />
+                        {/* Source asset is a solid forest green; rotated to match the brand teal. No badge
+                            background here — a teal icon on a teal badge has too little contrast to read;
+                            shown directly against the page background instead, same as the footer mark.
+                            overflow-hidden backstops browsers that let a filtered element's paint bleed
+                            past its own border-radius (a known filter+radius rendering quirk). */}
+                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl">
+                            <img src="/android-icon-192x192.png" alt="MedGo" className="h-12 w-12 rounded-2xl filter-[hue-rotate(47deg)_saturate(1.15)]" />
                         </div>
                         <div className="hidden min-w-0 sm:block">
                             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">MedGo</p>
@@ -98,7 +103,7 @@ const Navbar = () => {
                         </div>
                     </Link>
 
-                    <form onSubmit={handleSearchSubmit} className="relative z-10 hidden w-full items-center md:flex">
+                    <form onSubmit={handleSearchSubmit} className="relative z-10 hidden w-full items-center lg:flex">
                         <div className="mx-auto flex w-full items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-sm">
                             <Search className="h-5 w-5 shrink-0 text-slate-400" />
                             <input
@@ -171,12 +176,20 @@ const Navbar = () => {
                                 )}
                             </div>
                         ) : (
-                            <Link
-                                to="/login"
-                                className="btn-primary px-5 py-3 text-sm"
-                            >
-                                Login
-                            </Link>
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    to="/signup"
+                                    className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:text-teal-700"
+                                >
+                                    Register
+                                </Link>
+                                <Link
+                                    to="/login"
+                                    className="btn-primary px-5 py-3 text-sm"
+                                >
+                                    Login
+                                </Link>
+                            </div>
                         )}
                     </div>
 
@@ -265,13 +278,22 @@ const Navbar = () => {
                                 </div>
                             </div>
                         ) : (
-                            <Link
-                                to="/login"
-                                onClick={() => setMenuOpen(false)}
-                                className="btn-primary block rounded-2xl px-4 py-3 text-center text-sm"
-                            >
-                                Login
-                            </Link>
+                            <div className="grid grid-cols-2 gap-3">
+                                <Link
+                                    to="/signup"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700"
+                                >
+                                    Register
+                                </Link>
+                                <Link
+                                    to="/login"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="btn-primary rounded-2xl px-4 py-3 text-center text-sm"
+                                >
+                                    Login
+                                </Link>
+                            </div>
                         )}
                     </div>
                 )}

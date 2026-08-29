@@ -5,6 +5,12 @@ const { buildDoctorAccount } = require('../Utils/doctorAccount');
 const { buildDoctorSearchQuery } = require('../Utils/doctorAccount');
 const mongoose = require('mongoose');
 const NotificationService = require('./notificationService');
+const VidzaService = require('./vidzaService');
+
+// Must match the joinWindow sent to Vidza, which enforces the same thing
+// server-side. This copy only exists so the button can explain itself.
+const JOIN_BEFORE_MINUTES = 15;
+const JOIN_AFTER_MINUTES = 30;
 
 class AppointmentService {
     static parseTimeToMinutes(value) {
@@ -303,7 +309,15 @@ class AppointmentService {
             .sort({ date: 1, 'timeSlot.start': 1 });
     }
 
-    static async updateAppointmentStatus(id, status, notes, paymentStatus = null) {
+    static async updateAppointmentStatus(id, status, notes, paymentStatus = null, user) {
+        // Read before write: findByIdAndUpdate alone let any approved doctor
+        // mutate any appointment by guessing an id.
+        const existing = await Appointment.findById(id);
+        if (!existing) {
+            throw new Error('Appointment not found');
+        }
+        this.assertParticipant(existing, user);
+
         const update = { status };
         if (notes) update['notes.doctorNotes'] = notes;
         if (paymentStatus) update['payment.status'] = paymentStatus;
@@ -313,10 +327,6 @@ class AppointmentService {
             update,
             { new: true, runValidators: true }
         );
-
-        if (!appointment) {
-            throw new Error('Appointment not found');
-        }
 
         await Promise.all([
             NotificationService.safeCreate({
@@ -342,6 +352,134 @@ class AppointmentService {
         ]);
 
         return appointment;
+    }
+
+    /* -------------------------------------------------------------- */
+    /* teleconsultation                                                */
+    /* -------------------------------------------------------------- */
+
+    // The one access rule for a single appointment: you are on it, or you are
+    // an admin. Fails closed when `user` is missing entirely.
+    static assertParticipant(appointment, user) {
+        const userId = String(user?._id || user?.id || '');
+        const idOf = (value) => String(value?._id || value || '');
+        const onIt = Boolean(userId)
+            && (idOf(appointment.patient) === userId || idOf(appointment.doctor) === userId);
+
+        if (!onIt && user?.role !== 'admin') {
+            const error = new Error('You do not have access to this appointment');
+            error.status = 403;
+            throw error;
+        }
+    }
+
+    // Appointments hold a server-local midnight plus a bare "HH:MM", so the
+    // only real instant is reconstructed here, in that same local frame.
+    // Requires TZ to be pinned (see the Dockerfile) or every window shifts.
+    static slotInstants(appointment) {
+        const startMinutes = this.parseTimeToMinutes(appointment.timeSlot?.start);
+        const endMinutes = this.parseTimeToMinutes(appointment.timeSlot?.end);
+
+        if (startMinutes === null || endMinutes === null) {
+            throw new Error('This appointment has an unreadable time slot');
+        }
+
+        const midnight = new Date(appointment.date);
+        midnight.setHours(0, 0, 0, 0);
+
+        return {
+            start: new Date(midnight.getTime() + startMinutes * 60000),
+            end: new Date(midnight.getTime() + endMinutes * 60000),
+        };
+    }
+
+    static async getTeleconsultationJoin(appointmentId, user) {
+        const appointment = await Appointment.findById(appointmentId)
+            .populate('doctor', 'name username')
+            .populate('patient', 'name username');
+
+        if (!appointment) {
+            throw new Error('Appointment not found');
+        }
+
+        this.assertParticipant(appointment, user);
+
+        if (appointment.type !== 'teleconsultation') {
+            const error = new Error('This appointment is not a teleconsultation');
+            error.status = 400;
+            throw error;
+        }
+
+        if (appointment.status !== 'confirmed') {
+            const error = new Error(`This appointment is ${appointment.status}, so the call is not open`);
+            error.status = 403;
+            throw error;
+        }
+
+        const { start, end } = this.slotInstants(appointment);
+        const now = Date.now();
+
+        if (now < start.getTime() - JOIN_BEFORE_MINUTES * 60000) {
+            const error = new Error(`The call opens ${JOIN_BEFORE_MINUTES} minutes before your slot`);
+            error.status = 403;
+            throw error;
+        }
+
+        if (now > end.getTime() + JOIN_AFTER_MINUTES * 60000) {
+            const error = new Error('This appointment\'s call window has closed');
+            error.status = 403;
+            throw error;
+        }
+
+        const doctorRef = `medgo:user:${appointment.doctor?._id || appointment.doctor}`;
+        const patientRef = `medgo:user:${appointment.patient?._id || appointment.patient}`;
+        const doctorName = appointment.doctor?.name || appointment.doctor?.username || 'Doctor';
+        const patientName = appointment.patient?.name || appointment.patient?.username || 'Patient';
+
+        const meeting = await VidzaService.createMeeting({
+            externalId: `medgo:appt:${appointment._id}`,
+            title: `Teleconsultation with Dr. ${doctorName}`,
+            scheduledStart: start.toISOString(),
+            scheduledEnd: end.toISOString(),
+            participants: [
+                { ref: doctorRef, displayName: `Dr. ${doctorName}`, role: 'host' },
+                { ref: patientRef, displayName: patientName, role: 'guest' },
+            ],
+        });
+
+        // Idempotent upstream on externalId, so every click yields the same
+        // room and this write is a no-op after the first. Vidza returns the
+        // existing meeting even once expired, so a stale id is never replaced
+        // — our own join window closes first, which is the tighter gate.
+        if (appointment.teleconsultation?.meetingId !== meeting.meetingId) {
+            // updateOne, not save(): a full save re-runs the schema's "date must
+            // be in the future" validator, which every same-day appointment
+            // fails by definition — i.e. exactly when someone joins the call.
+            await Appointment.updateOne(
+                { _id: appointment._id },
+                {
+                    $set: {
+                        teleconsultation: {
+                            meetingId: meeting.meetingId,
+                            joinCode: meeting.joinCode,
+                            meetingUrl: meeting.meetingUrl,
+                            createdAt: new Date(),
+                        },
+                    },
+                },
+            );
+        }
+
+        const isDoctor = String(appointment.doctor?._id || appointment.doctor) === String(user._id || user.id);
+        const myRef = isDoctor ? doctorRef : patientRef;
+
+        return {
+            joinLink: meeting.participants?.find((p) => p.ref === myRef)?.joinLink || null,
+            meetingId: meeting.meetingId,
+            joinCode: meeting.joinCode,
+            meetingUrl: meeting.meetingUrl,
+            role: isDoctor ? 'host' : 'guest',
+        };
     }
 }
 

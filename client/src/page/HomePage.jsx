@@ -197,7 +197,7 @@ const HomePage = () => {
             </section>
 
             <section className="section-shell">
-                <div className="rounded-[40px] bg-slate-950 px-6 py-10 text-white md:px-10">
+                <div className="rounded-[40px] bg-[linear-gradient(135deg,var(--color-ink),var(--color-brand-dark))] px-6 py-10 text-white md:px-10">
                     <div className="section-heading-row gap-6">
                         <div>
                             <p className="eyebrow text-teal-300">Signals of trust</p>

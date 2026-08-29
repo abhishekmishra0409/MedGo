@@ -588,6 +588,7 @@ textarea:disabled,
     font-weight: 600;
     min-height: 3.25rem;
     padding: 0.95rem 1.25rem;
+    white-space: nowrap;
     transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 

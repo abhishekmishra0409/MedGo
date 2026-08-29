@@ -46,7 +46,9 @@ const FooterNew = () => {
                 <div className="grid gap-8 border-t border-slate-200 pt-10 md:grid-cols-2 lg:grid-cols-4">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <img src="/android-icon-192x192.png" alt="MedGo" className="h-12 w-12 rounded-2xl" />
+                            <div className="h-12 w-12 overflow-hidden rounded-2xl">
+                                <img src="/android-icon-192x192.png" alt="MedGo" className="h-12 w-12 rounded-2xl filter-[hue-rotate(47deg)_saturate(1.15)]" />
+                            </div>
                             <div>
                                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">MedGo</p>
                                 <p className="text-sm text-slate-500">Care platform</p>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, UserRound } from "lucide-react";
 
 const DoctorCardModern = ({ id, name, position, specialty, qualification, hospital, image }) => {
     const navigate = useNavigate();
@@ -18,7 +18,13 @@ const DoctorCardModern = ({ id, name, position, specialty, qualification, hospit
     return (
         <div className="group relative cursor-pointer rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl" onClick={handleCardClick}>
             <div className="flex items-start justify-between gap-4">
-                <img src={image || "/doctor.png"} alt={name} className="h-20 w-20 rounded-3xl object-cover ring-4 ring-teal-50" />
+                {image ? (
+                    <img src={image} alt={name} className="h-20 w-20 rounded-3xl object-cover ring-4 ring-teal-50" />
+                ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-teal-50 ring-4 ring-teal-50">
+                        <UserRound className="h-10 w-10 text-teal-700" />
+                    </div>
+                )}
                 <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
                     {specialty}
                 </span>

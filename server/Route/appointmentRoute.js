@@ -14,6 +14,10 @@ router.patch('/:id/status', doctorMiddleware, appointmentController.updateAppoin
 router.patch('/:id/cancel', doctorMiddleware, appointmentController.cancelAppointment);
 router.patch('/:id/complete', doctorMiddleware, appointmentController.completeAppointment);
 
+// Teleconsultation — authMiddleware, not doctorMiddleware: both parties use
+// this one endpoint and the service decides which link you get back.
+router.post('/:id/teleconsultation/join', authMiddleware, appointmentController.joinTeleconsultation);
+
 // Public route
 router.post('/check-availability', appointmentController.checkAvailability);
 

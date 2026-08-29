@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { UserRound } from "lucide-react";
 import { fetchDoctorById } from "../features/Doctor/DoctorSlice.js";
 import { fetchClinicsByDoctor } from "../features/Clinic/ClinicSlice.js";
 import { checkAvailability, bookAppointment, resetAppointmentState } from "../features/Appointment/AppointmentSlice.js";
@@ -237,40 +238,50 @@ const AppointmentForm = () => {
         }
 
         let isCancelled = false;
+        setSlotsLoading(true);
 
-        const filterUnavailableSlots = async () => {
-            setSlotsLoading(true);
-            try {
-                const slotResults = await Promise.all(
-                    generatedSlots.map(async (slot) => {
-                        try {
-                            const response = await appointmentService.checkAvailability({
-                                doctor: selectedDoctorId,
-                                date: formData.date,
-                                timeSlot: { start: slot.start, end: slot.end },
-                            });
+        // A native date input fires onChange on every partial keystroke while
+        // typing (e.g. 8 separate events for "08282026"), not just the final
+        // value. Without this debounce, each one kicked off its own batch of
+        // per-slot availability requests — dozens of overlapping calls — and
+        // the settle-order race between them could leave timeSlots empty even
+        // though every slot was actually available. Waiting for the input to
+        // go quiet means only the final, intended date/hour ever gets checked.
+        const debounceTimer = setTimeout(() => {
+            const filterUnavailableSlots = async () => {
+                try {
+                    const slotResults = await Promise.all(
+                        generatedSlots.map(async (slot) => {
+                            try {
+                                const response = await appointmentService.checkAvailability({
+                                    doctor: selectedDoctorId,
+                                    date: formData.date,
+                                    timeSlot: { start: slot.start, end: slot.end },
+                                });
 
-                            return response?.available ? slot : null;
-                        } catch {
-                            return null;
-                        }
-                    })
-                );
+                                return response?.available ? slot : null;
+                            } catch {
+                                return null;
+                            }
+                        })
+                    );
 
-                if (!isCancelled) {
-                    setTimeSlots(slotResults.filter(Boolean));
+                    if (!isCancelled) {
+                        setTimeSlots(slotResults.filter(Boolean));
+                    }
+                } finally {
+                    if (!isCancelled) {
+                        setSlotsLoading(false);
+                    }
                 }
-            } finally {
-                if (!isCancelled) {
-                    setSlotsLoading(false);
-                }
-            }
-        };
+            };
 
-        filterUnavailableSlots();
+            filterUnavailableSlots();
+        }, 400);
 
         return () => {
             isCancelled = true;
+            clearTimeout(debounceTimer);
         };
     }, [formData.date, selectedWorkingHourKey, buildTimeSlots, selectedDoctorId]);
 
@@ -598,7 +609,13 @@ const AppointmentForm = () => {
 
                 <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex flex-col items-center">
-                        <img src={doctor.image} alt={doctor.name} className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover" />
+                        {doctor.image ? (
+                            <img src={doctor.image} alt={doctor.name} className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover" />
+                        ) : (
+                            <div className="flex aspect-square h-auto w-full max-w-80 items-center justify-center rounded-lg bg-teal-100">
+                                <UserRound className="h-24 w-24 text-teal-700" />
+                            </div>
+                        )}
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>
                         <p className="text-teal-600 text-lg">{doctor.specialty || "Specialist"}</p>
                         <p className="text-gray-500 text-sm text-center">{doctor.qualification || "Qualification not added"}</p>

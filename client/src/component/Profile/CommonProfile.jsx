@@ -98,8 +98,6 @@ const CommonProfile = ({ profile, roleLabel = "Patient", isLoading = false, onSa
         setFormData(normalizeProfile(profile));
     }, [profile]);
 
-    const initials = (formData.name || formData.username || roleLabel || "U").slice(0, 1).toUpperCase();
-
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData((current) => ({ ...current, [name]: value }));
@@ -192,8 +190,8 @@ const CommonProfile = ({ profile, roleLabel = "Patient", isLoading = false, onSa
                             {formData.avatar ? (
                                 <img src={formData.avatar} alt={formData.name || "Profile"} className="h-20 w-20 rounded-3xl border border-white/30 object-cover" />
                             ) : (
-                                <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/30 bg-white/15 text-3xl font-semibold">
-                                    {initials}
+                                <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/30 bg-white/15">
+                                    <UserRound className="h-10 w-10 text-white" />
                                 </div>
                             )}
                             <div>
@@ -223,7 +221,7 @@ const CommonProfile = ({ profile, roleLabel = "Patient", isLoading = false, onSa
                                     {formData.avatar ? (
                                         <img src={formData.avatar} alt={formData.name || "Profile preview"} className="h-full w-full object-cover" />
                                     ) : (
-                                        <span className="text-4xl font-semibold text-teal-700">{initials}</span>
+                                        <UserRound className="h-14 w-14 text-teal-700" />
                                     )}
                                 </div>
                                 <div>

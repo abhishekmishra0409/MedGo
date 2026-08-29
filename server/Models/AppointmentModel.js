@@ -77,6 +77,15 @@ const appointmentSchema = new mongoose.Schema({
             default: null
         }
     },
+    // Set on the first join click. The per-person join links are NOT stored:
+    // Vidza derives them by HMAC and returns them fresh on every call, so a
+    // copy here would only be a second place for a credential to leak from.
+    teleconsultation: {
+        meetingId: String,      // vz_XXXXXXXXXX
+        joinCode: String,       // "XXXX-XXXX" — the fallback door
+        meetingUrl: String,     // where that code gets typed
+        createdAt: Date
+    },
     cancellation: {
         reason: String,
         initiatedBy: {

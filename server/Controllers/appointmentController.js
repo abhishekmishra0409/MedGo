@@ -12,7 +12,7 @@ exports.bookAppointment = async (req, res) => {
             data: appointment
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             error: error.message
         });
@@ -61,7 +61,7 @@ exports.checkAvailability = async (req, res) => {
             available: isAvailable
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             error: error.message
         });
@@ -73,14 +73,14 @@ exports.updateAppointmentStatus = async (req, res) => {
         const { id } = req.params;
         const { status, notes, paymentStatus } = req.body;
 
-        const appointment = await AppointmentService.updateAppointmentStatus(id, status, notes, paymentStatus);
+        const appointment = await AppointmentService.updateAppointmentStatus(id, status, notes, paymentStatus, req.user);
 
         res.status(200).json({
             success: true,
             data: appointment
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             error: error.message
         });
@@ -90,7 +90,7 @@ exports.updateAppointmentStatus = async (req, res) => {
 exports.cancelAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const appointment = await AppointmentService.updateAppointmentStatus(id, 'cancelled');
+        const appointment = await AppointmentService.updateAppointmentStatus(id, 'cancelled', undefined, null, req.user);
 
         res.status(200).json({
             success: true,
@@ -98,7 +98,7 @@ exports.cancelAppointment = async (req, res) => {
             message: 'Appointment cancelled successfully'
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             error: error.message
         });
@@ -109,7 +109,7 @@ exports.completeAppointment = async (req, res) => {
     try {
         const { id } = req.params;
         const { notes, paymentStatus } = req.body;
-        const appointment = await AppointmentService.updateAppointmentStatus(id, 'completed', notes, paymentStatus);
+        const appointment = await AppointmentService.updateAppointmentStatus(id, 'completed', notes, paymentStatus, req.user);
 
         res.status(200).json({
             success: true,
@@ -117,7 +117,23 @@ exports.completeAppointment = async (req, res) => {
             message: 'Appointment marked as completed'
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+exports.joinTeleconsultation = async (req, res) => {
+    try {
+        const join = await AppointmentService.getTeleconsultationJoin(req.params.id, req.user);
+
+        res.status(200).json({
+            success: true,
+            data: join
+        });
+    } catch (error) {
+        res.status(error.status || 400).json({
             success: false,
             error: error.message
         });

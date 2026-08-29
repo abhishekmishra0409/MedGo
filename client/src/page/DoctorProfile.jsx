@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { UserRound } from "lucide-react";
 import { fetchDoctorById } from "../features/Doctor/DoctorSlice.js";
 import { fetchClinicsByDoctor } from "../features/Clinic/ClinicSlice.js";
 
@@ -51,8 +52,8 @@ const DoctorProfile = () => {
                                 className="aspect-square h-auto w-full max-w-80 rounded-lg object-cover"
                             />
                         ) : (
-                            <div className="flex aspect-square h-auto w-full max-w-80 items-center justify-center rounded-lg bg-teal-100 text-6xl font-bold text-teal-800">
-                                {(doctor.name || "D").charAt(0).toUpperCase()}
+                            <div className="flex aspect-square h-auto w-full max-w-80 items-center justify-center rounded-lg bg-teal-100">
+                                <UserRound className="h-24 w-24 text-teal-700" />
                             </div>
                         )}
                         <h2 className="text-2xl font-bold mt-4 text-gray-800">{doctor.name}</h2>

@@ -16,6 +16,7 @@ import {
     X,
 } from "lucide-react";
 import { getMyAppointments } from "../../features/Appointment/AppointmentSlice.js";
+import JoinTeleconsultation from "../../component/Appointments/JoinTeleconsultation.jsx";
 
 const statusStyles = {
     pending: "border-amber-200 bg-amber-50 text-amber-800",
@@ -150,6 +151,7 @@ const AppointmentCard = ({ appointment, onViewDetails, onViewClinic }) => {
                     </p>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
+                    <JoinTeleconsultation appointment={appointment} tokenKey="userToken" />
                     {appointment.clinic ? (
                         <button
                             type="button"
@@ -388,6 +390,8 @@ const Appointments = () => {
                             <DetailItem label="Visit type" value={selectedAppointment.type === "in-person" ? "In-person" : "Teleconsultation"} />
                             <DetailItem label="Payment" value={<span className={`rounded-full px-3 py-1 text-xs capitalize ${paymentStyles[selectedAppointment.payment?.status] || "bg-slate-100 text-slate-700"}`}>{selectedAppointment.payment?.status || "Not specified"}</span>} />
                         </div>
+
+                        <JoinTeleconsultation appointment={selectedAppointment} tokenKey="userToken" />
 
                         <div className="rounded-3xl border border-slate-200 p-5">
                             <p className="flex items-center gap-2 text-sm font-bold text-slate-950">
