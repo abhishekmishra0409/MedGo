@@ -151,6 +151,57 @@ class AppointmentService {
         });
     }
 
+    // Allow-list, never a spread of req.body. Spreading let a patient set
+    // status:'confirmed', payment.status:'paid', doctorNotes, cancellation, or a
+    // forged teleconsultation block straight into the document — and
+    // status:'confirmed' + type:'teleconsultation' is exactly what the
+    // teleconsultation join gates on. Pure and static so it can be tested.
+    static buildAppointmentPayload(appointmentData, canonicalDoctorId, startOfDay) {
+        const payload = {
+            doctor: canonicalDoctorId,
+            patient: appointmentData.patient,
+            date: startOfDay,
+            timeSlot: {
+                start: appointmentData.timeSlot.start,
+                end: appointmentData.timeSlot.end,
+            },
+            type: appointmentData.type,
+            reason: appointmentData.reason,
+        };
+
+        if (appointmentData.type === 'in-person' && appointmentData.clinic) {
+            payload.clinic = appointmentData.clinic;
+        }
+
+        if (appointmentData.patientNotes) {
+            payload.notes = { patientNotes: appointmentData.patientNotes };
+        }
+
+        // Intake is patient-supplied, so it is allow-listed field by field like
+        // everything else — never spread.
+        const intake = appointmentData.intake;
+        if (intake && typeof intake === 'object') {
+            payload.intake = {
+                duration: intake.duration || null,
+                severity: intake.severity || null,
+                existingConditions: Array.isArray(intake.existingConditions)
+                    ? intake.existingConditions.map((item) => String(item).trim()).filter(Boolean).slice(0, 20)
+                    : [],
+                currentMedications: String(intake.currentMedications || '').trim(),
+                allergies: String(intake.allergies || '').trim(),
+                previousTreatment: String(intake.previousTreatment || '').trim(),
+            };
+        }
+
+        // Only the amount is patient-supplied; payment.status stays at its
+        // schema default of 'pending' so nobody can self-mark an appointment paid.
+        if (payload.type === 'teleconsultation') {
+            payload.payment = { amount: Number(appointmentData.payment?.amount) || 0 };
+        }
+
+        return payload;
+    }
+
     static async createAppointment(appointmentData) {
         if (!appointmentData?.date) {
             throw new Error('Appointment date is required');
@@ -205,18 +256,7 @@ class AppointmentService {
             }
         }
 
-        const payload = {
-            ...appointmentData,
-            doctor: canonicalDoctorId,
-            date: startOfDay,
-        };
-
-        if (payload.type === 'teleconsultation' && (payload.payment?.amount === undefined || payload.payment?.amount === null)) {
-            payload.payment = {
-                ...(payload.payment || {}),
-                amount: 0,
-            };
-        }
+        const payload = this.buildAppointmentPayload(appointmentData, canonicalDoctorId, startOfDay);
 
         const appointment = await Appointment.create(payload);
 
@@ -254,6 +294,27 @@ class AppointmentService {
         return appointment;
     }
 
+    // The taken slots for one doctor on one day. Same status predicate as
+    // checkAvailability and the unique index, so all three agree.
+    static async getBookedSlots(doctorIdentifier, dateInput) {
+        const doctor = await this.resolveDoctor(doctorIdentifier);
+        if (!doctor) {
+            throw new Error('Doctor not found');
+        }
+
+        const { startOfDay, endOfDay } = this.getDateRange(dateInput);
+
+        const appointments = await Appointment.find({
+            doctor: doctor._id,
+            date: { $gte: startOfDay, $lt: endOfDay },
+            status: { $ne: 'cancelled' },
+        }).select('timeSlot').lean();
+
+        return appointments
+            .map((appointment) => appointment.timeSlot)
+            .filter((slot) => slot?.start && slot?.end);
+    }
+
     static async checkAvailability(doctorId, date, timeSlot) {
         const doctor = await this.resolveDoctor(doctorId);
 
@@ -277,7 +338,10 @@ class AppointmentService {
                 $gte: startOfDay,
                 $lt: endOfDay,
             },
-            status: { $nin: ['cancelled', 'completed'] },
+            // Must match the unique index's partialFilterExpression exactly
+            // (status $ne 'cancelled'). Excluding 'completed' here too made a
+            // finished slot read as free, then fail the insert with a raw E11000.
+            status: { $ne: 'cancelled' },
             $or: [
                 {
                     'timeSlot.start': { $lt: timeSlot.end },

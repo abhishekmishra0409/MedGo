@@ -70,11 +70,11 @@ const HomePage = () => {
                                 MedGo helps patients move from symptoms to specialists, from prescriptions to pharmacy orders, and from tests to reports without the usual fragmented experience.
                             </p>
                             <div className="flex flex-wrap gap-3">
-                                <Link to="/doctorlists" className="btn-primary px-6 py-3 text-sm">
-                                    Find doctors
+                                <Link to="/book" className="btn-primary px-6 py-3 text-sm">
+                                    Book an appointment
                                 </Link>
-                                <Link to="/productlists" className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-teal-300">
-                                    Order medicines
+                                <Link to="/doctorlists" className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-teal-300">
+                                    Browse doctors
                                 </Link>
                             </div>
                             <div className="grid gap-4 sm:grid-cols-3">

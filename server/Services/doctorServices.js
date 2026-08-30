@@ -1,3 +1,4 @@
+const { resolveSpecialty } = require('../Utils/specialties');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const User = require('../Models/UserModel');
@@ -40,7 +41,11 @@ const sanitizeConsultationSettings = (payload = {}, existing = {}) => {
 
 const buildDoctorProfileFromPayload = (payload = {}, existingProfile = {}) => ({
     ...existingProfile,
-    specialty: payload.specialty?.trim() ?? existingProfile.specialty ?? '',
+    // Normalise on write so new records land canonical; the query side resolves
+    // aliases too, so records written before this still match.
+    specialty: payload.specialty !== undefined
+        ? resolveSpecialty(payload.specialty)
+        : (existingProfile.specialty ?? ''),
     qualification: payload.qualification?.trim() ?? existingProfile.qualification ?? '',
     councilRegistrationNumber: payload.councilRegistrationNumber?.trim().toUpperCase() ?? existingProfile.councilRegistrationNumber ?? '',
     councilName: payload.councilName?.trim() ?? existingProfile.councilName ?? '',

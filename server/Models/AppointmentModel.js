@@ -22,10 +22,28 @@ const appointmentSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Appointment date is required'],
         validate: {
-            validator: function(value) {
-                return value > new Date();
+            // `date` is stored as local midnight, so `value > new Date()` was
+            // false for every same-day booking — the UI offered today and the
+            // save always failed. The real instant is date + timeSlot.start.
+            validator: function (value) {
+                if (!value) return false;
+
+                const slotStart = this.timeSlot?.start;
+                const match = /^(\d{1,2}):(\d{2})$/.exec(String(slotStart || ''));
+
+                if (!match) {
+                    // No readable slot (or a query-context update): fall back to
+                    // rejecting only days that are already past.
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    return value >= todayStart;
+                }
+
+                const instant = new Date(value);
+                instant.setHours(Number(match[1]), Number(match[2]), 0, 0);
+                return instant > new Date();
             },
-            message: 'Appointment date must be in the future'
+            message: 'Appointment date and time must be in the future'
         }
     },
     timeSlot: {
@@ -58,6 +76,25 @@ const appointmentSchema = new mongoose.Schema({
     notes: {
         patientNotes: String,
         doctorNotes: String
+    },
+    // Structured intake captured at booking. The free-text `reason` alone gave
+    // the doctor almost nothing to work from — these are the questions a
+    // clinician asks first, so they arrive before the consultation starts.
+    intake: {
+        duration: {
+            type: String,
+            enum: ['today', 'few-days', 'about-a-week', 'few-weeks', 'few-months', 'longer', null],
+            default: null
+        },
+        severity: {
+            type: String,
+            enum: ['mild', 'moderate', 'severe', null],
+            default: null
+        },
+        existingConditions: [String],
+        currentMedications: { type: String, trim: true },
+        allergies: { type: String, trim: true },
+        previousTreatment: { type: String, trim: true }
     },
     payment: {
         status: {

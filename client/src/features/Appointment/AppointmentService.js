@@ -45,12 +45,22 @@ const completeAppointment = async ({ appointmentId, notes, paymentStatus }) => {
     return response.data;
 };
 
+// One request per date change instead of one per slot.
+const getBookedSlots = async ({ doctor, date }) => {
+    const response = await axios.get(`${API_URL}/booked`, {
+        ...userConfig(),
+        params: { doctor, date },
+    });
+    return response.data;
+};
+
 const checkAvailability = async (availabilityData) => {
     const response = await axios.post(`${API_URL}/check-availability`, availabilityData, userConfig());
     return response.data;
 };
 
 const appointmentService = {
+    getBookedSlots,
     bookAppointment,
     getMyAppointments,
     getDoctorAppointments,

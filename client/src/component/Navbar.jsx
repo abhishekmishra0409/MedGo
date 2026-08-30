@@ -8,6 +8,7 @@ import { logoutOwner } from "../features/Owner/OwnerSlice";
 import NotificationBell from "./Notifications/NotificationBell.jsx";
 
 const navLinks = [
+    { to: "/book", label: "Book appointment" },
     { to: "/doctorlists", label: "Doctors" },
     { to: "/productlists", label: "Pharmacy" },
     { to: "/labtestlists", label: "Lab Tests" },

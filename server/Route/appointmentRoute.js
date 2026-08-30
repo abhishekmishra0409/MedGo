@@ -20,7 +20,12 @@ router.patch('/:id/complete', doctorMiddleware, appointmentController.completeAp
 // this one endpoint and the service decides which link you get back.
 router.post('/:id/teleconsultation/join', authMiddleware, appointmentController.joinTeleconsultation);
 
-// Public route
-router.post('/check-availability', appointmentController.checkAvailability);
+// One call returns the day's taken slots, replacing the old one-POST-per-slot
+// storm the booking form used to render its grid.
+router.get('/booked', authMiddleware, appointmentController.getBookedSlots);
+
+// authMiddleware added: this used to be public, which let anyone enumerate any
+// approved doctor's booked calendar.
+router.post('/check-availability', authMiddleware, appointmentController.checkAvailability);
 
 module.exports = router;

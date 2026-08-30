@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './page/HomePage.jsx';
+import BookingFlow from './page/BookingFlow.jsx';
 import Doctors from './page/Doctors.jsx';
 import Ambulance from './page/Ambulance.jsx';
 import Login from './component/AuthPages/Login.jsx';
@@ -114,6 +115,7 @@ function App() {
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/store" element={<MedicalStore />} />
           <Route path="/ambulance" element={<Ambulance />} />
+          <Route path="/book" element={<BookingFlow />} />
           <Route path="/doctorlists" element={<DoctorLists />} />
           <Route path="/productlists" element={<ProductLists />} />
           <Route path="/product/:id" element={<SingleProduct />} />

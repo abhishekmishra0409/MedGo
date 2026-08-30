@@ -12,6 +12,16 @@ exports.bookAppointment = async (req, res) => {
             data: appointment
         });
     } catch (error) {
+        // The availability check and the insert are not atomic, so a concurrent
+        // booking can still trip the unique index. Translate it rather than
+        // returning a raw "E11000 duplicate key error" to the patient.
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                error: 'That time slot was just booked. Please choose another.'
+            });
+        }
+
         res.status(error.status || 400).json({
             success: false,
             error: error.message
@@ -83,6 +93,25 @@ exports.updateAppointmentStatus = async (req, res) => {
         res.status(error.status || 400).json({
             success: false,
             error: error.message
+        });
+    }
+};
+
+// Returns the slots already taken on one doctor/date, so the client can filter
+// its generated grid with a single request instead of one per slot.
+exports.getBookedSlots = async (req, res) => {
+    try {
+        const { doctor, date } = req.query;
+        const slots = await AppointmentService.getBookedSlots(doctor, date);
+
+        res.status(200).json({
+            success: true,
+            data: slots,
+        });
+    } catch (error) {
+        res.status(error.status || 400).json({
+            success: false,
+            error: error.message,
         });
     }
 };

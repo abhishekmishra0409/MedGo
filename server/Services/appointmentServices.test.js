@@ -55,4 +55,47 @@ assert.throws(
 );
 assert.doesNotThrow(() => AppointmentService.assertParticipant(appt, { _id: 'x', role: 'admin' }));
 
-console.log('appointment transition + participant checks passed');
+// --- mass assignment: the booking payload is an allow-list ---
+const hostile = {
+    patient: 'p1',
+    doctor: 'IGNORED',
+    date: 'IGNORED',
+    timeSlot: { start: '09:00', end: '09:30' },
+    type: 'teleconsultation',
+    reason: 'a genuine reason string',
+    // Everything below is an escalation attempt and must not survive.
+    status: 'confirmed',
+    payment: { status: 'paid', amount: 0, method: 'upi' },
+    notes: { doctorNotes: 'forged clinical note' },
+    cancellation: { reason: 'forged', initiatedBy: 'doctor' },
+    teleconsultation: { meetingId: 'vz_forged', joinCode: 'AAAA-BBBB' },
+    createdAt: new Date(0),
+};
+
+const startOfDay = new Date(2099, 0, 1);
+const built = AppointmentService.buildAppointmentPayload(hostile, 'realDoctorId', startOfDay);
+
+assert.equal(built.doctor, 'realDoctorId', 'doctor comes from the resolved record');
+assert.equal(built.date, startOfDay, 'date comes from the server-parsed range');
+assert.equal(built.patient, 'p1');
+assert.equal(built.type, 'teleconsultation');
+
+assert.equal(built.status, undefined, 'status must not be settable by the patient');
+assert.equal(built.cancellation, undefined, 'cancellation must not be settable');
+assert.equal(built.teleconsultation, undefined, 'the teleconsultation block must not be forgeable');
+assert.equal(built.notes, undefined, 'doctorNotes must not be settable');
+assert.equal(built.createdAt, undefined, 'timestamps must not be settable');
+assert.equal(built.payment.status, undefined, 'payment.status must not be settable');
+assert.equal(built.payment.method, undefined, 'payment.method must not be settable');
+assert.deepEqual(Object.keys(built.payment), ['amount'], 'only the amount is patient-supplied');
+
+// in-person keeps the clinic, drops payment entirely
+const inPerson = AppointmentService.buildAppointmentPayload(
+    { patient: 'p1', timeSlot: { start: '10:00', end: '10:30' }, type: 'in-person', reason: 'x'.repeat(12), clinic: 'c1', status: 'completed' },
+    'd1', startOfDay
+);
+assert.equal(inPerson.clinic, 'c1');
+assert.equal(inPerson.payment, undefined, 'in-person carries no payment block');
+assert.equal(inPerson.status, undefined);
+
+console.log('appointment transition + participant + payload allow-list checks passed');

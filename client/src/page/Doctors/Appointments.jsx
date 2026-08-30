@@ -314,6 +314,97 @@ const ChoiceGroup = ({ label, options, value, onChange }) => (
     </div>
 );
 
+const DURATION_LABELS = {
+    today: "Started today",
+    "few-days": "A few days",
+    "about-a-week": "About a week",
+    "few-weeks": "A few weeks",
+    "few-months": "A few months",
+    longer: "Longer than 6 months",
+};
+
+const SEVERITY_TONES = {
+    mild: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    moderate: "border-amber-200 bg-amber-50 text-amber-800",
+    severe: "border-rose-200 bg-rose-50 text-rose-800",
+};
+
+const IntakeRow = ({ label, children }) => (
+    <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+        <div className="mt-1 text-sm text-slate-800">{children}</div>
+    </div>
+);
+
+const PatientIntake = ({ appointment }) => {
+    const intake = appointment?.intake || {};
+    const hasIntake = intake.duration || intake.severity || intake.existingConditions?.length
+        || intake.currentMedications || intake.allergies || intake.previousTreatment;
+
+    if (!appointment?.reason && !hasIntake) {
+        return null;
+    }
+
+    return (
+        <section className="rounded-2xl border border-teal-100 bg-teal-50/40 p-4">
+            <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-teal-800">What the patient told us</h3>
+
+            <div className="mt-3 space-y-3">
+                {appointment.reason ? (
+                    <IntakeRow label="Reason">
+                        <p className="leading-6">{appointment.reason}</p>
+                    </IntakeRow>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {intake.duration ? (
+                        <IntakeRow label="Duration">{DURATION_LABELS[intake.duration] || intake.duration}</IntakeRow>
+                    ) : null}
+
+                    {intake.severity ? (
+                        <IntakeRow label="Severity">
+                            <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize ${SEVERITY_TONES[intake.severity] || "border-slate-200 bg-slate-100 text-slate-700"}`}>
+                                {intake.severity}
+                            </span>
+                        </IntakeRow>
+                    ) : null}
+                </div>
+
+                {intake.existingConditions?.length ? (
+                    <IntakeRow label="Existing conditions">
+                        <div className="flex flex-wrap gap-1.5">
+                            {intake.existingConditions.map((condition) => (
+                                <span key={condition} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700">{condition}</span>
+                            ))}
+                        </div>
+                    </IntakeRow>
+                ) : null}
+
+                {/* Allergies are called out separately — this is the field that
+                    changes what is safe to prescribe. */}
+                {intake.allergies ? (
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-3">
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-rose-700">Allergies</p>
+                        <p className="mt-1 text-sm font-semibold text-rose-900">{intake.allergies}</p>
+                    </div>
+                ) : null}
+
+                {intake.currentMedications ? (
+                    <IntakeRow label="Current medicines">{intake.currentMedications}</IntakeRow>
+                ) : null}
+
+                {intake.previousTreatment ? (
+                    <IntakeRow label="Previous treatment">{intake.previousTreatment}</IntakeRow>
+                ) : null}
+
+                {appointment.notes?.patientNotes ? (
+                    <IntakeRow label="Patient notes">{appointment.notes.patientNotes}</IntakeRow>
+                ) : null}
+            </div>
+        </section>
+    );
+};
+
 const UpdateAppointmentModal = ({
     appointment,
     notes,
@@ -343,6 +434,11 @@ const UpdateAppointmentModal = ({
                     <InfoTile label="Clinic" value={appointment.clinic?.name || "N/A"} icon={<MapPin className="h-4 w-4 text-teal-700" />} />
                     <InfoTile label="Type" value={appointment.type === "in-person" ? "In-person" : "Teleconsultation"} icon={<Stethoscope className="h-4 w-4 text-teal-700" />} />
                 </div>
+
+                {/* The reason and intake were collected at booking and shown to
+                    nobody — the doctor's only view of the patient was name,
+                    email and phone. */}
+                <PatientIntake appointment={appointment} />
 
                 <ChoiceGroup label="Appointment status" options={appointmentStatuses} value={status} onChange={onStatusChange} />
                 <ChoiceGroup label="Payment status" options={paymentStatuses} value={paymentStatus} onChange={onPaymentStatusChange} />

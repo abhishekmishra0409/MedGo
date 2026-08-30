@@ -1,136 +1,36 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { UserRound } from "lucide-react";
 import { fetchDoctorById } from "../features/Doctor/DoctorSlice.js";
 import { fetchClinicsByDoctor } from "../features/Clinic/ClinicSlice.js";
 import { checkAvailability, bookAppointment, resetAppointmentState } from "../features/Appointment/AppointmentSlice.js";
 import appointmentService from "../features/Appointment/AppointmentService.js";
+import { getSymptom } from "../data/symptoms.js";
+import {
+    COMMON_CONDITIONS,
+    DURATIONS,
+    REASON_MIN_LENGTH,
+    SEVERITIES,
+    buildReasonFromSymptom,
+    emptyIntake,
+    getIntakeValidationError,
+} from "../data/intake.js";
+import { buildSlotsForDate, isScheduleApplicable } from "./appointmentSlots.js";
 import { toast } from "react-toastify";
 
 // Fallback only — each doctor sets their own consultation length on the
 // availability page (doctorProfile.consultationSettings.slotDuration).
 const DEFAULT_SLOT_DURATION_MINUTES = 30;
-const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-const parseTimeToMinutes = (value = "") => {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
 
-    const match24 = trimmed.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-        const hours = Number(match24[1]);
-        const minutes = Number(match24[2]);
-        if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-            return hours * 60 + minutes;
-        }
-        return null;
-    }
-
-    const match12 = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
-    if (match12) {
-        let hours = Number(match12[1]);
-        const minutes = Number(match12[2] || "0");
-        const meridian = match12[3].toLowerCase();
-
-        if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
-            return null;
-        }
-
-        if (hours === 12) hours = 0;
-        if (meridian === "pm") hours += 12;
-        return hours * 60 + minutes;
-    }
-
-    return null;
-};
-
-const parseTimeRange = (range = "") => {
-    const normalized = range.replace(/\s+to\s+/i, "-");
-    const [startRaw, endRaw] = normalized.split("-").map((part) => part?.trim() || "");
-    if (!startRaw || !endRaw) return null;
-
-    const start = parseTimeToMinutes(startRaw);
-    const end = parseTimeToMinutes(endRaw);
-
-    if (start === null || end === null || end <= start) {
-        return null;
-    }
-
-    return { start, end };
-};
-
-const formatMinutes24 = (totalMinutes) => {
-    const hours = Math.floor(totalMinutes / 60)
-        .toString()
-        .padStart(2, "0");
-    const minutes = (totalMinutes % 60).toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-};
-
-const formatMinutes12 = (totalMinutes) => {
-    const rawHours = Math.floor(totalMinutes / 60);
-    const minutes = (totalMinutes % 60).toString().padStart(2, "0");
-    const suffix = rawHours >= 12 ? "PM" : "AM";
-    const hours12 = rawHours % 12 || 12;
-    return `${hours12}:${minutes} ${suffix}`;
-};
-
-const deriveDayIndexes = (daysLabel = "") => {
-    const normalized = daysLabel.toLowerCase();
-
-    if (normalized.includes("everyday") || normalized.includes("all days") || normalized.includes("daily")) {
-        return [0, 1, 2, 3, 4, 5, 6];
-    }
-
-    if (normalized.includes("weekday")) {
-        return [1, 2, 3, 4, 5];
-    }
-
-    if (normalized.includes("weekend")) {
-        return [0, 6];
-    }
-
-    const matchedDays = [];
-    DAY_NAMES.forEach((dayName, index) => {
-        if (normalized.includes(dayName)) {
-            matchedDays.push(index);
-        }
-    });
-
-    if (!matchedDays.length) {
-        return [0, 1, 2, 3, 4, 5, 6];
-    }
-
-    if (matchedDays.length >= 2 && normalized.includes("-")) {
-        const [startDay, endDay] = [matchedDays[0], matchedDays[1]];
-        const dayIndexes = [];
-        let cursor = startDay;
-        dayIndexes.push(cursor);
-
-        while (cursor !== endDay) {
-            cursor = (cursor + 1) % 7;
-            dayIndexes.push(cursor);
-            if (dayIndexes.length > 7) break;
-        }
-
-        return [...new Set(dayIndexes)];
-    }
-
-    return [...new Set(matchedDays)];
-};
-
-const isScheduleApplicable = (daysLabel, dateString) => {
-    if (!dateString) return true;
-
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return false;
-
-    return deriveDayIndexes(daysLabel).includes(date.getDay());
-};
 
 const AppointmentForm = () => {
     const { doctorId } = useParams();
+    const [searchParams] = useSearchParams();
+    // The guided flow passes the symptom the patient already described, so the
+    // reason field starts filled rather than as an empty 10-character minimum.
+    const referredSymptom = getSymptom(searchParams.get("symptom"));
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -150,10 +50,10 @@ const AppointmentForm = () => {
         date: "",
         timeSlot: { start: "", end: "" },
         type: "in-person",
-        reason: "",
+        reason: buildReasonFromSymptom(referredSymptom),
+        intake: emptyIntake(),
     });
     const [timeSlots, setTimeSlots] = useState([]);
-    const [selectedWorkingHourKey, setSelectedWorkingHourKey] = useState("");
     const [slotsLoading, setSlotsLoading] = useState(false);
 
     const clinicList = Array.isArray(doctorClinics) ? doctorClinics : doctorClinics ? [doctorClinics] : [];
@@ -177,54 +77,25 @@ const AppointmentForm = () => {
         dispatch(fetchClinicsByDoctor(doctorId));
     }, [dispatch, doctorId]);
 
-    useEffect(() => {
-        if (!workingHourOptions.length) {
-            setSelectedWorkingHourKey("");
-            return;
-        }
-
-        const matchingOption = workingHourOptions.find((option) => isScheduleApplicable(option.days, formData.date));
-        setSelectedWorkingHourKey(matchingOption?.key || workingHourOptions[0].key);
-    }, [workingHourOptions, formData.date]);
 
     const slotDuration = Number(doctor?.consultationSettings?.slotDuration) > 0
         ? Number(doctor.consultationSettings.slotDuration)
         : DEFAULT_SLOT_DURATION_MINUTES;
 
-    const buildTimeSlots = useCallback(() => {
-        const selectedSchedule = workingHourOptions.find((option) => option.key === selectedWorkingHourKey);
-        if (!selectedSchedule?.hours) {
-            return [];
-        }
+    const buildTimeSlots = useCallback(
+        () => buildSlotsForDate(workingHourOptions, formData.date, slotDuration),
+        [formData.date, workingHourOptions, slotDuration]
+    );
 
-        const parsedRange = parseTimeRange(selectedSchedule.hours);
-        if (!parsedRange) {
-            return [];
-        }
-
-        const slots = [];
-        let cursor = parsedRange.start;
-
-        while (cursor + slotDuration <= parsedRange.end) {
-            const slotStart = cursor;
-            const slotEnd = cursor + slotDuration;
-
-            slots.push({
-                start: formatMinutes24(slotStart),
-                end: formatMinutes24(slotEnd),
-                display: `${formatMinutes12(slotStart)} - ${formatMinutes12(slotEnd)}`,
-            });
-
-            cursor = slotEnd;
-        }
-
-        return slots;
-    }, [selectedWorkingHourKey, workingHourOptions, slotDuration]);
+    const worksOnSelectedDate = useMemo(() => (
+        Boolean(formData.date)
+        && workingHourOptions.some((option) => option.hours && isScheduleApplicable(option.days, formData.date))
+    ), [formData.date, workingHourOptions]);
 
     useEffect(() => {
         setFormData((prev) => ({ ...prev, timeSlot: { start: "", end: "" } }));
 
-        if (!formData.date || !selectedWorkingHourKey) {
+        if (!formData.date) {
             setTimeSlots([]);
             setSlotsLoading(false);
             return;
@@ -256,24 +127,29 @@ const AppointmentForm = () => {
         const debounceTimer = setTimeout(() => {
             const filterUnavailableSlots = async () => {
                 try {
-                    const slotResults = await Promise.all(
-                        generatedSlots.map(async (slot) => {
-                            try {
-                                const response = await appointmentService.checkAvailability({
-                                    doctor: selectedDoctorId,
-                                    date: formData.date,
-                                    timeSlot: { start: slot.start, end: slot.end },
-                                });
+                    // One call for the whole day. This used to fire a POST per
+                    // slot (32+ in parallel for a 15-minute grid), and its
+                    // per-slot `catch → null` silently hid slots that were
+                    // actually free whenever a single request blipped.
+                    const response = await appointmentService.getBookedSlots({
+                        doctor: selectedDoctorId,
+                        date: formData.date,
+                    });
 
-                                return response?.available ? slot : null;
-                            } catch {
-                                return null;
-                            }
-                        })
-                    );
+                    const taken = Array.isArray(response?.data) ? response.data : [];
+                    const overlaps = (slot) => taken.some((booked) => (
+                        slot.start < booked.end && slot.end > booked.start
+                    ));
 
                     if (!isCancelled) {
-                        setTimeSlots(slotResults.filter(Boolean));
+                        setTimeSlots(generatedSlots.filter((slot) => !overlaps(slot)));
+                    }
+                } catch {
+                    // Show the full grid rather than an empty one: the booking
+                    // request itself re-checks availability and will reject a
+                    // taken slot with a clear message.
+                    if (!isCancelled) {
+                        setTimeSlots(generatedSlots);
                     }
                 } finally {
                     if (!isCancelled) {
@@ -289,7 +165,7 @@ const AppointmentForm = () => {
             isCancelled = true;
             clearTimeout(debounceTimer);
         };
-    }, [formData.date, selectedWorkingHourKey, buildTimeSlots, selectedDoctorId]);
+    }, [formData.date, buildTimeSlots, selectedDoctorId]);
 
     useEffect(() => {
         if (availabilitySuccess && isAvailable) {
@@ -335,6 +211,27 @@ const AppointmentForm = () => {
         );
     };
 
+    const reasonRemaining = Math.max(0, REASON_MIN_LENGTH - formData.reason.trim().length);
+
+    const updateIntake = (field, value) => {
+        setFormData((prev) => ({ ...prev, intake: { ...prev.intake, [field]: value } }));
+    };
+
+    const toggleCondition = (condition) => {
+        setFormData((prev) => {
+            const current = prev.intake.existingConditions;
+            return {
+                ...prev,
+                intake: {
+                    ...prev.intake,
+                    existingConditions: current.includes(condition)
+                        ? current.filter((item) => item !== condition)
+                        : [...current, condition],
+                },
+            };
+        });
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -344,8 +241,9 @@ const AppointmentForm = () => {
             return;
         }
 
-        if (!formData.reason || formData.reason.length < 10) {
-            toast.error("Please provide a detailed reason (at least 10 characters)", { toastId: "appointment-reason-required" });
+        const intakeError = getIntakeValidationError(formData.reason, formData.intake);
+        if (intakeError) {
+            toast.error(intakeError, { toastId: "appointment-intake-required" });
             return;
         }
 
@@ -363,12 +261,19 @@ const AppointmentForm = () => {
             },
             type: formData.type,
             clinic: formData.type === "in-person" ? primaryClinic?._id : null,
-            reason: formData.reason,
+            reason: formData.reason.trim(),
+            intake: formData.intake,
             payment: formData.type === "teleconsultation" ? { amount: 0 } : undefined,
         };
 
-        if (formData.type === "in-person" && !primaryClinic?._id) {
-            toast.error("No clinic is assigned for in-person appointment. Please choose teleconsultation.", { toastId: "appointment-clinic-missing" });
+        // A solo doctor takes in-person bookings at their own practiceAddress —
+        // the server allows this, so only block when there is neither a clinic
+        // nor a practice address to send the patient to.
+        const isSoloDoctor = !doctor?.primaryClinic;
+        const hasPracticeAddress = Boolean(doctor?.practiceAddress?.city);
+
+        if (formData.type === "in-person" && !primaryClinic?._id && !(isSoloDoctor && hasPracticeAddress)) {
+            toast.error("This doctor has not set up in-person consultations yet. Please choose teleconsultation.", { toastId: "appointment-clinic-missing" });
             return;
         }
 
@@ -446,22 +351,6 @@ const AppointmentForm = () => {
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Working Hour</label>
-                                    <select
-                                        value={selectedWorkingHourKey}
-                                        onChange={(event) => setSelectedWorkingHourKey(event.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md"
-                                        disabled={!workingHourOptions.length}
-                                    >
-                                        {!workingHourOptions.length ? <option value="">No working hours configured</option> : null}
-                                        {workingHourOptions.map((option) => (
-                                            <option key={option.key} value={option.key}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
                             </div>
 
                             <div className="mt-4">
@@ -472,7 +361,7 @@ const AppointmentForm = () => {
                                     slotsLoading ? (
                                         <p className="text-sm text-gray-500">Loading available slots...</p>
                                     ) : timeSlots.length > 0 ? (
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                                             {timeSlots.map((slot, index) => (
                                                 <button
                                                     key={index}
@@ -488,7 +377,11 @@ const AppointmentForm = () => {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-gray-500">No available slots for the selected working hour on this date.</p>
+                                        <p className="text-sm text-gray-500">
+                                            {worksOnSelectedDate
+                                                ? "Every slot on this date is already booked. Please try another day."
+                                                : "The doctor does not consult on this day. Please pick another date."}
+                                        </p>
                                     )
                                 ) : (
                                     <p className="text-sm text-gray-500">Please select a date first</p>
@@ -562,27 +455,142 @@ const AppointmentForm = () => {
                             )}
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Appointment</label>
+                                <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
+                                    What is the problem? <span className="text-rose-600">*</span>
+                                </label>
                                 <textarea
+                                    id="reason"
                                     name="reason"
                                     rows="3"
-                                    className="w-full p-2 border border-gray-300 rounded-md"
-                                    placeholder="Please describe your symptoms or reason for the appointment (minimum 10 characters)"
+                                    className="w-full rounded-md border border-gray-300 p-2 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    placeholder="Describe your symptoms — when they started, what makes them better or worse."
                                     value={formData.reason}
                                     onChange={handleChange}
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Minimum 10 characters required</p>
+                                {/* Live count, so the minimum is visible while typing instead of
+                                    arriving as a toast after the patient presses Confirm. */}
+                                <p className={`mt-1 text-xs ${reasonRemaining > 0 ? "text-amber-700" : "text-gray-500"}`}>
+                                    {reasonRemaining > 0
+                                        ? `${reasonRemaining} more character${reasonRemaining === 1 ? "" : "s"} needed`
+                                        : "Thanks — that's enough detail."}
+                                </p>
+                            </div>
+
+                            <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label htmlFor="intake-duration" className="block text-sm font-medium text-gray-700 mb-1">
+                                        How long have you had this? <span className="text-rose-600">*</span>
+                                    </label>
+                                    <select
+                                        id="intake-duration"
+                                        value={formData.intake.duration}
+                                        onChange={(event) => updateIntake("duration", event.target.value)}
+                                        className="w-full rounded-md border border-gray-300 p-2 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    >
+                                        <option value="">Select...</option>
+                                        {DURATIONS.map((item) => (
+                                            <option key={item.value} value={item.value}>{item.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                                        How severe is it? <span className="text-rose-600">*</span>
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {SEVERITIES.map((item) => (
+                                            <button
+                                                key={item.value}
+                                                type="button"
+                                                title={item.hint}
+                                                aria-pressed={formData.intake.severity === item.value}
+                                                onClick={() => updateIntake("severity", item.value)}
+                                                className={`rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-teal-500 ${
+                                                    formData.intake.severity === item.value
+                                                        ? "border-teal-500 bg-teal-50 text-teal-800"
+                                                        : "border-gray-300 text-gray-600 hover:border-teal-300"
+                                                }`}
+                                            >
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <span className="block text-sm font-medium text-gray-700 mb-1">
+                                    Do you have any of these? <span className="text-gray-400">(optional)</span>
+                                </span>
+                                <div className="flex flex-wrap gap-2">
+                                    {COMMON_CONDITIONS.map((condition) => {
+                                        const checked = formData.intake.existingConditions.includes(condition);
+                                        return (
+                                            <label
+                                                key={condition}
+                                                className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                                                    checked ? "border-teal-500 bg-teal-50 text-teal-800" : "border-gray-300 text-gray-600"
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    onChange={() => toggleCondition(condition)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                                />
+                                                {condition}
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label htmlFor="intake-medications" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Medicines you are taking <span className="text-gray-400">(optional)</span>
+                                    </label>
+                                    <input
+                                        id="intake-medications"
+                                        value={formData.intake.currentMedications}
+                                        onChange={(event) => updateIntake("currentMedications", event.target.value)}
+                                        placeholder="e.g. Metformin 500mg"
+                                        className="w-full rounded-md border border-gray-300 p-2 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="intake-allergies" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Allergies <span className="text-gray-400">(optional)</span>
+                                    </label>
+                                    <input
+                                        id="intake-allergies"
+                                        value={formData.intake.allergies}
+                                        onChange={(event) => updateIntake("allergies", event.target.value)}
+                                        placeholder="e.g. Penicillin"
+                                        className="w-full rounded-md border border-gray-300 p-2 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label htmlFor="intake-previous" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Have you already had treatment for this? <span className="text-gray-400">(optional)</span>
+                                </label>
+                                <input
+                                    id="intake-previous"
+                                    value={formData.intake.previousTreatment}
+                                    onChange={(event) => updateIntake("previousTreatment", event.target.value)}
+                                    placeholder="e.g. saw a GP last month, took antibiotics"
+                                    className="w-full rounded-md border border-gray-300 p-2 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                />
                             </div>
 
                             <div className="bg-gray-50 p-4 rounded-md border border-gray-200 mb-6">
                                 <h4 className="font-medium mb-2">Appointment Summary</h4>
                                 <div className="space-y-2">
                                     <p><span className="text-gray-600 font-medium">Date:</span> {formData.date || "Not selected"}</p>
-                                    <p>
-                                        <span className="text-gray-600 font-medium">Working Hour:</span>{" "}
-                                        {workingHourOptions.find((option) => option.key === selectedWorkingHourKey)?.label || "Not selected"}
-                                    </p>
                                     <p>
                                         <span className="text-gray-600 font-medium">Time:</span>{" "}
                                         {formData.timeSlot.start ? `${formData.timeSlot.start} - ${formData.timeSlot.end}` : "Not selected"}

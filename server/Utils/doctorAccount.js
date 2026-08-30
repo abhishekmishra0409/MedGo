@@ -1,3 +1,4 @@
+const { resolveSpecialty, getSpecialty } = require('./specialties');
 const buildDoctorAccount = (user = {}) => {
     if (!user) {
         return null;
@@ -74,7 +75,23 @@ const buildDoctorSearchQuery = ({ search, specialty, approvalStatus = "approved"
     }
 
     if (specialty?.trim()) {
-        query["doctorProfile.specialty"] = specialty.trim();
+        // Was exact, case-sensitive equality, so "Cardiology" never matched a
+        // doctor stored as "Cardiologist". Match the canonical name and every
+        // alias, case-insensitively, so pre-existing records resolve with no
+        // migration.
+        const canonical = resolveSpecialty(specialty);
+        const entry = getSpecialty(canonical);
+        const candidates = entry ? [entry.name, ...entry.aliases] : [specialty.trim()];
+        const escape = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        // Stored values often append a role word — "Orthopedic Surgeon",
+        // "Heart Specialist" — so allow one optional suffix rather than trying
+        // to enumerate every combination as its own alias.
+        const ROLE_SUFFIX = "(?:\\s+(?:surgeon|specialist|doctor|consultant|physician|surgery))?";
+
+        query["doctorProfile.specialty"] = {
+            $in: candidates.map((value) => new RegExp(`^${escape(value)}${ROLE_SUFFIX}$`, "i")),
+        };
     }
 
     if (search?.trim()) {
