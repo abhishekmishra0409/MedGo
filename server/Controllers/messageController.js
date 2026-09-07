@@ -15,7 +15,7 @@ exports.sendMessage = async (req, res) => {
             data: message
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.statusCode || 400).json({
             success: false,
             error: error.message
         });
@@ -34,7 +34,7 @@ exports.getConversations = async (req, res) => {
             data: conversations
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.statusCode || 400).json({
             success: false,
             error: error.message
         });
@@ -56,7 +56,7 @@ exports.getMessages = async (req, res) => {
             pagination: result.pagination
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.statusCode || 400).json({
             success: false,
             error: error.message
         });
@@ -75,7 +75,7 @@ exports.markAsRead = async (req, res) => {
             message: 'Messages marked as read'
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.statusCode || 400).json({
             success: false,
             error: error.message
         });

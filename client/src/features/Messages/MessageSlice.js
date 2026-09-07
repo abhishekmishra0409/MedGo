@@ -10,10 +10,28 @@ const initialState = {
     isSuccess: false,
     isError: false,
     message: "",
+    activeConversationId: null,
+    typingByConversation: {},
 };
 
 const showMessageError = (message) => {
-    toast.error(message, { toastId: `message-error-${message}` });
+    const text = message || "Something went wrong. Please try again.";
+    toast.error(text, { toastId: `message-error-${text}` });
+};
+
+// Swaps the optimistic "sending..." bubble for the server-confirmed message
+// (matched by the tempId the composer generated); falls back to a plain
+// push when there was no pending bubble (e.g. the "new conversation" flow).
+const resolveOrPushMessage = (state, action) => {
+    const tempId = action.meta.arg?.tempId;
+    const realMessage = action.payload.data;
+    const index = tempId ? state.messages.findIndex((m) => m._id === tempId) : -1;
+
+    if (index !== -1) {
+        state.messages[index] = realMessage;
+    } else {
+        state.messages.push(realMessage);
+    }
 };
 
 // USER THUNKS
@@ -100,6 +118,51 @@ const messageSlice = createSlice({
             state.messages = [];
             state.message = "";
         },
+        setActiveConversationId: (state, action) => {
+            state.activeConversationId = action.payload;
+        },
+        addPendingMessage: (state, action) => {
+            const { tempId, conversation, content, senderRole } = action.payload;
+            state.messages.push({
+                _id: tempId,
+                conversation,
+                content,
+                senderRole,
+                isRead: false,
+                pending: true,
+                createdAt: null,
+            });
+        },
+        failPendingMessage: (state, action) => {
+            const tempId = action.payload;
+            state.messages = state.messages.filter((m) => m._id !== tempId);
+        },
+        wsMessageReceived: (state, action) => {
+            const message = action.payload;
+            if (message?.conversation === state.activeConversationId) {
+                const alreadyPresent = state.messages.some((m) => m._id === message._id);
+                if (!alreadyPresent) {
+                    state.messages.push(message);
+                }
+            }
+        },
+        wsConversationsUpdated: (state, action) => {
+            state.conversations = Array.isArray(action.payload) ? action.payload : state.conversations;
+        },
+        wsMessagesRead: (state, action) => {
+            const { conversationId } = action.payload || {};
+            state.messages = state.messages.map((m) => (
+                m.conversation === conversationId ? { ...m, isRead: true } : m
+            ));
+        },
+        wsTypingIndicator: (state, action) => {
+            const { conversationId, isTyping } = action.payload || {};
+            if (!conversationId) return;
+            state.typingByConversation = {
+                ...state.typingByConversation,
+                [conversationId]: isTyping,
+            };
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -111,7 +174,7 @@ const messageSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 toast.success("Message sent successfully", { toastId: "message-send-success" });
-                state.messages.push(action.payload.data);
+                resolveOrPushMessage(state, action);
             })
             .addCase(sendUserMessage.rejected, (state, action) => {
                 state.isLoading = false;
@@ -127,7 +190,7 @@ const messageSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 toast.success("Message sent successfully", { toastId: "message-send-success" });
-                state.messages.push(action.payload.data);
+                resolveOrPushMessage(state, action);
             })
             .addCase(sendDoctorMessage.rejected, (state, action) => {
                 state.isLoading = false;
@@ -235,5 +298,15 @@ const messageSlice = createSlice({
     },
 });
 
-export const { resetMessageState, clearMessages } = messageSlice.actions;
+export const {
+    resetMessageState,
+    clearMessages,
+    setActiveConversationId,
+    addPendingMessage,
+    failPendingMessage,
+    wsMessageReceived,
+    wsConversationsUpdated,
+    wsMessagesRead,
+    wsTypingIndicator,
+} = messageSlice.actions;
 export default messageSlice.reducer;

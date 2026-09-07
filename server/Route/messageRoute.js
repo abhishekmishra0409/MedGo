@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../Controllers/messageController');
-const userAuth = require('../Middlewares/authMiddleware');
+const userAuth = require('../Middlewares/patientAuth');
 const doctorAuth = require('../Middlewares/doctorMiddleware');
 
 // USER ROUTES

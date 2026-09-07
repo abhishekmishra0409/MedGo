@@ -1,7 +1,14 @@
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
-const MessageService = require('../Services/messageService');
+const config = require('./config');
 const Conversation = require('../Models/Conversation'); // You missed this in your WebSocket file
+
+// Required lazily (not at module load) inside the methods that use it —
+// messageService.js requires this file too (to call notifyUser/updateConversationLists),
+// so a top-level require here creates a circular import: whichever module loads
+// second gets the other's still-empty module.exports at that point in time,
+// and MessageService.getUserConversations ends up undefined at call time.
+const getMessageService = () => require('../Services/messageService');
 
 class WSServer {
     constructor(server) {
@@ -13,12 +20,13 @@ class WSServer {
 
     setupConnectionHandling() {
         this.wss.on('connection', (ws, req) => {
-            const token = req.url.split('token=')[1];
+            const { searchParams } = new URL(req.url, 'http://localhost');
+            const token = searchParams.get('token');
             let userId;
 
             try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                userId = decoded.id;
+                const decoded = jwt.verify(token, config.JWT_SECRET);
+                userId = String(decoded.id);
                 this.clients.set(userId, ws);
             } catch (error) {
                 ws.close(1008, 'Invalid token');
@@ -39,7 +47,7 @@ class WSServer {
                     await this.handleSendMessage(senderId, payload);
                     break;
                 case 'TYPING_STATUS':
-                    this.handleTypingStatus(senderId, payload);
+                    await this.handleTypingStatus(senderId, payload);
                     break;
                 case 'MARK_AS_READ':
                     await this.handleMarkAsRead(senderId, payload.conversationId);
@@ -51,7 +59,7 @@ class WSServer {
     }
 
     async handleSendMessage(senderId, { recipientId, content, attachments, appointmentId }) {
-        const message = await MessageService.sendMessage({
+        const message = await getMessageService().sendMessage({
             senderId,
             recipientId,
             content,
@@ -59,51 +67,68 @@ class WSServer {
             appointmentId
         });
 
-        this.notifyUser(recipientId, 'NEW_MESSAGE', message);
-        this.updateConversationLists([senderId, recipientId]);
+        try {
+            this.notifyUser(recipientId, 'NEW_MESSAGE', message);
+            this.updateConversationLists([
+                { id: senderId, role: message.senderRole },
+                { id: recipientId, role: message.recipientRole },
+            ]);
+        } catch (wsError) {
+            console.error('WS notify failed after message persisted:', wsError);
+        }
     }
 
     async handleMarkAsRead(userId, conversationId) {
-        await MessageService.markAsRead(userId, conversationId);
+        await getMessageService().markAsRead(userId, conversationId);
 
         const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+            return;
+        }
         const otherUserId = conversation.doctor.equals(userId)
             ? conversation.patient
             : conversation.doctor;
 
-        this.notifyUser(otherUserId, 'MESSAGES_READ', {
+        this.notifyUser(String(otherUserId), 'MESSAGES_READ', {
             conversationId,
             readerId: userId
         });
     }
 
-    handleTypingStatus(senderId, { conversationId, isTyping }) {
-        Conversation.findById(conversationId).then((conversation) => {
+    async handleTypingStatus(senderId, { conversationId, isTyping }) {
+        try {
+            const conversation = await Conversation.findById(conversationId);
+            if (!conversation) return;
+
             const recipientId = conversation.doctor.equals(senderId)
                 ? conversation.patient
                 : conversation.doctor;
 
-            this.notifyUser(recipientId, 'TYPING_INDICATOR', {
+            this.notifyUser(String(recipientId), 'TYPING_INDICATOR', {
                 conversationId,
                 isTyping
             });
-        });
+        } catch (error) {
+            console.error('handleTypingStatus error:', error);
+        }
     }
 
-    async updateConversationLists(userIds) {
-        for (const userId of userIds) {
-            if (this.clients.has(userId)) {
-                const userType = userId.startsWith('doc_') ? 'doctor' : 'user';
-                const conversations = await MessageService.getUserConversations(userId, userType);
+    async updateConversationLists(participants) {
+        for (const { id, role } of participants) {
+            const key = String(id);
+            if (this.clients.has(key)) {
+                const userType = role === 'doctor' ? 'doctor' : 'user';
+                const conversations = await getMessageService().getUserConversations(key, userType);
 
-                this.notifyUser(userId, 'UPDATE_CONVERSATIONS', conversations);
+                this.notifyUser(key, 'UPDATE_CONVERSATIONS', conversations);
             }
         }
     }
 
     notifyUser(userId, event, data) {
-        if (this.clients.has(userId)) {
-            this.clients.get(userId).send(JSON.stringify({ event, data }));
+        const key = String(userId);
+        if (this.clients.has(key)) {
+            this.clients.get(key).send(JSON.stringify({ event, data }));
         }
     }
 }

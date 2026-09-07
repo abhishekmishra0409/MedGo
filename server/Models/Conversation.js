@@ -15,7 +15,11 @@ const conversationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message'
     },
-    unreadCount: {
+    unreadCountForDoctor: {
+        type: Number,
+        default: 0
+    },
+    unreadCountForPatient: {
         type: Number,
         default: 0
     },
@@ -23,12 +27,9 @@ const conversationSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'archived'],
         default: 'active'
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
 }, {
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });

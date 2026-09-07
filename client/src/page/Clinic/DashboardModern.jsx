@@ -43,7 +43,7 @@ const DashboardModern = () => {
     };
 
     return (
-        <div className="relative flex h-dvh w-full overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
+        <div className="relative flex min-h-dvh w-full bg-[linear-gradient(180deg,#f7fbff_0%,#f4f8fb_100%)]">
             <button
                 onClick={() => setIsSidebarOpen((value) => !value)}
                 className="fixed left-4 top-4 z-50 rounded-full border border-slate-200 bg-white p-3 shadow-sm md:hidden"
@@ -63,7 +63,7 @@ const DashboardModern = () => {
             ) : null}
 
             <aside
-                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(17rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:static md:translate-x-0`}
+                className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[min(17rem,85vw)] transform border-r border-slate-200 bg-white/95 transition-transform duration-200 ease-in-out md:translate-x-0`}
             >
                 <div className="flex h-full flex-col overflow-hidden px-4 py-4">
                     <div className="mb-5 flex items-center gap-3">
@@ -113,11 +113,12 @@ const DashboardModern = () => {
                 </div>
             </aside>
 
-            <main className="modal-scroll h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-16 md:pt-0">
-                <div className="w-full p-4 md:p-6 xl:p-8">
-                    <div className="mb-4 flex justify-end">
-                        <NotificationBell tokenKey="ownerToken" />
-                    </div>
+            <main className="min-w-0 flex-1 md:ml-[min(17rem,85vw)]">
+                <header className="fixed inset-x-0 top-0 z-20 flex h-16 items-center justify-end border-b border-slate-200 bg-white/90 px-4 backdrop-blur-sm md:left-[min(17rem,85vw)] md:px-6 xl:px-8">
+                    <NotificationBell tokenKey="ownerToken" />
+                </header>
+
+                <div className="w-full p-4 pt-20 md:p-6 md:pt-[5.5rem] xl:p-8 xl:pt-24">
                     {profile?.ownerProfile?.approvalStatus === "rejected" ? (
                         <div className="auth-alert auth-alert--error mb-4">
                             Your facility application was rejected{profile.ownerProfile.approvalNotes ? `: ${profile.ownerProfile.approvalNotes}` : "."} Contact support if you believe this is a mistake.

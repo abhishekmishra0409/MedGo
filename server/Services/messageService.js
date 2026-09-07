@@ -14,21 +14,16 @@ class MessageService {
         ]);
 
         if (!doctor || !patient || patient.role !== 'user') {
-            throw new Error('Doctor or patient not found');
+            const err = new Error('Doctor or patient not found');
+            err.statusCode = 404;
+            throw err;
         }
 
-        let conversation = await Conversation.findOne({
-            doctor: doctorId,
-            patient: patientId
-        });
-
-        if (!conversation) {
-            conversation = new Conversation({
-                doctor: doctorId,
-                patient: patientId
-            });
-            await conversation.save();
-        }
+        const conversation = await Conversation.findOneAndUpdate(
+            { doctor: doctorId, patient: patientId },
+            { $setOnInsert: { doctor: doctorId, patient: patientId } },
+            { new: true, upsert: true }
+        );
 
         return conversation;
     }
@@ -39,7 +34,9 @@ class MessageService {
         const recipient = await User.findById(recipientId);
 
         if (!sender || !recipient) {
-            throw new Error('Participants not found');
+            const err = new Error('Participants not found');
+            err.statusCode = 404;
+            throw err;
         }
 
         // Ensure conversation is between doctor and patient
@@ -68,7 +65,11 @@ class MessageService {
         // Update conversation
         conversation.lastMessage = message._id;
         if (recipientId.toString() !== senderId.toString()) {
-            conversation.unreadCount += 1;
+            if (recipient.role === 'doctor') {
+                conversation.unreadCountForDoctor += 1;
+            } else {
+                conversation.unreadCountForPatient += 1;
+            }
         }
 
         await Promise.all([message.save(), conversation.save()]);
@@ -88,9 +89,16 @@ class MessageService {
             },
         });
 
-        // WebSocket notifications
-        getWSSInstance().notifyUser(recipientId, 'NEW_MESSAGE', message);
-        getWSSInstance().updateConversationLists([senderId, recipientId]);
+        // WebSocket notifications — must never fail a send that already persisted.
+        try {
+            getWSSInstance().notifyUser(String(recipientId), 'NEW_MESSAGE', message);
+            getWSSInstance().updateConversationLists([
+                { id: senderId, role: sender.role },
+                { id: recipientId, role: recipient.role },
+            ]);
+        } catch (wsError) {
+            console.error('WS notify failed after message persisted:', wsError);
+        }
 
         return message;
     }
@@ -105,7 +113,9 @@ class MessageService {
         });
 
         if (!conversation) {
-            throw new Error('Conversation not found or access denied');
+            const err = new Error('Conversation not found or access denied');
+            err.statusCode = 404;
+            throw err;
         }
 
         // Page 1 must be the MOST RECENT messages — ascending skip/limit meant
@@ -169,11 +179,27 @@ class MessageService {
             const item = conversation.toObject();
             item.doctor = item.doctor ? buildDoctorAccount(item.doctor) : null;
             item.isAvailable = Boolean(item.doctor && item.patient);
+            item.unreadCount = userType === 'doctor' ? item.unreadCountForDoctor : item.unreadCountForPatient;
             return item;
         });
     }
 
     static async markAsRead(userId, conversationId) {
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            $or: [{ doctor: userId }, { patient: userId }]
+        });
+
+        if (!conversation) {
+            const err = new Error('Conversation not found or access denied');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        const isDoctor = conversation.doctor.equals(userId);
+        const unreadField = isDoctor ? 'unreadCountForDoctor' : 'unreadCountForPatient';
+        const otherUserId = isDoctor ? conversation.patient : conversation.doctor;
+
         await Promise.all([
             Message.updateMany(
                 {
@@ -185,24 +211,18 @@ class MessageService {
             ),
             Conversation.updateOne(
                 { _id: conversationId },
-                { $set: { unreadCount: 0 } }
+                { $set: { [unreadField]: 0 } }
             )
         ]);
 
-        // WebSocket notification
-        const conversation = await Conversation.findById(conversationId);
-        if (!conversation) {
-            return;
+        try {
+            getWSSInstance().notifyUser(String(otherUserId), 'MESSAGES_READ', {
+                conversationId,
+                readerId: userId
+            });
+        } catch (wsError) {
+            console.error('WS notify failed after mark-as-read persisted:', wsError);
         }
-
-        const otherUserId = conversation.doctor.equals(userId)
-            ? conversation.patient
-            : conversation.doctor;
-
-        getWSSInstance().notifyUser(otherUserId, 'MESSAGES_READ', {
-            conversationId,
-            readerId: userId
-        });
     }
 }
 

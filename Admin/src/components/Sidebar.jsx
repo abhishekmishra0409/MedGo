@@ -34,13 +34,13 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="flex h-full w-64 flex-col rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="fixed left-[clamp(1rem,2vw,2rem)] top-4 z-10 flex h-[calc(100dvh-2rem)] w-64 flex-col rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm xl:top-5 xl:h-[calc(100dvh-2.5rem)]">
             <div className="mb-5 rounded-3xl bg-[linear-gradient(135deg,#0f9c8c,#0b7669)] p-4 text-white">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100">Admin Hub</p>
                 <h2 className="mt-2 text-lg font-semibold">MedGo operations</h2>
                 <p className="mt-2 text-xs leading-5 text-teal-50">Products, doctors, clinics, diagnostics, and orders.</p>
             </div>
-            <div className="min-h-0 flex-1">
+            <div className="admin-scroll min-h-0 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                     {sidebarItems.map((item) => (
                         <NavItem key={item.path} item={item} />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import {
     AlertCircle,
     CalendarDays,
@@ -15,7 +16,9 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
+    addPendingMessage,
     clearMessages,
+    failPendingMessage,
     getDoctorConversations,
     getDoctorMessages,
     getUserConversations,
@@ -25,8 +28,11 @@ import {
     resetMessageState,
     sendDoctorMessage,
     sendUserMessage,
+    setActiveConversationId,
 } from "../features/Messages/MessageSlice.js";
 import { getDoctorAppointments, getMyAppointments } from "../features/Appointment/AppointmentSlice.js";
+import useMessagingSocket from "../hooks/useMessagingSocket.js";
+import EmptyState from "../component/ui/EmptyState.jsx";
 
 const formatDate = (dateString, options = {}) => {
     if (!dateString) return "No date";
@@ -77,22 +83,10 @@ const getAppointmentLabel = (appointment, userType) => {
     return `${formatDate(appointment.date, { year: "numeric" })} - ${person}`;
 };
 
-const EmptyPanel = ({ title, description, action }) => (
-    <div className="flex h-full min-h-[24rem] items-center justify-center p-6 text-center">
-        <div className="max-w-md">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-teal-50 text-teal-700">
-                <MessageSquareText className="h-8 w-8" />
-            </div>
-            <h3 className="mt-5 text-2xl font-bold text-slate-950">{title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
-            {action}
-        </div>
-    </div>
-);
-
 const ConversationPage = ({ userType }) => {
     const dispatch = useDispatch();
     const messagesEndRef = useRef(null);
+    const [searchParams, setSearchParams] = useSearchParams();
     const { conversations, messages, isLoading, messagePagination } = useSelector((state) => state.messages);
     const { myAppointments, doctorAppointments } = useSelector((state) => state.appointment);
 
@@ -103,13 +97,18 @@ const ConversationPage = ({ userType }) => {
     const [isAppointmentPickerOpen, setIsAppointmentPickerOpen] = useState(false);
     const [initialMessage, setInitialMessage] = useState("");
 
+    useMessagingSocket(userType);
+
     const conversationList = Array.isArray(conversations) ? conversations : [];
     const currentConversation = conversationList.find((item) => item._id === activeConversation) || null;
     const currentAvailable = isConversationAvailable(currentConversation, userType);
     const availableAppointments = useMemo(() => {
         const appointments = userType === "user" ? myAppointments : doctorAppointments;
         return Array.isArray(appointments)
-            ? appointments.filter((appointment) => (userType === "user" ? appointment?.doctor?._id : appointment?.patient?._id))
+            ? appointments.filter((appointment) => {
+                  const hasContact = userType === "user" ? appointment?.doctor?._id : appointment?.patient?._id;
+                  return Boolean(hasContact) && appointment?.status !== "cancelled";
+              })
             : [];
     }, [doctorAppointments, myAppointments, userType]);
 
@@ -124,6 +123,7 @@ const ConversationPage = ({ userType }) => {
 
         return () => {
             dispatch(resetMessageState());
+            dispatch(setActiveConversationId(null));
         };
     }, [dispatch, userType]);
 
@@ -140,6 +140,7 @@ const ConversationPage = ({ userType }) => {
 
     const handleConversationClick = (conversation) => {
         setActiveConversation(conversation._id);
+        dispatch(setActiveConversationId(conversation._id));
 
         if (!isConversationAvailable(conversation, userType)) {
             dispatch(clearMessages());
@@ -154,6 +155,36 @@ const ConversationPage = ({ userType }) => {
             dispatch(markDoctorMessagesRead(conversation._id));
         }
     };
+
+    // Entry point from the Appointments page's "Message" link
+    // (?doctorId=&appointmentId=). Opens the existing thread with that
+    // doctor, or pre-fills the "new conversation" modal if none exists yet.
+    useEffect(() => {
+        if (userType !== "user") return;
+
+        const doctorId = searchParams.get("doctorId");
+        if (!doctorId || !conversationList.length) return;
+
+        const existing = conversationList.find((conversation) => (
+            String(getOtherParticipant(conversation, userType)?._id) === String(doctorId)
+        ));
+
+        if (existing) {
+            handleConversationClick(existing);
+        } else {
+            const appointmentId = searchParams.get("appointmentId");
+            const appointment = availableAppointments.find((item) => item._id === appointmentId)
+                || availableAppointments.find((item) => item.doctor?._id === doctorId);
+
+            if (appointment) {
+                setSelectedAppointment(appointment);
+                setShowNewConversationModal(true);
+            }
+        }
+
+        setSearchParams({}, { replace: true });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [conversationList, availableAppointments, userType]);
 
     const loadOlderMessages = () => {
         if (!activeConversation || !messagePagination?.hasMore || isLoading) return;
@@ -176,19 +207,32 @@ const ConversationPage = ({ userType }) => {
 
         setNewMessage("");
 
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        dispatch(addPendingMessage({
+            tempId,
+            conversation: currentConversation._id,
+            content,
+            senderRole: userType,
+        }));
+
         const payload = {
             recipientId: recipient._id,
             content,
             attachments: [],
-            appointmentId: currentConversation.lastMessage?.metadata?.appointment || null,
+            appointmentId: null,
+            tempId,
         };
 
         const action = userType === "user" ? sendUserMessage(payload) : sendDoctorMessage(payload);
         const result = await dispatch(action);
 
-        if (!result.error) {
-            reloadConversations();
+        if (result.error) {
+            dispatch(failPendingMessage(tempId));
+            setNewMessage(content);
+            return;
         }
+
+        reloadConversations();
     };
 
     const handleStartNewConversation = async () => {
@@ -217,20 +261,26 @@ const ConversationPage = ({ userType }) => {
 
         if (result.error) return;
 
-        const refreshed = await reloadConversations();
-        const refreshedList = Array.isArray(refreshed.payload?.data) ? refreshed.payload.data : [];
-        const recipientConversation = refreshedList.find((conversation) => {
-            const other = getOtherParticipant(conversation, userType);
-            return String(other?._id) === String(recipientId);
-        });
+        const newConversationId = result.payload?.data?.conversation;
+        await reloadConversations();
 
         setShowNewConversationModal(false);
         setSelectedAppointment(null);
         setIsAppointmentPickerOpen(false);
         setInitialMessage("");
 
-        if (recipientConversation) {
-            handleConversationClick(recipientConversation);
+        if (newConversationId) {
+            setActiveConversation(newConversationId);
+            dispatch(setActiveConversationId(newConversationId));
+            if (userType === "user") {
+                dispatch(getUserMessages(newConversationId));
+                dispatch(markUserMessagesRead(newConversationId));
+            } else {
+                dispatch(getDoctorMessages(newConversationId));
+                dispatch(markDoctorMessagesRead(newConversationId));
+            }
+        } else {
+            toast.warning("Conversation started, but couldn't auto-select it. Pick it from the list.");
         }
     };
 
@@ -306,9 +356,11 @@ const ConversationPage = ({ userType }) => {
                                     );
                                 })
                             ) : (
-                                <EmptyPanel
+                                <EmptyState
+                                    icon={MessageSquareText}
                                     title="No conversations yet"
-                                    description="Start with an appointment so your doctor and care notes stay connected."
+                                    message="Start with an appointment so your doctor and care notes stay connected."
+                                    className="min-h-[24rem]"
                                     action={(
                                         <button
                                             type="button"
@@ -349,9 +401,11 @@ const ConversationPage = ({ userType }) => {
                                 </header>
 
                                 {!currentAvailable ? (
-                                    <EmptyPanel
+                                    <EmptyState
+                                        icon={MessageSquareText}
                                         title="This conversation is unavailable"
-                                        description="The linked contact no longer exists in the system, so this thread is kept for history only."
+                                        message="The linked contact no longer exists in the system, so this thread is kept for history only."
+                                        className="min-h-[24rem]"
                                     />
                                 ) : (
                                     <>
@@ -378,10 +432,17 @@ const ConversationPage = ({ userType }) => {
                                                         const own = isOwnMessage(message, userType);
                                                         return (
                                                             <div key={message._id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
-                                                                <div className={`max-w-[85%] rounded-3xl px-4 py-3 shadow-sm sm:max-w-[70%] ${own ? "rounded-br-lg bg-teal-600 text-white" : "rounded-bl-lg border border-slate-200 bg-white text-slate-800"}`}>
+                                                                <div className={`max-w-[85%] rounded-3xl px-4 py-3 shadow-sm transition-opacity sm:max-w-[70%] ${own ? "rounded-br-lg bg-teal-600 text-white" : "rounded-bl-lg border border-slate-200 bg-white text-slate-800"} ${message.pending ? "opacity-60" : ""}`}>
                                                                     <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
-                                                                    <p className={`mt-2 text-[11px] ${own ? "text-teal-100" : "text-slate-400"}`}>
-                                                                        {formatDate(message.createdAt)}
+                                                                    <p className={`mt-2 flex items-center gap-1.5 text-[11px] ${own ? "text-teal-100" : "text-slate-400"}`}>
+                                                                        {message.pending ? (
+                                                                            <>
+                                                                                <span className="h-2.5 w-2.5 animate-spin rounded-full border border-current border-t-transparent" />
+                                                                                Sending...
+                                                                            </>
+                                                                        ) : (
+                                                                            formatDate(message.createdAt)
+                                                                        )}
                                                                     </p>
                                                                 </div>
                                                             </div>
@@ -390,9 +451,11 @@ const ConversationPage = ({ userType }) => {
                                                     <div ref={messagesEndRef} />
                                                 </div>
                                             ) : (
-                                                <EmptyPanel
+                                                <EmptyState
+                                                    icon={MessageSquareText}
                                                     title="No messages yet"
-                                                    description="Send the first message to keep this care conversation in one place."
+                                                    message="Send the first message to keep this care conversation in one place."
+                                                    className="min-h-[16rem]"
                                                 />
                                             )}
                                         </div>
@@ -420,11 +483,13 @@ const ConversationPage = ({ userType }) => {
                                 )}
                             </>
                         ) : (
-                            <EmptyPanel
+                            <EmptyState
+                                icon={MessageSquareText}
                                 title="Select a conversation"
-                                description={userType === "user"
+                                message={userType === "user"
                                     ? "Choose a care conversation or start a new one from an appointment."
                                     : "Choose a patient thread to review messages and follow-up notes."}
+                                className="min-h-[24rem]"
                             />
                         )}
                     </main>

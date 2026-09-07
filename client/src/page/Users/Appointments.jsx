@@ -11,6 +11,7 @@ import {
     Clock3,
     FileText,
     MapPin,
+    MessageSquareText,
     Stethoscope,
     Video,
     X,
@@ -160,6 +161,15 @@ const AppointmentCard = ({ appointment, onViewDetails, onViewClinic, onCancel })
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
                     <JoinTeleconsultation appointment={appointment} tokenKey="userToken" />
+                    {appointment.doctor?._id && appointment.status !== "cancelled" ? (
+                        <Link
+                            to={`/user/messages?doctorId=${appointment.doctor._id}&appointmentId=${appointment._id}`}
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-teal-200 px-4 py-2.5 text-sm font-semibold text-teal-700 transition hover:bg-teal-50"
+                        >
+                            <MessageSquareText className="h-4 w-4" />
+                            Message
+                        </Link>
+                    ) : null}
                     {appointment.clinic ? (
                         <button
                             type="button"
